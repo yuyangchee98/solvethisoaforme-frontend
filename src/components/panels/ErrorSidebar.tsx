@@ -68,7 +68,7 @@ export function ErrorSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="w-16 flex flex-col items-center pt-8 bg-stone-50/50">
+      <div className="sticky top-16 self-start w-16 max-h-[calc(100vh-4rem)] flex flex-col items-center pt-8 bg-stone-50/50">
         <Button
           variant="ghost"
           size="icon"
@@ -88,7 +88,7 @@ export function ErrorSidebar({
   }
 
   return (
-    <div className="w-96 flex flex-col bg-amber-50/30 pr-12 pl-8 py-12">
+    <div className="sticky top-16 self-start w-96 max-h-[calc(100vh-4rem)] flex flex-col bg-amber-50/30 pr-12 pl-8 py-12">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <h2 className="font-semibold text-base text-stone-900">Errors</h2>
