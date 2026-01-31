@@ -27,3 +27,36 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
 }
+
+/* CodeMirror annotation styles */
+.cm-annotation {
+  cursor: pointer;
+  border-radius: 2px;
+  padding: 1px 0;
+  transition: background-color 150ms ease;
+}
+
+.cm-annotation-intro {
+  background-color: oklch(92% 0.08 160 / 0.4);
+}
+
+.cm-annotation-ref {
+  background-color: oklch(92% 0.08 263 / 0.3);
+}
+
+.cm-annotation-error {
+  background-color: oklch(92% 0.12 27 / 0.5);
+}
+
+/* Hover states - brighter backgrounds */
+.cm-annotation-intro.hovered {
+  background-color: oklch(85% 0.12 160 / 0.7);
+}
+
+.cm-annotation-ref.hovered {
+  background-color: oklch(85% 0.12 263 / 0.6);
+}
+
+.cm-annotation-error.hovered {
+  background-color: oklch(85% 0.16 27 / 0.8);
+}
