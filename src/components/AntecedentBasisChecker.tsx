@@ -216,6 +216,21 @@ export default function AntecedentBasisChecker() {
           refElements.forEach(el => el.classList.add('hovered'));
         });
       }
+
+      // If it's an error, highlight ALL errors with the same noun phrase
+      if (hoveredAnnotation.type === 'error') {
+        // Find all errors with the same noun phrase
+        const matchingErrors = annotations.filter(
+          ann => ann.type === 'error' && ann.np === hoveredAnnotation.np
+        );
+
+        matchingErrors.forEach(error => {
+          const errorElements = document.querySelectorAll(
+            `.cm-annotation[data-start="${error.start}"][data-end="${error.end}"]`
+          );
+          errorElements.forEach(el => el.classList.add('hovered'));
+        });
+      }
     }
   }, [hoveredAnnotation, annotations, analysis]);
 
