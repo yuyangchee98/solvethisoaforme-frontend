@@ -41,18 +41,18 @@ export function ErrorSidebar({
 
   if (isCollapsed) {
     return (
-      <div className="w-12 border-l bg-white flex flex-col items-center pt-4">
+      <div className="w-16 flex flex-col items-center pt-8 bg-stone-50/50">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(false)}
-          className="h-8 w-8"
+          className="h-8 w-8 hover:bg-amber-100"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4 text-stone-600" />
         </Button>
-        <div className="mt-4 flex flex-col items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-red-500" />
-          <Badge variant="destructive" className="text-xs">
+        <div className="mt-6 flex flex-col items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-amber-600" />
+          <Badge className="text-xs bg-amber-100 text-amber-700 border-0">
             {errors.length}
           </Badge>
         </div>
@@ -61,12 +61,11 @@ export function ErrorSidebar({
   }
 
   return (
-    <div className="w-80 border-l bg-white flex flex-col">
-      <div className="h-14 border-b px-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-red-500" />
-          <h2 className="font-semibold text-sm">Errors</h2>
-          <Badge variant="destructive" className="text-xs">
+    <div className="w-96 flex flex-col bg-amber-50/30 pr-12 pl-8 py-12">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <h2 className="font-semibold text-base text-stone-900">Errors</h2>
+          <Badge className="text-xs bg-amber-100 text-amber-700 border-0">
             {errors.length}
           </Badge>
         </div>
@@ -74,16 +73,16 @@ export function ErrorSidebar({
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(true)}
-          className="h-8 w-8"
+          className="h-8 w-8 hover:bg-amber-100"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4 text-stone-600" />
         </Button>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-4">
+      <div className="flex-1 overflow-auto space-y-3">
         {claimNumbers.map((claimNum) => (
           <div key={claimNum}>
-            <div className="text-xs font-semibold text-muted-foreground mb-2">
+            <div className="text-xs font-medium text-stone-500 mb-3">
               Claim {claimNum}
             </div>
             <div className="space-y-2">
@@ -92,31 +91,31 @@ export function ErrorSidebar({
                                  hoveredAnnotation?.end === error.end;
 
                 return (
-                  <Card
+                  <div
                     key={`${claimNum}-${idx}`}
-                    className={`p-3 cursor-pointer transition-colors ${
+                    className={`p-4 cursor-pointer transition-all rounded-lg ${
                       isHovered
-                        ? 'bg-red-100 border-red-300'
-                        : 'hover:bg-muted/50'
+                        ? 'bg-amber-100/70 soft-shadow'
+                        : 'bg-white/80 hover:bg-white soft-shadow'
                     }`}
                     onClick={() => onErrorClick(error)}
                     onMouseEnter={() => onErrorHover?.(error)}
                     onMouseLeave={() => onErrorHover?.(null)}
                   >
-                    <p className="text-sm font-medium text-red-600 mb-1">
+                    <p className="text-sm font-medium text-stone-900 mb-1">
                       "{error.text}"
                     </p>
                     {error.reason && (
-                      <p className="text-xs text-muted-foreground line-clamp-2">
+                      <p className="text-xs text-stone-600 line-clamp-2">
                         {error.reason}
                       </p>
                     )}
                     {error.suggestion && (
-                      <p className="text-xs text-amber-600 mt-1">
+                      <p className="text-xs text-amber-700 mt-2 font-medium">
                         Suggestion: "{error.suggestion}"
                       </p>
                     )}
-                  </Card>
+                  </div>
                 );
               })}
             </div>

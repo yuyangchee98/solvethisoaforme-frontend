@@ -7,6 +7,7 @@ export interface AnnotationData {
   start: number;
   end: number;
   text: string;
+  np: string; // Noun phrase without determiner (from spaCy)
   claimNumber: number;
   reason?: string;
   suggestion?: string;
@@ -37,13 +38,14 @@ export function createAnnotationsFromAnalysis(
   for (const claim of analysis.analyses) {
     const offset = claimPositions.get(claim.claim_number) || 0;
 
-    // Add introductions with offset
+    // Add introductions with offset (includes both "a/an X" and bare "X")
     for (const intro of claim.introductions) {
       annotations.push({
         type: 'intro',
         start: intro.start + offset,
         end: intro.end + offset,
         text: intro.text,
+        np: intro.np, // Store the noun phrase for matching
         claimNumber: claim.claim_number,
       });
     }
@@ -57,6 +59,7 @@ export function createAnnotationsFromAnalysis(
           start: ref.start + offset,
           end: ref.end + offset,
           text: ref.text,
+          np: ref.np, // Store the noun phrase for matching
           claimNumber: claim.claim_number,
         });
       }
@@ -69,6 +72,7 @@ export function createAnnotationsFromAnalysis(
         start: error.start + offset,
         end: error.end + offset,
         text: error.text,
+        np: error.np, // Store the noun phrase for matching
         claimNumber: claim.claim_number,
         reason: error.reason,
         suggestion: error.suggestion || undefined,

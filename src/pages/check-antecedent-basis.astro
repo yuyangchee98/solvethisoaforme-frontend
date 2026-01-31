@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TopNav from '../components/layout/TopNav.astro';
+import AntecedentBasisChecker from '../components/AntecedentBasisChecker';
+---
+
+<Layout title="Check Antecedent Basis - Solve This OA For Me">
+  <TopNav />
+
+  <main class="min-h-screen bg-stone-50">
+    <AntecedentBasisChecker client:load />
+  </main>
+</Layout>

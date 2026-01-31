@@ -5,28 +5,30 @@ export const editorTheme = EditorView.theme({
     height: '100%',
     fontSize: '14px',
     fontFamily: 'JetBrains Mono, SF Mono, Consolas, monospace',
+    backgroundColor: 'white',
   },
   '.cm-content': {
-    padding: '1rem',
-    lineHeight: '1.6',
+    padding: '2rem',
+    lineHeight: '1.7',
   },
   '.cm-scroller': {
     overflow: 'auto',
     fontFamily: 'JetBrains Mono, SF Mono, Consolas, monospace',
   },
   '.cm-lineNumbers': {
-    fontWeight: '600',
-    color: 'oklch(50% 0.019 257.28)',
-    paddingRight: '1rem',
+    fontWeight: '500',
+    color: 'oklch(60% 0.01 60)',
+    paddingRight: '1.5rem',
+    paddingLeft: '1rem',
   },
   '.cm-gutters': {
-    backgroundColor: '#FAFAF9',
+    backgroundColor: 'oklch(99% 0.001 60)',
     border: 'none',
   },
   '.cm-activeLineGutter': {
     backgroundColor: 'transparent',
   },
   '.cm-activeLine': {
-    backgroundColor: 'oklch(98% 0.002 264.54)',
+    backgroundColor: 'oklch(97% 0.003 60)',
   },
 });

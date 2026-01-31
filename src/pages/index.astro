@@ -1,19 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import TabsContainer from '../components/TabsContainer';
+// Redirect to /agent as the home page
 ---
 
-<Layout title="Solve This OA For Me">
-  <main class="container mx-auto p-6 h-screen flex flex-col">
-    <div class="mb-6">
-      <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-        Solve This OA For Me
-      </h1>
-      <p class="text-muted-foreground mt-1">
-        Patent analysis and automation tools
-      </p>
-    </div>
-
-    <TabsContainer client:load />
-  </main>
-</Layout>
+<script>
+  window.location.href = '/agent';
+</script>

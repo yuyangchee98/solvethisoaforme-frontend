@@ -1,0 +1,52 @@
+---
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-black/5 z-50">
+  <div class="container mx-auto px-8 h-full flex items-center justify-between">
+    <div class="flex items-center gap-12">
+      <a href="/" class="text-lg font-semibold text-stone-900">
+        Solve This OA For Me
+      </a>
+
+      <div class="flex items-center gap-8">
+        <a
+          href="/agent"
+          class={`text-sm font-medium transition-colors relative pb-1 ${
+            currentPath === '/agent' || currentPath === '/'
+              ? 'text-amber-600'
+              : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Agent
+          {(currentPath === '/agent' || currentPath === '/') && (
+            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600 rounded-full"></span>
+          )}
+        </a>
+
+        <a
+          href="/check-antecedent-basis"
+          class={`text-sm font-medium transition-colors relative pb-1 ${
+            currentPath === '/check-antecedent-basis'
+              ? 'text-amber-600'
+              : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Check Antecedent Basis
+          {currentPath === '/check-antecedent-basis' && (
+            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600 rounded-full"></span>
+          )}
+        </a>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="text-xs text-stone-500">
+        <slot name="status" />
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Spacer for fixed nav -->
+<div class="h-16"></div>

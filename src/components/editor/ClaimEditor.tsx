@@ -25,6 +25,13 @@ export function ClaimEditor({
   const viewRef = useRef<EditorView | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  // Use ref to keep current annotations accessible in event handlers
+  const annotationsRef = useRef<AnnotationData[]>(annotations);
+
+  useEffect(() => {
+    annotationsRef.current = annotations;
+  }, [annotations]);
+
   // Initialize editor
   useEffect(() => {
     if (!editorRef.current || mounted) return;
@@ -32,7 +39,6 @@ export function ClaimEditor({
     const startState = EditorState.create({
       doc: value,
       extensions: [
-        lineNumbers(),
         highlightActiveLine(),
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
@@ -51,8 +57,8 @@ export function ClaimEditor({
             const pos = view.posAtCoords({ x: event.clientX, y: event.clientY });
             if (pos === null) return false;
 
-            // Find annotation at this position
-            const annotation = annotations.find(
+            // Find annotation at this position using ref
+            const annotation = annotationsRef.current.find(
               (ann) => pos >= ann.start && pos < ann.end
             );
 
@@ -72,8 +78,8 @@ export function ClaimEditor({
               return false;
             }
 
-            // Find annotation at this position
-            const annotation = annotations.find(
+            // Find annotation at this position using ref
+            const annotation = annotationsRef.current.find(
               (ann) => pos >= ann.start && pos < ann.end
             );
 
@@ -131,7 +137,7 @@ export function ClaimEditor({
   }, [annotations, mounted]);
 
   return (
-    <div className="h-full w-full overflow-hidden border rounded-lg bg-white">
+    <div className="h-full w-full overflow-hidden rounded-xl bg-white soft-shadow-lg">
       <div ref={editorRef} className="h-full" />
     </div>
   );
