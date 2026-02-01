@@ -73,6 +73,9 @@ export default function AntecedentBasisChecker() {
   // Hovered annotation for highlighting
   const [hoveredAnnotation, setHoveredAnnotation] = useState<AnnotationData | null>(null);
 
+  // Hovered group (noun phrase) for highlighting all instances
+  const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+
   // Check API health on mount
   useEffect(() => {
     checkHealth().then((ok) => setApiStatus(ok ? 'online' : 'offline'));
@@ -180,8 +183,22 @@ export default function AntecedentBasisChecker() {
       el.classList.remove('hovered');
     });
 
-    if (hoveredAnnotation) {
-      // Highlight the hovered annotation
+    // If hovering a group, highlight all errors with that noun phrase
+    if (hoveredGroup) {
+      const matchingErrors = annotations.filter(
+        ann => ann.type === 'error' && ann.np === hoveredGroup
+      );
+
+      matchingErrors.forEach(error => {
+        const errorElements = document.querySelectorAll(
+          `.cm-annotation[data-start="${error.start}"][data-end="${error.end}"]`
+        );
+        errorElements.forEach(el => el.classList.add('hovered'));
+      });
+    }
+    // If hovering an individual annotation
+    else if (hoveredAnnotation) {
+      // Highlight the specific hovered annotation
       const hoveredElements = document.querySelectorAll(
         `.cm-annotation[data-start="${hoveredAnnotation.start}"][data-end="${hoveredAnnotation.end}"]`
       );
@@ -217,22 +234,9 @@ export default function AntecedentBasisChecker() {
         });
       }
 
-      // If it's an error, highlight ALL errors with the same noun phrase
-      if (hoveredAnnotation.type === 'error') {
-        // Find all errors with the same noun phrase
-        const matchingErrors = annotations.filter(
-          ann => ann.type === 'error' && ann.np === hoveredAnnotation.np
-        );
-
-        matchingErrors.forEach(error => {
-          const errorElements = document.querySelectorAll(
-            `.cm-annotation[data-start="${error.start}"][data-end="${error.end}"]`
-          );
-          errorElements.forEach(el => el.classList.add('hovered'));
-        });
-      }
+      // For individual errors, only highlight that specific one (no matching)
     }
-  }, [hoveredAnnotation, annotations, analysis]);
+  }, [hoveredAnnotation, hoveredGroup, annotations, analysis]);
 
   const claimCount = analysis?.analyses.length || 0;
   const errorCount = analysis?.total_errors || 0;
@@ -256,6 +260,7 @@ export default function AntecedentBasisChecker() {
           annotations={annotations}
           onErrorClick={handleErrorClick}
           onErrorHover={setHoveredAnnotation}
+          onGroupHover={setHoveredGroup}
           hoveredAnnotation={hoveredAnnotation}
         />
       </div>

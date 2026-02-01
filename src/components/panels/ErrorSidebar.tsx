@@ -9,6 +9,7 @@ interface ErrorSidebarProps {
   annotations: AnnotationData[];
   onErrorClick: (annotation: AnnotationData) => void;
   onErrorHover?: (annotation: AnnotationData | null) => void;
+  onGroupHover?: (nounPhrase: string | null) => void;
   hoveredAnnotation?: AnnotationData | null;
 }
 
@@ -16,6 +17,7 @@ export function ErrorSidebar({
   annotations,
   onErrorClick,
   onErrorHover,
+  onGroupHover,
   hoveredAnnotation
 }: ErrorSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -60,6 +62,29 @@ export function ErrorSidebar({
       newExpanded.add(phrase);
     }
     setExpandedGroups(newExpanded);
+  };
+
+  // Check if element is in viewport
+  const isElementInViewport = (el: HTMLElement | null): boolean => {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    return (
+      rect.top >= 64 && // Account for header height
+      rect.bottom <= window.innerHeight &&
+      rect.left >= 0 &&
+      rect.right <= window.innerWidth
+    );
+  };
+
+  // Scroll to annotation if not visible
+  const scrollToAnnotation = (error: AnnotationData) => {
+    const element = document.querySelector(
+      `.cm-annotation[data-start="${error.start}"][data-end="${error.end}"]`
+    ) as HTMLElement;
+
+    if (element && !isElementInViewport(element)) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   };
 
   if (errors.length === 0) {
@@ -132,8 +157,8 @@ export function ErrorSidebar({
                 <div
                   className="p-3 cursor-pointer bg-white/80 hover:bg-white soft-shadow rounded-lg transition-all"
                   onClick={() => toggleGroup(phrase)}
-                  onMouseEnter={() => onErrorHover?.(firstError)}
-                  onMouseLeave={() => onErrorHover?.(null)}
+                  onMouseEnter={() => onGroupHover?.(phrase)}
+                  onMouseLeave={() => onGroupHover?.(null)}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 flex items-center gap-2">
@@ -171,8 +196,14 @@ export function ErrorSidebar({
                             e.stopPropagation();
                             onErrorClick(error);
                           }}
-                          onMouseEnter={() => onErrorHover?.(error)}
-                          onMouseLeave={() => onErrorHover?.(null)}
+                          onMouseEnter={() => {
+                            onGroupHover?.(null); // Clear group hover
+                            onErrorHover?.(error);
+                            scrollToAnnotation(error);
+                          }}
+                          onMouseLeave={() => {
+                            onErrorHover?.(null);
+                          }}
                         >
                           <p className="text-xs font-medium text-stone-700 mb-1">
                             Claim {error.claimNumber}
@@ -183,7 +214,7 @@ export function ErrorSidebar({
                             </p>
                           )}
                           {error.suggestion && (
-                            <p className="text-xs text-amber-700 mt-2 font-medium">
+                            <p className="text-xs text-blue-600 mt-2 font-medium bg-blue-50 px-2 py-1 rounded">
                               Suggestion: "{error.suggestion}"
                             </p>
                           )}
@@ -216,8 +247,14 @@ export function ErrorSidebar({
                           : 'bg-white/80 hover:bg-white soft-shadow'
                       }`}
                       onClick={() => onErrorClick(error)}
-                      onMouseEnter={() => onErrorHover?.(error)}
-                      onMouseLeave={() => onErrorHover?.(null)}
+                      onMouseEnter={() => {
+                        onGroupHover?.(null); // Clear group hover
+                        onErrorHover?.(error);
+                        scrollToAnnotation(error);
+                      }}
+                      onMouseLeave={() => {
+                        onErrorHover?.(null);
+                      }}
                     >
                       <p className="text-sm font-medium text-stone-900 mb-1">
                         "{error.text}"
@@ -228,7 +265,7 @@ export function ErrorSidebar({
                         </p>
                       )}
                       {error.suggestion && (
-                        <p className="text-xs text-amber-700 mt-2 font-medium">
+                        <p className="text-xs text-blue-600 mt-2 font-medium bg-blue-50 px-2 py-1 rounded">
                           Suggestion: "{error.suggestion}"
                         </p>
                       )}
