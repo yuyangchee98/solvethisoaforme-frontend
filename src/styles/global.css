@@ -85,3 +85,30 @@ body {
 .cm-line::first-line {
   font-weight: 500;
 }
+
+/* Claim Tree Overlay Animations */
+.claim-tree-backdrop {
+  animation: fadeIn 200ms ease-out;
+}
+
+.claim-tree-panel {
+  animation: slideInFromLeft 300ms ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

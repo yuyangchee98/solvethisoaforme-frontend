@@ -1,12 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { parseClaimsToTree } from '@/lib/claim-parser';
 import { analyzeClaims, checkHealth, type AnalyzeClaimsResponse } from '@/lib/api';
 import { createAnnotationsFromAnalysis, type AnnotationData } from '@/lib/annotationUtils';
 import { debounce } from '@/lib/debounce';
 import { ClaimEditor } from './editor/ClaimEditor';
 import { StatusBar } from './layout/StatusBar';
+import { ActionBar } from './layout/ActionBar';
 import { ErrorSidebar } from './panels/ErrorSidebar';
 import { AnnotationCard } from './editor/AnnotationCard';
+import { ClaimTreeOverlay } from './panels/ClaimTreeOverlay';
+import { Button } from './ui/button';
+import { GitBranch } from 'lucide-react';
 
 const EXAMPLE_CLAIMS = `1. An apparatus to treat tissue of a prostate of a patient, the apparatus comprising:
 a display;
@@ -76,6 +80,23 @@ export default function AntecedentBasisChecker() {
 
   // Hovered group (noun phrase) for highlighting all instances
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
+
+  // Claim tree overlay state
+  const [isTreeOpen, setIsTreeOpen] = useState(false);
+
+  // Parse claim tree from text
+  const claimTree = useMemo(() => parseClaimsToTree(claimText), [claimText]);
+
+  // Calculate error counts per claim
+  const errorCounts = useMemo(() => {
+    const counts = new Map<number, number>();
+    if (analysis) {
+      analysis.analyses.forEach((claimAnalysis) => {
+        counts.set(claimAnalysis.claim_number, claimAnalysis.antecedent_errors.length);
+      });
+    }
+    return counts;
+  }, [analysis]);
 
   // Check API health on mount
   useEffect(() => {
@@ -166,6 +187,36 @@ export default function AntecedentBasisChecker() {
     setSelectedElement(null);
   }, [claimText]);
 
+  // Handle claim click from tree - scroll to claim in editor
+  const handleTreeClaimClick = useCallback((claimNumber: number) => {
+    // Find the claim text in the editor
+    const claimRegex = new RegExp(`^${claimNumber}\\.`, 'm');
+    const match = claimText.match(claimRegex);
+
+    if (match && match.index !== undefined) {
+      // Find the line element in the editor
+      const lines = document.querySelectorAll('.cm-line');
+      let targetLine: HTMLElement | null = null;
+      let currentPos = 0;
+
+      for (const line of lines) {
+        const lineText = line.textContent || '';
+        const lineLength = lineText.length + 1; // +1 for newline
+
+        if (currentPos <= match.index && match.index < currentPos + lineLength) {
+          targetLine = line as HTMLElement;
+          break;
+        }
+
+        currentPos += lineLength;
+      }
+
+      if (targetLine) {
+        targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [claimText]);
+
   // Handle keyboard shortcut (Cmd+Enter to analyze)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -246,28 +297,45 @@ export default function AntecedentBasisChecker() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="flex-1 flex min-h-0">
-        {/* Main editor area */}
-        <div className="flex-1 p-12 flex flex-col min-h-0">
-          <ClaimEditor
-            value={claimText}
-            onChange={setClaimText}
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-h-0 mt-6">
+        {/* Action Bar */}
+        <ActionBar>
+          <Button
+            onClick={() => setIsTreeOpen(true)}
+            variant="outline"
+            size="sm"
+            className="border-amber-200 hover:bg-amber-50 hover:border-amber-300"
+          >
+            <GitBranch className="h-4 w-4 mr-2" />
+            Claim Tree
+          </Button>
+        </ActionBar>
+
+        {/* Editor and Sidebar */}
+        <div className="flex-1 flex min-h-0">
+          {/* Main editor area */}
+          <div className="flex-1 p-12 flex flex-col min-h-0">
+            <ClaimEditor
+              value={claimText}
+              onChange={setClaimText}
+              annotations={annotations}
+              onAnnotationClick={handleAnnotationClick}
+              onAnnotationHover={setHoveredAnnotation}
+            />
+          </div>
+
+          {/* Error sidebar */}
+          <ErrorSidebar
             annotations={annotations}
-            onAnnotationClick={handleAnnotationClick}
-            onAnnotationHover={setHoveredAnnotation}
+            onErrorClick={handleErrorClick}
+            onErrorHover={setHoveredAnnotation}
+            onGroupHover={setHoveredGroup}
+            hoveredAnnotation={hoveredAnnotation}
+            isAnalyzing={analyzing}
+            hasAnalyzed={hasAnalyzed}
           />
         </div>
-
-        {/* Error sidebar */}
-        <ErrorSidebar
-          annotations={annotations}
-          onErrorClick={handleErrorClick}
-          onErrorHover={setHoveredAnnotation}
-          onGroupHover={setHoveredGroup}
-          hoveredAnnotation={hoveredAnnotation}
-          isAnalyzing={analyzing}
-          hasAnalyzed={hasAnalyzed}
-        />
       </div>
 
       <StatusBar
@@ -286,6 +354,15 @@ export default function AntecedentBasisChecker() {
           setSelectedElement(null);
         }}
         onApplySuggestion={handleApplySuggestion}
+      />
+
+      {/* Claim Tree Overlay */}
+      <ClaimTreeOverlay
+        isOpen={isTreeOpen}
+        onClose={() => setIsTreeOpen(false)}
+        claimTree={claimTree}
+        errorCounts={errorCounts}
+        onClaimClick={handleTreeClaimClick}
       />
 
       {error && (
