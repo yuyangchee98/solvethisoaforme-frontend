@@ -1,58 +1,62 @@
 import React from 'react';
-import type { ClaimAnnotation } from '@/lib/claimPositions';
+import type { AnnotationData } from '@/lib/annotationUtils';
 
 interface AnnotatedTextProps {
-  text: string;
-  annotations: ClaimAnnotation[];  // Has both absolute and claim-relative positions
-  onAnnotationClick?: (annotation: ClaimAnnotation) => void;
-  onAnnotationHover?: (annotation: ClaimAnnotation | null) => void;
+  fullText: string;  // The full document text (untrimmed)
+  claimStart: number;  // Where this claim starts in fullText
+  claimEnd: number;  // Where this claim ends in fullText
+  annotations: AnnotationData[];  // Annotations with absolute positions
+  onAnnotationClick?: (annotation: AnnotationData) => void;
+  onAnnotationHover?: (annotation: AnnotationData | null) => void;
 }
 
 export function AnnotatedText({
-  text,
+  fullText,
+  claimStart,
+  claimEnd,
   annotations,
   onAnnotationClick,
   onAnnotationHover
 }: AnnotatedTextProps) {
-  // Sort annotations by relative start position (for rendering within claim)
-  const sorted = [...annotations].sort((a, b) => a.relativeStart - b.relativeStart);
+  // Sort annotations by start position
+  const sorted = [...annotations].sort((a, b) => a.start - b.start);
 
-  // Split text into segments
+  // Split text into segments, slicing from fullText using absolute positions
   const segments: React.ReactNode[] = [];
-  let lastEnd = 0;
+  let lastEnd = claimStart;
 
   for (let i = 0; i < sorted.length; i++) {
     const ann = sorted[i];
 
-    // Plain text before annotation (using relative positions for slicing)
-    if (ann.relativeStart > lastEnd) {
-      segments.push(<span key={`text-${lastEnd}`}>{text.slice(lastEnd, ann.relativeStart)}</span>);
+    // Plain text before annotation - slice from fullText
+    if (ann.start > lastEnd) {
+      segments.push(fullText.slice(lastEnd, ann.start));
     }
 
-    // Annotated text
+    // Annotated text - slice from fullText using absolute positions
     segments.push(
       <span
         key={`ann-${ann.start}-${ann.end}`}
         className={`annotation annotation-${ann.type}`}
         data-type={ann.type}
-        data-start={ann.start}  // ABSOLUTE position for hover matching
-        data-end={ann.end}      // ABSOLUTE position for hover matching
+        data-start={ann.start}
+        data-end={ann.end}
         data-claim={ann.claimNumber}
         onClick={() => onAnnotationClick?.(ann)}
         onMouseEnter={() => onAnnotationHover?.(ann)}
         onMouseLeave={() => onAnnotationHover?.(null)}
       >
-        {text.slice(ann.relativeStart, ann.relativeEnd)}  {/* RELATIVE positions for text slicing */}
+        {fullText.slice(ann.start, ann.end)}
       </span>
     );
 
-    lastEnd = ann.relativeEnd;  // Track relative position for next segment
+    lastEnd = ann.end;
   }
 
-  // Remaining text
-  if (lastEnd < text.length) {
-    segments.push(<span key={`text-${lastEnd}`}>{text.slice(lastEnd)}</span>);
+  // Remaining text - slice from fullText
+  if (lastEnd < claimEnd) {
+    segments.push(fullText.slice(lastEnd, claimEnd));
   }
 
-  return <div className="whitespace-pre-wrap leading-relaxed">{segments}</div>;
+  return <>{segments}</>;
 }

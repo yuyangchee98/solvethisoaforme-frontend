@@ -1,16 +1,6 @@
 import type { AnnotationData } from './annotationUtils';
 
 /**
- * Annotation with both absolute and claim-relative positions
- */
-export interface ClaimAnnotation extends AnnotationData {
-  // These are claim-relative positions for text slicing
-  relativeStart: number;
-  relativeEnd: number;
-  // start/end remain absolute for hover matching
-}
-
-/**
  * Find where each claim starts in the full document text
  */
 export function getClaimStartPosition(
@@ -24,26 +14,34 @@ export function getClaimStartPosition(
 }
 
 /**
- * Get annotations for a claim with both absolute and claim-relative positions
+ * Find where each claim ends in the full document text
+ */
+export function getClaimEndPosition(
+  fullText: string,
+  claimNumber: number
+): number {
+  const claimStart = getClaimStartPosition(fullText, claimNumber);
+  if (claimStart === -1) return -1;
+
+  // Find the start of the next claim
+  const nextClaimPattern = new RegExp(`^${claimNumber + 1}\\.\\s`, 'm');
+  const nextMatch = fullText.slice(claimStart + 1).match(nextClaimPattern);
+
+  if (nextMatch && nextMatch.index !== undefined) {
+    // End at the start of the next claim
+    return claimStart + 1 + nextMatch.index;
+  }
+
+  // This is the last claim, goes to end of document
+  return fullText.length;
+}
+
+/**
+ * Get annotations for a specific claim number
  */
 export function getAnnotationsForClaim(
-  fullText: string,
   allAnnotations: AnnotationData[],
   claimNumber: number
-): ClaimAnnotation[] {
-  const claimStart = getClaimStartPosition(fullText, claimNumber);
-  if (claimStart === -1) return [];
-
-  // Filter annotations for this claim and add relative positions
-  return allAnnotations
-    .filter(ann => ann.claimNumber === claimNumber)
-    .map(ann => ({
-      ...ann,
-      // Keep original absolute positions for hover matching
-      start: ann.start,
-      end: ann.end,
-      // Add claim-relative positions for text slicing
-      relativeStart: ann.start - claimStart,
-      relativeEnd: ann.end - claimStart,
-    }));
+): AnnotationData[] {
+  return allAnnotations.filter(ann => ann.claimNumber === claimNumber);
 }

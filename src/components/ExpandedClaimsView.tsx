@@ -6,7 +6,7 @@ import type { ClaimTree, ParsedClaim } from '@/lib/claim-parser';
 import type { ClaimAnalysis } from '@/lib/api';
 import type { AnnotationData } from '@/lib/annotationUtils';
 import { AnnotatedText } from '@/components/text/AnnotatedText';
-import { getAnnotationsForClaim } from '@/lib/claimPositions';
+import { getAnnotationsForClaim, getClaimStartPosition, getClaimEndPosition } from '@/lib/claimPositions';
 
 interface ExpandedClaimsViewProps {
   claimTree: ClaimTree;
@@ -188,10 +188,12 @@ function ClaimCard({
                       <div className="text-xs font-bold text-stone-600 mb-2">
                         Claim {depNumber}
                       </div>
-                      <div className="text-sm text-stone-700">
+                      <div className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">
                         <AnnotatedText
-                          text={depClaim.text}
-                          annotations={getAnnotationsForClaim(fullText, annotations, depNumber)}
+                          fullText={fullText}
+                          claimStart={getClaimStartPosition(fullText, depNumber)}
+                          claimEnd={getClaimEndPosition(fullText, depNumber)}
+                          annotations={getAnnotationsForClaim(annotations, depNumber)}
                           onAnnotationClick={onAnnotationClick}
                           onAnnotationHover={onAnnotationHover}
                         />
@@ -206,10 +208,12 @@ function ClaimCard({
 
         {/* Claim Text */}
         <div className="prose prose-sm max-w-none">
-          <div className="text-stone-800">
+          <div className="text-stone-800 leading-relaxed whitespace-pre-wrap">
             <AnnotatedText
-              text={claim.text}
-              annotations={getAnnotationsForClaim(fullText, annotations, claim.number)}
+              fullText={fullText}
+              claimStart={getClaimStartPosition(fullText, claim.number)}
+              claimEnd={getClaimEndPosition(fullText, claim.number)}
+              annotations={getAnnotationsForClaim(annotations, claim.number)}
               onAnnotationClick={onAnnotationClick}
               onAnnotationHover={onAnnotationHover}
             />
