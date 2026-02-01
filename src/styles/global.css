@@ -76,6 +76,40 @@ body {
   transform: translateY(-1px);
 }
 
+/* Annotation styles for expanded claims view */
+.annotation {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 3px 1px;
+  transition: all 200ms ease;
+  border-bottom: 2px solid transparent;
+  display: inline;
+}
+
+.annotation-intro,
+.annotation-ref {
+  background-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.annotation-error {
+  background-color: oklch(93% 0.08 25 / 0.35);
+  border-bottom-color: oklch(75% 0.15 25 / 0.4);
+}
+
+/* Hover states */
+.annotation-intro.hovered,
+.annotation-ref.hovered {
+  background-color: oklch(93% 0.10 60 / 0.45);
+  border-bottom-color: oklch(70% 0.15 60 / 0.6);
+}
+
+.annotation-error.hovered {
+  background-color: oklch(90% 0.12 25 / 0.5);
+  border-bottom-color: oklch(65% 0.18 25 / 0.7);
+  transform: translateY(-1px);
+}
+
 /* Typography enhancements for better readability */
 .cm-content {
   letter-spacing: 0.01em;
@@ -84,31 +118,4 @@ body {
 /* Add subtle emphasis to claim numbers in the text */
 .cm-line::first-line {
   font-weight: 500;
-}
-
-/* Claim Tree Overlay Animations */
-.claim-tree-backdrop {
-  animation: fadeIn 200ms ease-out;
-}
-
-.claim-tree-panel {
-  animation: slideInFromLeft 300ms ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInFromLeft {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
 }

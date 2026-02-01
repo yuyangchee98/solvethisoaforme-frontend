@@ -84,9 +84,17 @@ export function ErrorSidebar({
 
   // Scroll to annotation if not visible
   const scrollToAnnotation = (error: AnnotationData) => {
-    const element = document.querySelector(
+    // Try editor first
+    let element = document.querySelector(
       `.cm-annotation[data-start="${error.start}"][data-end="${error.end}"]`
     ) as HTMLElement;
+
+    // If not in editor, try expanded claims view
+    if (!element) {
+      element = document.querySelector(
+        `.annotation[data-start="${error.start}"][data-end="${error.end}"]`
+      ) as HTMLElement;
+    }
 
     if (element && !isElementInViewport(element)) {
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });

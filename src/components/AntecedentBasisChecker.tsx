@@ -8,9 +8,9 @@ import { StatusBar } from './layout/StatusBar';
 import { ActionBar } from './layout/ActionBar';
 import { ErrorSidebar } from './panels/ErrorSidebar';
 import { AnnotationCard } from './editor/AnnotationCard';
-import { ClaimTreeOverlay } from './panels/ClaimTreeOverlay';
+import { ExpandedClaimsView } from './ExpandedClaimsView';
 import { Button } from './ui/button';
-import { GitBranch } from 'lucide-react';
+import { FileText, LayoutList } from 'lucide-react';
 
 const EXAMPLE_CLAIMS = `1. An apparatus to treat tissue of a prostate of a patient, the apparatus comprising:
 a display;
@@ -81,22 +81,11 @@ export default function AntecedentBasisChecker() {
   // Hovered group (noun phrase) for highlighting all instances
   const [hoveredGroup, setHoveredGroup] = useState<string | null>(null);
 
-  // Claim tree overlay state
-  const [isTreeOpen, setIsTreeOpen] = useState(false);
+  // View state: 'editor' or 'expanded'
+  const [currentView, setCurrentView] = useState<'editor' | 'expanded'>('editor');
 
   // Parse claim tree from text
   const claimTree = useMemo(() => parseClaimsToTree(claimText), [claimText]);
-
-  // Calculate error counts per claim
-  const errorCounts = useMemo(() => {
-    const counts = new Map<number, number>();
-    if (analysis) {
-      analysis.analyses.forEach((claimAnalysis) => {
-        counts.set(claimAnalysis.claim_number, claimAnalysis.antecedent_errors.length);
-      });
-    }
-    return counts;
-  }, [analysis]);
 
   // Check API health on mount
   useEffect(() => {
@@ -187,36 +176,6 @@ export default function AntecedentBasisChecker() {
     setSelectedElement(null);
   }, [claimText]);
 
-  // Handle claim click from tree - scroll to claim in editor
-  const handleTreeClaimClick = useCallback((claimNumber: number) => {
-    // Find the claim text in the editor
-    const claimRegex = new RegExp(`^${claimNumber}\\.`, 'm');
-    const match = claimText.match(claimRegex);
-
-    if (match && match.index !== undefined) {
-      // Find the line element in the editor
-      const lines = document.querySelectorAll('.cm-line');
-      let targetLine: HTMLElement | null = null;
-      let currentPos = 0;
-
-      for (const line of lines) {
-        const lineText = line.textContent || '';
-        const lineLength = lineText.length + 1; // +1 for newline
-
-        if (currentPos <= match.index && match.index < currentPos + lineLength) {
-          targetLine = line as HTMLElement;
-          break;
-        }
-
-        currentPos += lineLength;
-      }
-
-      if (targetLine) {
-        targetLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [claimText]);
-
   // Handle keyboard shortcut (Cmd+Enter to analyze)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -233,7 +192,7 @@ export default function AntecedentBasisChecker() {
   // Apply hover highlighting to editor annotations and their pairs
   useEffect(() => {
     // Remove all hover classes first
-    document.querySelectorAll('.cm-annotation.hovered').forEach(el => {
+    document.querySelectorAll('.cm-annotation.hovered, .annotation.hovered').forEach(el => {
       el.classList.remove('hovered');
     });
 
@@ -245,7 +204,7 @@ export default function AntecedentBasisChecker() {
 
       matchingErrors.forEach(error => {
         const errorElements = document.querySelectorAll(
-          `.cm-annotation[data-start="${error.start}"][data-end="${error.end}"]`
+          `.cm-annotation[data-start="${error.start}"][data-end="${error.end}"], .annotation[data-start="${error.start}"][data-end="${error.end}"]`
         );
         errorElements.forEach(el => el.classList.add('hovered'));
       });
@@ -254,7 +213,7 @@ export default function AntecedentBasisChecker() {
     else if (hoveredAnnotation) {
       // Highlight the specific hovered annotation
       const hoveredElements = document.querySelectorAll(
-        `.cm-annotation[data-start="${hoveredAnnotation.start}"][data-end="${hoveredAnnotation.end}"]`
+        `.cm-annotation[data-start="${hoveredAnnotation.start}"][data-end="${hoveredAnnotation.end}"], .annotation[data-start="${hoveredAnnotation.start}"][data-end="${hoveredAnnotation.end}"]`
       );
       hoveredElements.forEach(el => el.classList.add('hovered'));
 
@@ -267,7 +226,7 @@ export default function AntecedentBasisChecker() {
 
         matchingIntros.forEach(intro => {
           const introElements = document.querySelectorAll(
-            `.cm-annotation[data-start="${intro.start}"][data-end="${intro.end}"]`
+            `.cm-annotation[data-start="${intro.start}"][data-end="${intro.end}"], .annotation[data-start="${intro.start}"][data-end="${intro.end}"]`
           );
           introElements.forEach(el => el.classList.add('hovered'));
         });
@@ -282,7 +241,7 @@ export default function AntecedentBasisChecker() {
 
         matchingRefs.forEach(ref => {
           const refElements = document.querySelectorAll(
-            `.cm-annotation[data-start="${ref.start}"][data-end="${ref.end}"]`
+            `.cm-annotation[data-start="${ref.start}"][data-end="${ref.end}"], .annotation[data-start="${ref.start}"][data-end="${ref.end}"]`
           );
           refElements.forEach(el => el.classList.add('hovered'));
         });
@@ -301,41 +260,78 @@ export default function AntecedentBasisChecker() {
       <div className="flex-1 flex flex-col min-h-0 mt-6">
         {/* Action Bar */}
         <ActionBar>
-          <Button
-            onClick={() => setIsTreeOpen(true)}
-            variant="outline"
-            size="sm"
-            className="border-amber-200 hover:bg-amber-50 hover:border-amber-300"
-          >
-            <GitBranch className="h-4 w-4 mr-2" />
-            Claim Tree
-          </Button>
+          <div className="flex items-center gap-2 bg-stone-100 rounded-lg p-1">
+            <Button
+              onClick={() => setCurrentView('editor')}
+              variant="ghost"
+              size="sm"
+              className={currentView === 'editor' ? 'bg-white shadow-sm text-stone-900 hover:bg-white' : 'text-stone-600 hover:bg-stone-200'}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Editor
+            </Button>
+            <Button
+              onClick={() => setCurrentView('expanded')}
+              variant="ghost"
+              size="sm"
+              className={currentView === 'expanded' ? 'bg-white shadow-sm text-stone-900 hover:bg-white' : 'text-stone-600 hover:bg-stone-200'}
+            >
+              <LayoutList className="h-4 w-4 mr-2" />
+              Expanded Claims
+            </Button>
+          </div>
         </ActionBar>
 
-        {/* Editor and Sidebar */}
-        <div className="flex-1 flex min-h-0">
-          {/* Main editor area */}
-          <div className="flex-1 p-12 flex flex-col min-h-0">
-            <ClaimEditor
-              value={claimText}
-              onChange={setClaimText}
+        {/* Conditional View */}
+        {currentView === 'editor' ? (
+          /* Editor and Sidebar */
+          <div className="flex-1 flex min-h-0">
+            {/* Main editor area */}
+            <div className="flex-1 p-12 flex flex-col min-h-0">
+              <ClaimEditor
+                value={claimText}
+                onChange={setClaimText}
+                annotations={annotations}
+                onAnnotationClick={handleAnnotationClick}
+                onAnnotationHover={setHoveredAnnotation}
+              />
+            </div>
+
+            {/* Error sidebar */}
+            <ErrorSidebar
               annotations={annotations}
+              onErrorClick={handleErrorClick}
+              onErrorHover={setHoveredAnnotation}
+              onGroupHover={setHoveredGroup}
+              hoveredAnnotation={hoveredAnnotation}
+              isAnalyzing={analyzing}
+              hasAnalyzed={hasAnalyzed}
+            />
+          </div>
+        ) : (
+          /* Expanded Claims View with Sidebar */
+          <div className="flex-1 flex min-h-0">
+            <ExpandedClaimsView
+              claimTree={claimTree}
+              analyses={analysis?.analyses || []}
+              annotations={annotations}
+              fullText={claimText}
               onAnnotationClick={handleAnnotationClick}
               onAnnotationHover={setHoveredAnnotation}
             />
-          </div>
 
-          {/* Error sidebar */}
-          <ErrorSidebar
-            annotations={annotations}
-            onErrorClick={handleErrorClick}
-            onErrorHover={setHoveredAnnotation}
-            onGroupHover={setHoveredGroup}
-            hoveredAnnotation={hoveredAnnotation}
-            isAnalyzing={analyzing}
-            hasAnalyzed={hasAnalyzed}
-          />
-        </div>
+            {/* Error sidebar */}
+            <ErrorSidebar
+              annotations={annotations}
+              onErrorClick={handleErrorClick}
+              onErrorHover={setHoveredAnnotation}
+              onGroupHover={setHoveredGroup}
+              hoveredAnnotation={hoveredAnnotation}
+              isAnalyzing={analyzing}
+              hasAnalyzed={hasAnalyzed}
+            />
+          </div>
+        )}
       </div>
 
       <StatusBar
@@ -354,15 +350,6 @@ export default function AntecedentBasisChecker() {
           setSelectedElement(null);
         }}
         onApplySuggestion={handleApplySuggestion}
-      />
-
-      {/* Claim Tree Overlay */}
-      <ClaimTreeOverlay
-        isOpen={isTreeOpen}
-        onClose={() => setIsTreeOpen(false)}
-        claimTree={claimTree}
-        errorCounts={errorCounts}
-        onClaimClick={handleTreeClaimClick}
       />
 
       {error && (
