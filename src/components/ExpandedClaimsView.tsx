@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, AlertCircle, CheckCircle, FileText } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertCircle, CheckCircle, FileText, Link2, GitBranch, ArrowUp, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { ClaimTree, ParsedClaim } from '@/lib/claim-parser';
@@ -7,6 +7,15 @@ import type { ClaimAnalysis } from '@/lib/api';
 import type { AnnotationData } from '@/lib/annotationUtils';
 import { AnnotatedText } from '@/components/text/AnnotatedText';
 import { getAnnotationsForClaim, getClaimStartPosition, getClaimEndPosition } from '@/lib/claimPositions';
+import {
+  getDependencyType,
+  buildDependencyChain,
+  formatChainBreadcrumb,
+  formatMultiDependencyRange,
+  isChainDependency,
+  isMultiDependency,
+  getDependencySummary
+} from '@/lib/dependencyUtils';
 
 interface ExpandedClaimsViewProps {
   claimTree: ClaimTree;
@@ -118,17 +127,6 @@ function ClaimCard({
     return 'bg-red-100 text-red-700 border-red-200';
   };
 
-  // Format dependency text
-  const getDependencyText = () => {
-    if (claim.dependsOn.length === 0) return null;
-    if (claim.dependsOn.length === 1) {
-      return `Claim ${claim.dependsOn[0]}`;
-    }
-    const min = Math.min(...claim.dependsOn);
-    const max = Math.max(...claim.dependsOn);
-    return `any of Claims ${min}-${max}`;
-  };
-
   return (
     <Card className={`border-2 ${getCardClass()} transition-all`}>
       <div className="p-6">
@@ -155,55 +153,33 @@ function ClaimCard({
           </div>
         </div>
 
-        {/* Dependencies - Expandable */}
+        {/* Dependencies - Different views for chain vs multi */}
         {hasDependencies && (
-          <div className="mb-4">
-            <button
-              onClick={onToggleExpanded}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 transition-colors text-sm font-medium text-stone-700 w-full"
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-              <span>Depends on: {getDependencyText()}</span>
-              <span className="text-xs text-stone-500 ml-auto">
-                {isExpanded ? 'Hide' : 'Show'} context
-              </span>
-            </button>
-
-            {/* Expanded dependency claims */}
-            {isExpanded && (
-              <div className="mt-3 pl-6 border-l-2 border-stone-300 space-y-3">
-                {claim.dependsOn.map((depNumber) => {
-                  const depClaim = claimTree.claims.get(depNumber);
-                  if (!depClaim) return null;
-
-                  return (
-                    <div
-                      key={depNumber}
-                      className="bg-stone-50 rounded-lg p-4 border border-stone-200"
-                    >
-                      <div className="text-xs font-bold text-stone-600 mb-2">
-                        Claim {depNumber}
-                      </div>
-                      <div className="text-sm text-stone-700 leading-relaxed whitespace-pre-wrap">
-                        <AnnotatedText
-                          fullText={fullText}
-                          claimStart={getClaimStartPosition(fullText, depNumber)}
-                          claimEnd={getClaimEndPosition(fullText, depNumber)}
-                          annotations={getAnnotationsForClaim(annotations, depNumber)}
-                          onAnnotationClick={onAnnotationClick}
-                          onAnnotationHover={onAnnotationHover}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+          <>
+            {isChainDependency(claim) ? (
+              <ChainDependencyView
+                claim={claim}
+                claimTree={claimTree}
+                isExpanded={isExpanded}
+                onToggleExpanded={onToggleExpanded}
+                annotations={annotations}
+                fullText={fullText}
+                onAnnotationClick={onAnnotationClick}
+                onAnnotationHover={onAnnotationHover}
+              />
+            ) : (
+              <MultiDependencyView
+                claim={claim}
+                claimTree={claimTree}
+                isExpanded={isExpanded}
+                onToggleExpanded={onToggleExpanded}
+                annotations={annotations}
+                fullText={fullText}
+                onAnnotationClick={onAnnotationClick}
+                onAnnotationHover={onAnnotationHover}
+              />
             )}
-          </div>
+          </>
         )}
 
         {/* Claim Text */}
@@ -221,5 +197,222 @@ function ClaimCard({
         </div>
       </div>
     </Card>
+  );
+}
+
+interface ChainDependencyViewProps {
+  claim: ParsedClaim;
+  claimTree: ClaimTree;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
+  annotations: AnnotationData[];
+  fullText: string;
+  onAnnotationClick?: (annotation: AnnotationData) => void;
+  onAnnotationHover?: (annotation: AnnotationData | null) => void;
+}
+
+function ChainDependencyView({
+  claim,
+  claimTree,
+  isExpanded,
+  onToggleExpanded,
+  annotations,
+  fullText,
+  onAnnotationClick,
+  onAnnotationHover
+}: ChainDependencyViewProps) {
+  const chain = buildDependencyChain(claim.number, claimTree);
+  const breadcrumb = formatChainBreadcrumb(claim.number, chain);
+
+  return (
+    <div className="mb-4">
+      <button
+        onClick={onToggleExpanded}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors text-sm font-medium text-blue-900 w-full border border-blue-200"
+      >
+        <Link2 className="h-4 w-4 flex-shrink-0" />
+        {isExpanded ? (
+          <ChevronDown className="h-4 w-4 flex-shrink-0" />
+        ) : (
+          <ChevronRight className="h-4 w-4 flex-shrink-0" />
+        )}
+        <span className="flex-1 text-left">
+          {isExpanded ? 'Dependency chain:' : `Chain: ${breadcrumb}`}
+        </span>
+        <span className="text-xs text-blue-600 ml-auto flex-shrink-0">
+          {isExpanded ? 'Hide' : 'Show'} chain
+        </span>
+      </button>
+
+      {/* Expanded chain view */}
+      {isExpanded && (
+        <div className="mt-3 space-y-0">
+          {chain.slice(1).reverse().map((depNumber, index, arr) => {
+            const depClaim = claimTree.claims.get(depNumber);
+            if (!depClaim) return null;
+
+            const isLast = index === arr.length - 1;
+
+            return (
+              <div key={depNumber} className="relative">
+                {/* Connecting line */}
+                {!isLast && (
+                  <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gradient-to-b from-blue-300 to-blue-200 chain-connector" />
+                )}
+
+                <div className="pl-6 pt-3 relative">
+                  {/* Arrow indicator */}
+                  <div className="absolute left-0 top-6">
+                    <ArrowUp className="h-4 w-4 text-blue-400 rotate-180" />
+                  </div>
+
+                  <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-bold text-blue-900">
+                        Claim {depNumber}
+                      </span>
+                    </div>
+                    <div className="text-sm text-blue-900 leading-relaxed whitespace-pre-wrap">
+                      <AnnotatedText
+                        fullText={fullText}
+                        claimStart={getClaimStartPosition(fullText, depNumber)}
+                        claimEnd={getClaimEndPosition(fullText, depNumber)}
+                        annotations={getAnnotationsForClaim(annotations, depNumber)}
+                        onAnnotationClick={onAnnotationClick}
+                        onAnnotationHover={onAnnotationHover}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface MultiDependencyViewProps {
+  claim: ParsedClaim;
+  claimTree: ClaimTree;
+  isExpanded: boolean;
+  onToggleExpanded: () => void;
+  annotations: AnnotationData[];
+  fullText: string;
+  onAnnotationClick?: (annotation: AnnotationData) => void;
+  onAnnotationHover?: (annotation: AnnotationData | null) => void;
+}
+
+function MultiDependencyView({
+  claim,
+  claimTree,
+  isExpanded,
+  onToggleExpanded,
+  annotations,
+  fullText,
+  onAnnotationClick,
+  onAnnotationHover
+}: MultiDependencyViewProps) {
+  const [expandedOptions, setExpandedOptions] = useState<Set<number>>(new Set());
+  const rangeText = formatMultiDependencyRange(claim.dependsOn);
+
+  const toggleOption = (claimNumber: number) => {
+    const newExpanded = new Set(expandedOptions);
+    if (newExpanded.has(claimNumber)) {
+      newExpanded.delete(claimNumber);
+    } else {
+      newExpanded.add(claimNumber);
+    }
+    setExpandedOptions(newExpanded);
+  };
+
+  return (
+    <div className="mb-4">
+      <button
+        onClick={onToggleExpanded}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 hover:bg-purple-100 transition-colors text-sm font-medium text-purple-900 w-full border border-purple-200"
+      >
+        <GitBranch className="h-4 w-4 flex-shrink-0" />
+        {isExpanded ? (
+          <ChevronDown className="h-4 w-4 flex-shrink-0" />
+        ) : (
+          <ChevronRight className="h-4 w-4 flex-shrink-0" />
+        )}
+        <span className="flex-1 text-left">
+          {isExpanded ? 'Alternative options:' : `Depends on ${rangeText}`}
+        </span>
+        <span className="text-xs text-purple-600 ml-auto flex-shrink-0">
+          {isExpanded ? 'Hide' : 'Show'} options
+        </span>
+      </button>
+
+      {/* Expanded multi-dependency view */}
+      {isExpanded && (
+        <div className="mt-3">
+          {claim.dependsOn.length > 4 && (
+            <div className="text-xs text-purple-600 mb-2 px-2">
+              Scroll horizontally to view all options →
+            </div>
+          )}
+          <div className="multi-dependency-scroll overflow-x-auto pb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 min-w-max md:min-w-0">
+              {claim.dependsOn.map((depNumber) => {
+                const depClaim = claimTree.claims.get(depNumber);
+                if (!depClaim) return null;
+
+                const isOptionExpanded = expandedOptions.has(depNumber);
+                const dependencySummary = getDependencySummary(depClaim, claimTree);
+
+                return (
+                  <div
+                    key={depNumber}
+                    className="bg-purple-50 rounded-lg border-2 border-purple-200 min-w-[300px] md:min-w-0"
+                  >
+                    <button
+                      onClick={() => toggleOption(depNumber)}
+                      className="w-full px-4 py-3 text-left hover:bg-purple-100 transition-colors rounded-t-lg"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-purple-900">
+                            Claim {depNumber}
+                          </span>
+                        </div>
+                        {isOptionExpanded ? (
+                          <ChevronUp className="h-4 w-4 text-purple-600" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-purple-600" />
+                        )}
+                      </div>
+                      {dependencySummary && (
+                        <div className="text-xs text-purple-600 mt-1">
+                          {dependencySummary}
+                        </div>
+                      )}
+                    </button>
+
+                    {isOptionExpanded && (
+                      <div className="px-4 pb-4 pt-2 border-t border-purple-200">
+                        <div className="text-sm text-purple-900 leading-relaxed whitespace-pre-wrap">
+                          <AnnotatedText
+                            fullText={fullText}
+                            claimStart={getClaimStartPosition(fullText, depNumber)}
+                            claimEnd={getClaimEndPosition(fullText, depNumber)}
+                            annotations={getAnnotationsForClaim(annotations, depNumber)}
+                            onAnnotationClick={onAnnotationClick}
+                            onAnnotationHover={onAnnotationHover}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

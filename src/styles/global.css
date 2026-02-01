@@ -119,3 +119,42 @@ body {
 .cm-line::first-line {
   font-weight: 500;
 }
+
+/* Chain dependency connector lines */
+.chain-connector {
+  transition: all 200ms ease;
+}
+
+/* Multi-dependency horizontal scroll */
+.multi-dependency-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(75% 0.10 280 / 0.3) oklch(95% 0.02 280 / 0.2);
+}
+
+.multi-dependency-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.multi-dependency-scroll::-webkit-scrollbar-track {
+  background: oklch(95% 0.02 280 / 0.2);
+  border-radius: 3px;
+}
+
+.multi-dependency-scroll::-webkit-scrollbar-thumb {
+  background: oklch(75% 0.10 280 / 0.3);
+  border-radius: 3px;
+  transition: background 200ms ease;
+}
+
+.multi-dependency-scroll::-webkit-scrollbar-thumb:hover {
+  background: oklch(70% 0.12 280 / 0.5);
+}
+
+/* Smooth transitions for dependency views */
+.multi-dependency-scroll > div {
+  scroll-snap-type: x mandatory;
+}
+
+.multi-dependency-scroll > div > div {
+  scroll-snap-align: start;
+}
