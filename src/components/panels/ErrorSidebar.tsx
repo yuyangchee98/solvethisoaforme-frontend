@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, AlertCircle, ChevronDown, Loader2, CheckCircle } from 'lucide-react';
 import type { AnnotationData } from '@/lib/annotationUtils';
 
 interface ErrorSidebarProps {
@@ -11,6 +11,8 @@ interface ErrorSidebarProps {
   onErrorHover?: (annotation: AnnotationData | null) => void;
   onGroupHover?: (nounPhrase: string | null) => void;
   hoveredAnnotation?: AnnotationData | null;
+  isAnalyzing?: boolean;
+  hasAnalyzed?: boolean;
 }
 
 export function ErrorSidebar({
@@ -18,7 +20,9 @@ export function ErrorSidebar({
   onErrorClick,
   onErrorHover,
   onGroupHover,
-  hoveredAnnotation
+  hoveredAnnotation,
+  isAnalyzing = false,
+  hasAnalyzed = false
 }: ErrorSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState<'grouped' | 'all'>('grouped');
@@ -54,6 +58,8 @@ export function ErrorSidebar({
     .map(Number)
     .sort((a, b) => a - b);
 
+  const hasErrors = errors.length > 0;
+
   const toggleGroup = (phrase: string) => {
     const newExpanded = new Set(expandedGroups);
     if (newExpanded.has(phrase)) {
@@ -87,10 +93,6 @@ export function ErrorSidebar({
     }
   };
 
-  if (errors.length === 0) {
-    return null;
-  }
-
   if (isCollapsed) {
     return (
       <div className="sticky top-16 self-start w-16 max-h-[calc(100vh-4rem)] flex flex-col items-center pt-8 bg-stone-50/50">
@@ -103,10 +105,18 @@ export function ErrorSidebar({
           <ChevronLeft className="h-4 w-4 text-stone-600" />
         </Button>
         <div className="mt-6 flex flex-col items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-amber-600" />
-          <Badge className="text-xs bg-amber-100 text-amber-700 border-0">
-            {errors.length}
-          </Badge>
+          {isAnalyzing ? (
+            <Loader2 className="h-5 w-5 text-stone-400 animate-spin" />
+          ) : hasErrors ? (
+            <>
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+              <Badge className="text-xs bg-amber-100 text-amber-700 border-0">
+                {errors.length}
+              </Badge>
+            </>
+          ) : hasAnalyzed ? (
+            <CheckCircle className="h-5 w-5 text-green-600" />
+          ) : null}
         </div>
       </div>
     );
@@ -114,12 +124,16 @@ export function ErrorSidebar({
 
   return (
     <div className="sticky top-16 self-start w-96 max-h-[calc(100vh-4rem)] flex flex-col bg-amber-50/30 pr-12 pl-8 py-12">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h2 className="font-semibold text-base text-stone-900">Errors</h2>
-          <Badge className="text-xs bg-amber-100 text-amber-700 border-0">
-            {errors.length}
-          </Badge>
+          <h2 className="font-bold text-lg text-stone-900">
+            {isAnalyzing ? 'Analyzing...' : 'Errors'}
+          </h2>
+          {!isAnalyzing && hasErrors && (
+            <Badge className="text-xs font-semibold bg-amber-100 text-amber-700 border-0 px-2.5 py-1">
+              {errors.length}
+            </Badge>
+          )}
         </div>
         <Button
           variant="ghost"
@@ -131,20 +145,41 @@ export function ErrorSidebar({
         </Button>
       </div>
 
-      {/* View mode toggle */}
-      <div className="mb-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setViewMode(viewMode === 'grouped' ? 'all' : 'grouped')}
-          className="text-xs h-7 bg-white/80 hover:bg-white border-stone-200"
-        >
-          {viewMode === 'grouped' ? 'Show All' : 'Group by Phrase'}
-        </Button>
-      </div>
+      {/* View mode toggle - only show when we have errors */}
+      {!isAnalyzing && hasErrors && (
+        <div className="mb-5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setViewMode(viewMode === 'grouped' ? 'all' : 'grouped')}
+            className="text-xs font-semibold h-8 bg-white/80 hover:bg-white border-stone-200"
+          >
+            {viewMode === 'grouped' ? 'Show All' : 'Group by Phrase'}
+          </Button>
+        </div>
+      )}
 
       <div className="flex-1 overflow-auto space-y-3">
-        {viewMode === 'grouped' ? (
+        {/* Loading state */}
+        {isAnalyzing && (
+          <div className="flex flex-col items-center justify-center h-64 text-stone-500">
+            <Loader2 className="h-8 w-8 animate-spin mb-3" />
+            <p className="text-sm">Checking antecedent basis...</p>
+          </div>
+        )}
+
+        {/* No errors state */}
+        {!isAnalyzing && hasAnalyzed && !hasErrors && (
+          <div className="flex flex-col items-center justify-center h-64 text-stone-500">
+            <CheckCircle className="h-8 w-8 text-green-600 mb-3" />
+            <p className="text-sm font-medium text-stone-700">No errors found!</p>
+            <p className="text-xs text-stone-500 mt-1">All claims look good</p>
+          </div>
+        )}
+
+        {/* Errors list */}
+        {!isAnalyzing && hasErrors && (
+          viewMode === 'grouped' ? (
           // Grouped view - by noun phrase
           phrases.map((phrase) => {
             const phraseErrors = errorsByPhrase[phrase];
@@ -155,23 +190,23 @@ export function ErrorSidebar({
               <div key={phrase} className="space-y-2">
                 {/* Group header */}
                 <div
-                  className="p-3 cursor-pointer bg-white/80 hover:bg-white soft-shadow rounded-lg transition-all"
+                  className="p-3.5 cursor-pointer bg-white/80 hover:bg-white soft-shadow rounded-lg transition-all"
                   onClick={() => toggleGroup(phrase)}
                   onMouseEnter={() => onGroupHover?.(phrase)}
                   onMouseLeave={() => onGroupHover?.(null)}
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex-1 flex items-center gap-2">
+                    <div className="flex-1 flex items-center gap-2.5">
                       {isExpanded ? (
                         <ChevronDown className="h-4 w-4 text-stone-500 flex-shrink-0" />
                       ) : (
                         <ChevronRight className="h-4 w-4 text-stone-500 flex-shrink-0" />
                       )}
-                      <p className="text-sm font-medium text-stone-900 truncate">
+                      <p className="text-[15px] font-semibold text-stone-900 truncate">
                         "{phrase}"
                       </p>
                     </div>
-                    <Badge className="text-xs bg-amber-100 text-amber-700 border-0 ml-2 flex-shrink-0">
+                    <Badge className="text-xs font-semibold bg-amber-100 text-amber-700 border-0 ml-2 flex-shrink-0 px-2 py-0.5">
                       {phraseErrors.length}
                     </Badge>
                   </div>
@@ -187,7 +222,7 @@ export function ErrorSidebar({
                       return (
                         <div
                           key={`${phrase}-${idx}`}
-                          className={`p-3 cursor-pointer transition-all rounded-lg text-sm ${
+                          className={`p-3.5 cursor-pointer transition-all rounded-lg ${
                             isHovered
                               ? 'bg-amber-100/70 soft-shadow'
                               : 'bg-white/60 hover:bg-white/80 soft-shadow'
@@ -205,16 +240,16 @@ export function ErrorSidebar({
                             onErrorHover?.(null);
                           }}
                         >
-                          <p className="text-xs font-medium text-stone-700 mb-1">
+                          <p className="text-xs font-bold text-stone-700 uppercase tracking-wide mb-1.5">
                             Claim {error.claimNumber}
                           </p>
                           {error.reason && (
-                            <p className="text-xs text-stone-600 line-clamp-2">
+                            <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
                               {error.reason}
                             </p>
                           )}
                           {error.suggestion && (
-                            <p className="text-xs text-blue-600 mt-2 font-medium bg-blue-50 px-2 py-1 rounded">
+                            <p className="text-sm text-blue-600 mt-2.5 font-semibold bg-blue-50 px-2.5 py-1.5 rounded leading-relaxed">
                               Suggestion: "{error.suggestion}"
                             </p>
                           )}
@@ -230,10 +265,10 @@ export function ErrorSidebar({
           // Ungrouped view - by claim number
           claimNumbers.map((claimNum) => (
             <div key={claimNum}>
-              <div className="text-xs font-medium text-stone-500 mb-3">
+              <div className="text-xs font-bold text-stone-500 uppercase tracking-wide mb-3">
                 Claim {claimNum}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {errorsByClaim[claimNum].map((error, idx) => {
                   const isHovered = hoveredAnnotation?.start === error.start &&
                                    hoveredAnnotation?.end === error.end;
@@ -256,16 +291,16 @@ export function ErrorSidebar({
                         onErrorHover?.(null);
                       }}
                     >
-                      <p className="text-sm font-medium text-stone-900 mb-1">
+                      <p className="text-[15px] font-semibold text-stone-900 mb-2 leading-relaxed">
                         "{error.text}"
                       </p>
                       {error.reason && (
-                        <p className="text-xs text-stone-600 line-clamp-2">
+                        <p className="text-sm text-stone-600 line-clamp-2 leading-relaxed">
                           {error.reason}
                         </p>
                       )}
                       {error.suggestion && (
-                        <p className="text-xs text-blue-600 mt-2 font-medium bg-blue-50 px-2 py-1 rounded">
+                        <p className="text-sm text-blue-600 mt-2.5 font-semibold bg-blue-50 px-2.5 py-1.5 rounded leading-relaxed">
                           Suggestion: "{error.suggestion}"
                         </p>
                       )}
@@ -275,6 +310,7 @@ export function ErrorSidebar({
               </div>
             </div>
           ))
+        )
         )}
       </div>
     </div>

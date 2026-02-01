@@ -63,7 +63,8 @@ export default function AntecedentBasisChecker() {
   const [analysis, setAnalysis] = useState<AnalyzeClaimsResponse | null>(null);
   const [annotations, setAnnotations] = useState<AnnotationData[]>([]);
   const [apiStatus, setApiStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzing, setAnalyzing] = useState(true); // Start as true since we have initial content
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Selected annotation for card display
@@ -105,10 +106,12 @@ export default function AntecedentBasisChecker() {
       const result = await analyzeClaims(claims);
       setAnalysis(result);
       setAnnotations(createAnnotationsFromAnalysis(result, text));
+      setHasAnalyzed(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Analysis failed');
       setAnalysis(null);
       setAnnotations([]);
+      setHasAnalyzed(true);
     } finally {
       setAnalyzing(false);
     }
@@ -262,6 +265,8 @@ export default function AntecedentBasisChecker() {
           onErrorHover={setHoveredAnnotation}
           onGroupHover={setHoveredGroup}
           hoveredAnnotation={hoveredAnnotation}
+          isAnalyzing={analyzing}
+          hasAnalyzed={hasAnalyzed}
         />
       </div>
 

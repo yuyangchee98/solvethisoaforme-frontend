@@ -73,32 +73,32 @@ export function AnnotationCard({
           </Button>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Text:</p>
-            <p className="text-sm font-medium">"{annotation.text}"</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Text</p>
+            <p className="text-[15px] font-medium leading-relaxed">"{annotation.text}"</p>
           </div>
 
           {isError && annotation.reason && (
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Issue:</p>
-              <p className="text-sm text-red-600">{annotation.reason}</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Issue</p>
+              <p className="text-[15px] text-red-600 leading-relaxed">{annotation.reason}</p>
             </div>
           )}
 
           {annotation.suggestion && (
-            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-              <div className="flex items-start gap-2">
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3.5">
+              <div className="flex items-start gap-2.5">
                 <Lightbulb className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-amber-900 mb-1">
-                    Suggested correction:
+                  <p className="text-xs font-semibold text-amber-900 mb-2">
+                    Suggested correction
                   </p>
-                  <p className="text-sm text-amber-800 font-medium mb-2">
+                  <p className="text-[15px] text-amber-800 font-semibold mb-2 leading-relaxed">
                     "{annotation.suggestion}"
                   </p>
                   {annotation.suggestionScore && annotation.suggestionScore >= 0.9 && (
-                    <p className="text-xs text-amber-700">
+                    <p className="text-xs text-amber-700 font-medium">
                       High confidence match
                     </p>
                   )}
