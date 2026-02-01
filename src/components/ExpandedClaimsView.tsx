@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, AlertCircle, CheckCircle, FileText, Link2, GitBranch, ArrowUp, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronRight, AlertCircle, CheckCircle, FileText, Link2, GitBranch, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { ClaimTree, ParsedClaim } from '@/lib/claim-parser';
@@ -237,10 +237,10 @@ function ChainDependencyView({
           <ChevronRight className="h-4 w-4 flex-shrink-0" />
         )}
         <span className="flex-1 text-left">
-          {isExpanded ? 'Dependency chain:' : `Chain: ${breadcrumb}`}
+          {isExpanded ? 'Depends on:' : `Depends on: ${breadcrumb}`}
         </span>
         <span className="text-xs text-blue-600 ml-auto flex-shrink-0">
-          {isExpanded ? 'Hide' : 'Show'} chain
+          {isExpanded ? 'Hide' : 'Show'} dependencies
         </span>
       </button>
 
@@ -261,11 +261,6 @@ function ChainDependencyView({
                 )}
 
                 <div className="pl-6 pt-3 relative">
-                  {/* Arrow indicator */}
-                  <div className="absolute left-0 top-6">
-                    <ArrowUp className="h-4 w-4 text-blue-400 rotate-180" />
-                  </div>
-
                   <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xs font-bold text-blue-900">
