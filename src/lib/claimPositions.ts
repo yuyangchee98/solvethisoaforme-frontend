@@ -1,6 +1,16 @@
 import type { AnnotationData } from './annotationUtils';
 
 /**
+ * Annotation with both absolute and claim-relative positions
+ */
+export interface ClaimAnnotation extends AnnotationData {
+  // These are claim-relative positions for text slicing
+  relativeStart: number;
+  relativeEnd: number;
+  // start/end remain absolute for hover matching
+}
+
+/**
  * Find where each claim starts in the full document text
  */
 export function getClaimStartPosition(
@@ -14,22 +24,26 @@ export function getClaimStartPosition(
 }
 
 /**
- * Convert annotations from absolute to claim-relative positions
+ * Get annotations for a claim with both absolute and claim-relative positions
  */
 export function getAnnotationsForClaim(
   fullText: string,
   allAnnotations: AnnotationData[],
   claimNumber: number
-): AnnotationData[] {
+): ClaimAnnotation[] {
   const claimStart = getClaimStartPosition(fullText, claimNumber);
   if (claimStart === -1) return [];
 
-  // Filter annotations for this claim and convert positions
+  // Filter annotations for this claim and add relative positions
   return allAnnotations
     .filter(ann => ann.claimNumber === claimNumber)
     .map(ann => ({
       ...ann,
-      start: ann.start - claimStart,
-      end: ann.end - claimStart,
+      // Keep original absolute positions for hover matching
+      start: ann.start,
+      end: ann.end,
+      // Add claim-relative positions for text slicing
+      relativeStart: ann.start - claimStart,
+      relativeEnd: ann.end - claimStart,
     }));
 }

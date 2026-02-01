@@ -1,11 +1,11 @@
 import React from 'react';
-import type { AnnotationData } from '@/lib/annotationUtils';
+import type { ClaimAnnotation } from '@/lib/claimPositions';
 
 interface AnnotatedTextProps {
   text: string;
-  annotations: AnnotationData[];  // Claim-relative positions
-  onAnnotationClick?: (annotation: AnnotationData) => void;
-  onAnnotationHover?: (annotation: AnnotationData | null) => void;
+  annotations: ClaimAnnotation[];  // Has both absolute and claim-relative positions
+  onAnnotationClick?: (annotation: ClaimAnnotation) => void;
+  onAnnotationHover?: (annotation: ClaimAnnotation | null) => void;
 }
 
 export function AnnotatedText({
@@ -14,8 +14,8 @@ export function AnnotatedText({
   onAnnotationClick,
   onAnnotationHover
 }: AnnotatedTextProps) {
-  // Sort annotations by start position
-  const sorted = [...annotations].sort((a, b) => a.start - b.start);
+  // Sort annotations by relative start position (for rendering within claim)
+  const sorted = [...annotations].sort((a, b) => a.relativeStart - b.relativeStart);
 
   // Split text into segments
   const segments: React.ReactNode[] = [];
@@ -24,9 +24,9 @@ export function AnnotatedText({
   for (let i = 0; i < sorted.length; i++) {
     const ann = sorted[i];
 
-    // Plain text before annotation
-    if (ann.start > lastEnd) {
-      segments.push(<span key={`text-${lastEnd}`}>{text.slice(lastEnd, ann.start)}</span>);
+    // Plain text before annotation (using relative positions for slicing)
+    if (ann.relativeStart > lastEnd) {
+      segments.push(<span key={`text-${lastEnd}`}>{text.slice(lastEnd, ann.relativeStart)}</span>);
     }
 
     // Annotated text
@@ -35,18 +35,18 @@ export function AnnotatedText({
         key={`ann-${ann.start}-${ann.end}`}
         className={`annotation annotation-${ann.type}`}
         data-type={ann.type}
-        data-start={ann.start}
-        data-end={ann.end}
+        data-start={ann.start}  // ABSOLUTE position for hover matching
+        data-end={ann.end}      // ABSOLUTE position for hover matching
         data-claim={ann.claimNumber}
         onClick={() => onAnnotationClick?.(ann)}
         onMouseEnter={() => onAnnotationHover?.(ann)}
         onMouseLeave={() => onAnnotationHover?.(null)}
       >
-        {text.slice(ann.start, ann.end)}
+        {text.slice(ann.relativeStart, ann.relativeEnd)}  {/* RELATIVE positions for text slicing */}
       </span>
     );
 
-    lastEnd = ann.end;
+    lastEnd = ann.relativeEnd;  // Track relative position for next segment
   }
 
   // Remaining text
