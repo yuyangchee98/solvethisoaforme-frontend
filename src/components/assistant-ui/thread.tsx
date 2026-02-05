@@ -4,6 +4,7 @@ import {
   UserMessageAttachments,
 } from "@/components/assistant-ui/attachment";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import { ReadToolCard } from "@/components/assistant-ui/read-tool-card";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
@@ -205,7 +206,12 @@ const AssistantMessage: FC = () => {
         <MessagePrimitive.Parts
           components={{
             Text: MarkdownText,
-            tools: { Fallback: ToolFallback },
+            tools: {
+              by_name: {
+                Read: ReadToolCard,
+              },
+              Fallback: ToolFallback,
+            },
           }}
         />
         <MessageError />
