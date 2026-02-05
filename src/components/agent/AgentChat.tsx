@@ -1,5 +1,11 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { ChatSection, type ChatHandler, type Message } from '@llamaindex/chat-ui';
+import {
+  ChatSection,
+  ChatMessages,
+  ChatInput,
+  type ChatHandler,
+  type Message,
+} from '@llamaindex/chat-ui';
 import '@llamaindex/chat-ui/styles/markdown.css';
 import '@llamaindex/chat-ui/styles/editor.css';
 
@@ -7,8 +13,14 @@ import { useSession } from './hooks/useSession';
 import { SessionSidebar } from './SessionSidebar';
 import { ToolCallDisplay } from './ToolIndicator';
 import { getAgentMessagesEndpoint, type AgentMessage } from '@/lib/api';
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus, X, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+interface UploadedFile {
+  id: string;
+  file: File;
+  preview?: string;
+}
 
 interface ToolCall {
   toolCallId: string;
@@ -40,7 +52,34 @@ export function AgentChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [status, setStatus] = useState<'submitted' | 'streaming' | 'ready' | 'error'>('ready');
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleFileUpload = useCallback(async (file: File) => {
+    const id = `file-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const uploaded: UploadedFile = { id, file };
+
+    // Create preview for images
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedFiles((prev) =>
+          prev.map((f) => (f.id === id ? { ...f, preview: e.target?.result as string } : f))
+        );
+      };
+      reader.readAsDataURL(file);
+    }
+
+    setUploadedFiles((prev) => [...prev, uploaded]);
+  }, []);
+
+  const removeFile = useCallback((id: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
+  }, []);
+
+  const resetUploadedFiles = useCallback(() => {
+    setUploadedFiles([]);
+  }, []);
 
   // Sync session messages to local state when session changes
   useEffect(() => {
@@ -72,7 +111,12 @@ export function AgentChat() {
         const textPart = msg.parts.find((p): p is { type: 'text'; text: string } => p.type === 'text');
         formData.append('content', textPart?.text || '');
 
-        // Handle file uploads if present
+        // Handle file uploads from state
+        for (const uploaded of uploadedFiles) {
+          formData.append('attachments', uploaded.file);
+        }
+
+        // Also handle file uploads from message parts (for compatibility)
         for (const part of msg.parts) {
           if (part.type === 'data-file' && 'data' in part && part.data) {
             const fileData = part.data as { url: string; filename: string; mediaType: string };
@@ -81,6 +125,9 @@ export function AgentChat() {
             formData.append('attachments', new File([blob], fileData.filename, { type: fileData.mediaType }));
           }
         }
+
+        // Clear uploaded files after adding to form
+        resetUploadedFiles();
 
         abortControllerRef.current = new AbortController();
 
@@ -203,7 +250,7 @@ export function AgentChat() {
         }
       }
     },
-    [currentSession]
+    [currentSession, uploadedFiles, resetUploadedFiles]
   );
 
   const stop = useCallback(async () => {
@@ -252,7 +299,47 @@ export function AgentChat() {
               </div>
             )}
             <div className="flex-1 overflow-y-auto">
-              <ChatSection handler={handler} className="h-full" />
+              <ChatSection handler={handler} className="h-full">
+                <ChatMessages />
+                <ChatInput>
+                  {/* File preview */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {uploadedFiles.map((file) => (
+                        <div
+                          key={file.id}
+                          className="relative group flex items-center gap-2 bg-stone-100 rounded-lg px-3 py-2 text-sm"
+                        >
+                          {file.preview ? (
+                            <img
+                              src={file.preview}
+                              alt={file.file.name}
+                              className="h-8 w-8 object-cover rounded"
+                            />
+                          ) : (
+                            <FileText className="h-4 w-4 text-stone-500" />
+                          )}
+                          <span className="max-w-[150px] truncate text-stone-700">
+                            {file.file.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(file.id)}
+                            className="ml-1 p-0.5 rounded-full hover:bg-stone-200 text-stone-500 hover:text-stone-700"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <ChatInput.Form>
+                    <ChatInput.Upload onUpload={handleFileUpload} />
+                    <ChatInput.Field />
+                    <ChatInput.Submit />
+                  </ChatInput.Form>
+                </ChatInput>
+              </ChatSection>
             </div>
           </div>
         ) : (
