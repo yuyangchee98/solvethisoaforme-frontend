@@ -5,27 +5,32 @@ import {
   ChatInput,
   type ChatHandler,
   type Message,
+  type MessagePart,
 } from '@llamaindex/chat-ui';
 import '@llamaindex/chat-ui/styles/markdown.css';
 import '@llamaindex/chat-ui/styles/editor.css';
 
 import { useSession } from './hooks/useSession';
 import { SessionSidebar } from './SessionSidebar';
-import { ToolCallDisplay } from './ToolIndicator';
 import { getAgentMessagesEndpoint, type AgentMessage } from '@/lib/api';
 import { MessageSquarePlus, X, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Tool name to display label mapping
+const TOOL_LABELS: Record<string, string> = {
+  Read: 'Reading file',
+  Grep: 'Searching',
+  Bash: 'Running command',
+  Glob: 'Finding files',
+  Write: 'Writing file',
+  Edit: 'Editing file',
+  Task: 'Running task',
+};
 
 interface UploadedFile {
   id: string;
   file: File;
   preview?: string;
-}
-
-interface ToolCall {
-  toolCallId: string;
-  toolName: string;
-  status: 'running' | 'complete';
 }
 
 function convertAgentMessages(messages: AgentMessage[]): Message[] {
@@ -51,7 +56,6 @@ export function AgentChat() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [status, setStatus] = useState<'submitted' | 'streaming' | 'ready' | 'error'>('ready');
-  const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -84,7 +88,6 @@ export function AgentChat() {
   // Sync session messages to local state when session changes
   useEffect(() => {
     setMessages(convertAgentMessages(sessionMessages));
-    setToolCalls([]);
   }, [sessionMessages]);
 
   const sendMessage = useCallback(
@@ -94,7 +97,6 @@ export function AgentChat() {
       // Add user message to local state
       setMessages((prev) => [...prev, msg]);
       setStatus('submitted');
-      setToolCalls([]);
 
       // Create assistant message placeholder
       const assistantId = `assistant-${Date.now()}`;
@@ -150,6 +152,29 @@ export function AgentChat() {
         const decoder = new TextDecoder();
         let accumulatedText = '';
         let buffer = '';
+        // Track inline tool events by their ID
+        const eventParts = new Map<string, MessagePart>();
+
+        // Helper to rebuild message parts (events first, then text)
+        const rebuildParts = (): MessagePart[] => {
+          const parts: MessagePart[] = [];
+          eventParts.forEach((part) => parts.push(part));
+          // Always include text part (even if empty, for proper rendering)
+          parts.push({ type: 'text', text: accumulatedText });
+          return parts;
+        };
+
+        // Helper to update assistant message parts
+        const updateAssistantParts = () => {
+          setMessages((prev) => {
+            const updated = [...prev];
+            const lastMsg = updated[updated.length - 1];
+            if (lastMsg?.role === 'assistant') {
+              lastMsg.parts = rebuildParts();
+            }
+            return updated;
+          });
+        };
 
         while (true) {
           const { done, value } = await reader.read();
@@ -174,47 +199,43 @@ export function AgentChat() {
                 try {
                   const text = JSON.parse(data);
                   accumulatedText += text;
-                  setMessages((prev) => {
-                    const updated = [...prev];
-                    const lastMsg = updated[updated.length - 1];
-                    if (lastMsg?.role === 'assistant') {
-                      lastMsg.parts = [{ type: 'text', text: accumulatedText }];
-                    }
-                    return updated;
-                  });
+                  updateAssistantParts();
                 } catch {
                   // Ignore parse errors
                 }
                 break;
               }
               case '9': {
-                // Tool call start
+                // Tool call start - add inline event part
                 try {
                   const toolCall = JSON.parse(data);
-                  setToolCalls((prev) => [
-                    ...prev,
-                    {
-                      toolCallId: toolCall.toolCallId,
-                      toolName: toolCall.toolName,
-                      status: 'running',
+                  const eventPart: MessagePart = {
+                    type: 'data-event',
+                    id: toolCall.toolCallId,
+                    data: {
+                      title: TOOL_LABELS[toolCall.toolName] || toolCall.toolName,
+                      status: 'pending',
                     },
-                  ]);
+                  };
+                  eventParts.set(toolCall.toolCallId, eventPart);
+                  updateAssistantParts();
                 } catch {
                   // Ignore parse errors
                 }
                 break;
               }
               case 'a': {
-                // Tool result
+                // Tool result - update event to success
                 try {
                   const result = JSON.parse(data);
-                  setToolCalls((prev) =>
-                    prev.map((tc) =>
-                      tc.toolCallId === result.toolCallId
-                        ? { ...tc, status: 'complete' }
-                        : tc
-                    )
-                  );
+                  const existing = eventParts.get(result.toolCallId);
+                  if (existing && 'data' in existing) {
+                    eventParts.set(result.toolCallId, {
+                      ...existing,
+                      data: { ...(existing.data as object), status: 'success' },
+                    });
+                    updateAssistantParts();
+                  }
                 } catch {
                   // Ignore parse errors
                 }
@@ -293,11 +314,6 @@ export function AgentChat() {
 
         {currentSession ? (
           <div className="flex-1 flex flex-col overflow-hidden">
-            {toolCalls.length > 0 && (
-              <div className="px-4 py-2 border-b border-stone-200 bg-stone-50">
-                <ToolCallDisplay toolCalls={toolCalls} />
-              </div>
-            )}
             <div className="flex-1 overflow-y-auto">
               <ChatSection handler={handler} className="h-full">
                 <ChatMessages />
