@@ -2,24 +2,32 @@ import { AssistantRuntimeProvider } from '@assistant-ui/react';
 import { useChatRuntime, AssistantChatTransport } from '@assistant-ui/react-ai-sdk';
 import { Thread } from '@/components/assistant-ui/thread';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import type { UIMessage } from '@ai-sdk/react';
 
 import { useSession } from './hooks/useSession';
 import { SessionSidebar } from './SessionSidebar';
-import { getAgentMessagesEndpoint } from '@/lib/api';
+import { getAgentMessagesEndpoint, type AgentMessage } from '@/lib/api';
 import { MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-function ChatThread({ sessionId }: { sessionId: string }) {
+function convertToUIMessages(messages: AgentMessage[]): UIMessage[] {
+  return messages.map((msg) => ({
+    id: msg.id,
+    role: msg.role as 'user' | 'assistant',
+    parts: [{ type: 'text' as const, text: msg.content }],
+  }));
+}
+
+function ChatThread({ sessionId, initialMessages }: { sessionId: string; initialMessages: AgentMessage[] }) {
   const endpoint = getAgentMessagesEndpoint(sessionId);
-  console.log('[DEBUG] ChatThread mounting with endpoint:', endpoint);
 
   const runtime = useChatRuntime({
+    id: sessionId,
+    messages: convertToUIMessages(initialMessages),
     transport: new AssistantChatTransport({
       api: endpoint,
     }),
   });
-
-  console.log('[DEBUG] Runtime created:', runtime);
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
@@ -32,6 +40,7 @@ export function AgentChat() {
   const {
     sessions,
     currentSession,
+    messages,
     isLoading: sessionLoading,
     error: sessionError,
     createSession,
@@ -67,7 +76,7 @@ export function AgentChat() {
 
         {currentSession ? (
           <TooltipProvider>
-            <ChatThread key={currentSession.id} sessionId={currentSession.id} />
+            <ChatThread key={currentSession.id} sessionId={currentSession.id} initialMessages={messages} />
           </TooltipProvider>
         ) : (
           <div className="flex-1 flex items-center justify-center">
