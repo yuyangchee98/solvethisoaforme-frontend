@@ -1,5 +1,5 @@
 import { AssistantRuntimeProvider } from '@assistant-ui/react';
-import { useChatRuntime } from '@assistant-ui/react-ai-sdk';
+import { useChatRuntime, AssistantChatTransport } from '@assistant-ui/react-ai-sdk';
 import { Thread } from '@/components/assistant-ui/thread';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -8,6 +8,20 @@ import { SessionSidebar } from './SessionSidebar';
 import { getAgentMessagesEndpoint } from '@/lib/api';
 import { MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+function ChatThread({ sessionId }: { sessionId: string }) {
+  const runtime = useChatRuntime({
+    transport: new AssistantChatTransport({
+      api: getAgentMessagesEndpoint(sessionId),
+    }),
+  });
+
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      <Thread />
+    </AssistantRuntimeProvider>
+  );
+}
 
 export function AgentChat() {
   const {
@@ -20,10 +34,6 @@ export function AgentChat() {
     deleteSession,
     clearError,
   } = useSession();
-
-  const runtime = useChatRuntime({
-    api: currentSession ? getAgentMessagesEndpoint(currentSession.id) : '/api/chat',
-  });
 
   const handleCreateSession = async () => {
     await createSession();
@@ -52,9 +62,7 @@ export function AgentChat() {
 
         {currentSession ? (
           <TooltipProvider>
-            <AssistantRuntimeProvider runtime={runtime}>
-              <Thread />
-            </AssistantRuntimeProvider>
+            <ChatThread key={currentSession.id} sessionId={currentSession.id} />
           </TooltipProvider>
         ) : (
           <div className="flex-1 flex items-center justify-center">
