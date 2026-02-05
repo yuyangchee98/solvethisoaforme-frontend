@@ -33,8 +33,6 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = ({
   result,
   status,
 }) => {
-  console.log("[ReadToolCard]", { argsText, result, status });
-
   const filePath = useMemo(() => {
     if (!argsText) return "";
     try {
@@ -108,14 +106,14 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = ({
   return (
     <Dialog>
       <DialogTrigger asChild>{card}</DialogTrigger>
-      <DialogContent className="max-h-[80vh] max-w-3xl overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[80vh] max-w-3xl flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileTextIcon className="size-5" />
             {filename}
           </DialogTitle>
         </DialogHeader>
-        <div className="overflow-auto rounded-md border bg-muted/30 p-4">
+        <div className="min-h-0 flex-1 overflow-auto rounded-md border bg-muted/30 p-4">
           <pre
             className={cn(
               "whitespace-pre-wrap break-all font-mono text-sm",
