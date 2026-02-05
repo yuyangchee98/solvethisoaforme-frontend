@@ -65,3 +65,80 @@ export async function checkHealth(): Promise<boolean> {
     return false;
   }
 }
+
+// Agent Session Types
+export interface AgentSession {
+  id: string;
+  status: 'active' | 'completed' | 'archived';
+  created_at: string;
+  updated_at: string;
+  workspace_path: string;
+}
+
+export interface AgentMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+  attachments?: {
+    id: string;
+    filename: string;
+    original_filename: string;
+    document_type: string;
+    file_size: number;
+    created_at: string;
+  }[];
+}
+
+// Agent Session API Functions
+export async function createAgentSession(): Promise<{
+  id: string;
+  workspace_path: string;
+  created_at: string;
+}> {
+  const response = await fetch(`${API_BASE}/agents/sessions`, {
+    method: 'POST',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create session: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function listAgentSessions(): Promise<{ sessions: AgentSession[] }> {
+  const response = await fetch(`${API_BASE}/agents/sessions`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to list sessions: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function deleteAgentSession(sessionId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/agents/sessions/${sessionId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete session: ${response.status}`);
+  }
+}
+
+export async function getAgentMessages(
+  sessionId: string
+): Promise<{ messages: AgentMessage[] }> {
+  const response = await fetch(`${API_BASE}/agents/sessions/${sessionId}/messages`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to get messages: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export function getAgentMessagesEndpoint(sessionId: string): string {
+  return `${API_BASE}/agents/sessions/${sessionId}/messages`;
+}
