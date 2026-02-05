@@ -10,11 +10,16 @@ import { MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function ChatThread({ sessionId }: { sessionId: string }) {
+  const endpoint = getAgentMessagesEndpoint(sessionId);
+  console.log('[DEBUG] ChatThread mounting with endpoint:', endpoint);
+
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
-      api: getAgentMessagesEndpoint(sessionId),
+      api: endpoint,
     }),
   });
+
+  console.log('[DEBUG] Runtime created:', runtime);
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
