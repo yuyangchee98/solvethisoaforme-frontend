@@ -28,21 +28,12 @@ function getFileExtension(filePath: string): string {
   return lastDot > 0 ? filename.slice(lastDot + 1).toLowerCase() : "";
 }
 
-const ReadToolCardImpl: ToolCallMessagePartComponent = (props) => {
-  const { toolName, argsText, result, status, ...rest } = props;
-
-  // Log all props including any we might be missing
-  console.log("[ReadToolCard] ALL PROPS KEYS:", Object.keys(props));
-  console.log("[ReadToolCard] REST PROPS:", rest);
-  // Debug logging - log ALL props
-  console.log("[ReadToolCard] Render - ALL PROPS:", {
-    toolName,
-    argsText,
-    result,
-    resultType: typeof result,
-    resultLength: typeof result === "string" ? result.length : null,
-    status: JSON.parse(JSON.stringify(status || {})),
-  });
+const ReadToolCardImpl: ToolCallMessagePartComponent = ({
+  argsText,
+  result,
+  status,
+}) => {
+  console.log("[ReadToolCard]", { argsText, result, status });
 
   const filePath = useMemo(() => {
     if (!argsText) return "";
@@ -62,12 +53,6 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = (props) => {
   const isError = status?.type === "incomplete";
 
   const resultText = useMemo(() => {
-    console.log("[ReadToolCard] Processing result:", {
-      result,
-      typeofResult: typeof result,
-      isNull: result === null,
-      isUndefined: result === undefined,
-    });
     if (!result) return "";
     if (typeof result === "string") return result;
     return JSON.stringify(result, null, 2);
@@ -116,22 +101,13 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = (props) => {
   );
 
   // Don't make clickable while running or if there's no result
-  console.log("[ReadToolCard] Click check:", {
-    isRunning,
-    hasResultText: !!resultText,
-    resultTextLength: resultText.length,
-    willBeClickable: !isRunning && !!resultText,
-  });
-
   if (isRunning || !resultText) {
-    console.log("[ReadToolCard] Returning non-clickable card");
     return card;
   }
 
-  console.log("[ReadToolCard] Returning clickable dialog");
   return (
-    <Dialog onOpenChange={(open) => console.log("[ReadToolCard] Dialog open change:", open)}>
-      <DialogTrigger asChild onClick={() => console.log("[ReadToolCard] Trigger clicked")}>{card}</DialogTrigger>
+    <Dialog>
+      <DialogTrigger asChild>{card}</DialogTrigger>
       <DialogContent className="max-h-[80vh] max-w-3xl overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
