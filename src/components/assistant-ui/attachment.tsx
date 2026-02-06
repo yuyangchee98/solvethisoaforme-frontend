@@ -148,6 +148,14 @@ const usePdfFile = () => {
   return { isPdf, src: fileSrc || dataUrl || cachedUrl, file, pdfSource };
 };
 
+const useFileExt = () => {
+  return useAuiState(({ attachment }) => {
+    const isDocOrFile = attachment.type === "document" || attachment.type === "file";
+    if (!isDocOrFile) return undefined;
+    return attachment.name?.split(".").pop()?.toLowerCase();
+  });
+};
+
 const DOCX_MIME =
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -378,17 +386,15 @@ const PdfThumbnail: FC<{ source: File | string }> = ({ source }) => {
   );
 };
 
-// DOCX Thumbnail - branded Word doc icon
-const DocxThumbnail: FC = () => {
-  return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-0.5 bg-white">
-      <FileText className="size-6 text-blue-600" />
-      <span className="text-[7px] font-semibold leading-none text-blue-600">
-        DOCX
-      </span>
-    </div>
-  );
-};
+// Branded file extension thumbnail - reusable across file types
+const FileExtThumbnail: FC<{ label: string; colorClass: string }> = ({ label, colorClass }) => (
+  <div className="flex h-full w-full flex-col items-center justify-center gap-0.5 bg-white">
+    <FileText className={cn("size-6", colorClass)} />
+    <span className={cn("text-[7px] font-semibold leading-none", colorClass)}>
+      {label}
+    </span>
+  </div>
+);
 
 // DOCX Preview Dialog - shows rendered HTML from mammoth
 const DocxPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
@@ -531,6 +537,7 @@ const AttachmentThumb: FC = () => {
   const src = useAttachmentSrc();
   const { isPdf, pdfSource } = usePdfFile();
   const isDocx = useIsDocx();
+  const ext = useFileExt();
 
   // Show PDF thumbnail for PDFs (works for both composer and sent messages)
   if (isPdf && pdfSource) {
@@ -541,8 +548,10 @@ const AttachmentThumb: FC = () => {
     );
   }
 
-  // Show DOCX branded thumbnail
-  if (isDocx) return <DocxThumbnail />;
+  // Show branded thumbnails for known file types
+  if (isDocx) return <FileExtThumbnail label="DOCX" colorClass="text-blue-600" />;
+  if (ext === "txt") return <FileExtThumbnail label="TXT" colorClass="text-slate-500" />;
+  if (ext === "csv") return <FileExtThumbnail label="CSV" colorClass="text-emerald-600" />;
 
   return (
     <Avatar className="aui-attachment-tile-avatar h-full w-full rounded-none">
@@ -599,6 +608,7 @@ const AttachmentUI: FC = () => {
   const isImage = useAuiState(({ attachment }) => attachment.type === "image");
   const { isPdf } = usePdfFile();
   const isDocx = useIsDocx();
+  const ext = useFileExt();
   const typeLabel = useAuiState(({ attachment }) => {
     const type = attachment.type;
     switch (type) {
@@ -630,7 +640,7 @@ const AttachmentUI: FC = () => {
                 "aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[14px] border bg-muted transition-opacity hover:opacity-75",
                 isComposer &&
                   "aui-attachment-tile-composer border-foreground/20",
-                (isPdf || isDocx) && "bg-white", // White background for PDF/DOCX thumbnails
+                (isPdf || isDocx || ext === "txt" || ext === "csv") && "bg-white",
               )}
               role="button"
               id="attachment-tile"
