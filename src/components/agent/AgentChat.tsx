@@ -8,6 +8,7 @@ import {
   AssistantChatTransport,
 } from '@assistant-ui/react-ai-sdk';
 import { PDFAttachmentAdapter } from '@/lib/pdfAttachmentAdapter';
+import { DocxAttachmentAdapter } from '@/lib/docxAttachmentAdapter';
 import { TextAttachmentAdapter } from '@/lib/textAttachmentAdapter';
 import { Thread } from '@/components/assistant-ui/thread';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -33,6 +34,7 @@ function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMes
         if (ext === 'pdf') mediaType = 'application/pdf';
         else if (ext === 'png') mediaType = 'image/png';
         else if (ext === 'jpg' || ext === 'jpeg') mediaType = 'image/jpeg';
+        else if (ext === 'docx') mediaType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
         else if (ext === 'txt' || ext === 'md' || ext === 'csv' || ext === 'log') mediaType = 'text/plain';
         else if (ext === 'json') mediaType = 'application/json';
         else if (ext === 'xml') mediaType = 'text/xml';
@@ -81,6 +83,7 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
       attachments: new CompositeAttachmentAdapter([
         new SimpleImageAttachmentAdapter(),
         new PDFAttachmentAdapter(),
+        new DocxAttachmentAdapter(),
         new TextAttachmentAdapter(),
       ]),
     },
