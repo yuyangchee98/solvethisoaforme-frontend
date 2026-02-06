@@ -2,13 +2,13 @@ import {
   AssistantRuntimeProvider,
   CompositeAttachmentAdapter,
   SimpleImageAttachmentAdapter,
-  SimpleTextAttachmentAdapter,
 } from '@assistant-ui/react';
 import {
   useChatRuntime,
   AssistantChatTransport,
 } from '@assistant-ui/react-ai-sdk';
 import { PDFAttachmentAdapter } from '@/lib/pdfAttachmentAdapter';
+import { TextAttachmentAdapter } from '@/lib/textAttachmentAdapter';
 import { Thread } from '@/components/assistant-ui/thread';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { UIMessage } from '@ai-sdk/react';
@@ -33,6 +33,9 @@ function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMes
         if (ext === 'pdf') mediaType = 'application/pdf';
         else if (ext === 'png') mediaType = 'image/png';
         else if (ext === 'jpg' || ext === 'jpeg') mediaType = 'image/jpeg';
+        else if (ext === 'txt' || ext === 'md' || ext === 'csv' || ext === 'log') mediaType = 'text/plain';
+        else if (ext === 'json') mediaType = 'application/json';
+        else if (ext === 'xml') mediaType = 'text/xml';
 
         parts.push({ type: 'file' as const, mediaType, filename: att.filename, url });
       }
@@ -77,8 +80,8 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
     adapters: {
       attachments: new CompositeAttachmentAdapter([
         new SimpleImageAttachmentAdapter(),
-        new SimpleTextAttachmentAdapter(),
         new PDFAttachmentAdapter(),
+        new TextAttachmentAdapter(),
       ]),
     },
   });

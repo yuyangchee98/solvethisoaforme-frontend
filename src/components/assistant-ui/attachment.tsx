@@ -52,6 +52,70 @@ const useFileSrc = (file: File | undefined) => {
   return src;
 };
 
+// Helper: check if a content type looks like text
+const isTextContentType = (ct: string | undefined) =>
+  !!ct && (ct.startsWith("text/") || ct === "application/json" || ct === "application/xml");
+
+// Hook to get text file content for preview
+const useTextFile = () => {
+  const attachmentData = useAuiState(
+    useShallow(({ attachment }) => {
+      const isDocOrFile = attachment.type === "document" || attachment.type === "file";
+      if (!isDocOrFile) return { file: undefined, contentType: undefined, name: undefined, dataUrl: undefined };
+
+      const file = (attachment as { file?: File }).file;
+      const contentType = (attachment as { contentType?: string }).contentType;
+      const name = attachment.name;
+
+      const content = (attachment as { content?: Array<{ type: string; data?: string; mimeType?: string }> }).content;
+      const fileContent = content?.find(c => c.type === "file");
+      const dataUrl = fileContent?.data;
+
+      return { file, contentType, name, dataUrl };
+    })
+  );
+
+  const { file, contentType, name, dataUrl } = attachmentData;
+
+  // Detect text files by content type or extension
+  const ext = name?.split(".").pop()?.toLowerCase();
+  const textExts = ["txt", "md", "csv", "log", "json", "xml", "yaml", "yml", "cfg", "ini", "conf", "sh", "py", "js", "ts", "html", "css"];
+  const isText = isTextContentType(contentType) || (ext != null && textExts.includes(ext));
+
+  // Read text content from the File object or decode from data URL
+  const [textContent, setTextContent] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!isText) {
+      setTextContent(undefined);
+      return;
+    }
+
+    // Priority 1: Read from File object (composer)
+    if (file) {
+      file.text().then(setTextContent).catch(() => setTextContent(undefined));
+      return;
+    }
+
+    // Priority 2: Decode from data URL (sent messages with inline data)
+    if (dataUrl && dataUrl.startsWith("data:")) {
+      try {
+        const base64 = dataUrl.split(",")[1];
+        if (base64) {
+          setTextContent(atob(base64));
+          return;
+        }
+      } catch {
+        // fall through
+      }
+    }
+
+    setTextContent(undefined);
+  }, [isText, file, dataUrl]);
+
+  return { isText, textContent, name };
+};
+
 // Hook to get PDF file/URL for preview
 const usePdfFile = () => {
   const attachmentData = useAuiState(
@@ -273,6 +337,34 @@ const PdfPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
   );
 };
 
+// Text Preview Dialog - shows scrollable text content
+const TextPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
+  const { isText, textContent, name } = useTextFile();
+
+  if (!isText || textContent == null) return children;
+
+  return (
+    <Dialog>
+      <DialogTrigger
+        className="aui-attachment-preview-trigger cursor-pointer transition-colors hover:bg-accent/50"
+        asChild
+      >
+        {children}
+      </DialogTrigger>
+      <DialogContent className="aui-text-preview-dialog-content p-4 sm:max-w-3xl max-h-[90vh] overflow-hidden [&>button]:rounded-full [&>button]:bg-foreground/60 [&>button]:p-1 [&>button]:opacity-100 [&>button]:ring-0! [&_svg]:text-background [&>button]:hover:[&_svg]:text-destructive">
+        <DialogTitle className="text-sm font-medium mb-2">
+          {name}
+        </DialogTitle>
+        <div className="relative overflow-auto max-h-[calc(90vh-80px)] bg-muted/30 rounded-lg">
+          <pre className="p-4 text-sm whitespace-pre-wrap break-words font-mono leading-relaxed">
+            {textContent}
+          </pre>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const AttachmentThumb: FC = () => {
   const isImage = useAuiState(({ attachment }) => attachment.type === "image");
   const src = useAttachmentSrc();
@@ -305,6 +397,7 @@ const AttachmentThumb: FC = () => {
 const AttachmentDialogWrapper: FC<PropsWithChildren> = ({ children }) => {
   const { isPdf, pdfSource } = usePdfFile();
   const imageSrc = useAttachmentSrc();
+  const { isText, textContent } = useTextFile();
 
   // Use PDF dialog for PDFs (only if we have a source to display)
   if (isPdf && pdfSource) {
@@ -314,6 +407,11 @@ const AttachmentDialogWrapper: FC<PropsWithChildren> = ({ children }) => {
   // Use image dialog for images
   if (imageSrc) {
     return <AttachmentPreviewDialog>{children}</AttachmentPreviewDialog>;
+  }
+
+  // Use text dialog for text files
+  if (isText && textContent != null) {
+    return <TextPreviewDialog>{children}</TextPreviewDialog>;
   }
 
   // No dialog for other file types
