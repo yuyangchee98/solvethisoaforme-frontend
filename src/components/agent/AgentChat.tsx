@@ -16,13 +16,27 @@ import type { UIMessage } from '@ai-sdk/react';
 import { useSession } from './hooks/useSession';
 import { SessionSidebar } from './SessionSidebar';
 import { SessionProvider } from './contexts/SessionContext';
-import { getAgentMessagesEndpoint, type AgentMessage } from '@/lib/api';
+import { getAgentMessagesEndpoint, getFileUrl, type AgentMessage } from '@/lib/api';
 import { MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-function convertToUIMessages(messages: AgentMessage[]): UIMessage[] {
+function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMessage[] {
   return messages.map((msg) => {
     const parts: UIMessage['parts'] = [];
+
+    // Add file parts for user messages with attachments (before text for proper ordering)
+    if (msg.role === 'user' && msg.attachments?.length) {
+      for (const att of msg.attachments) {
+        const url = getFileUrl(sessionId, `input/${att.filename}`);
+        const ext = att.filename.split('.').pop()?.toLowerCase();
+        let mediaType = 'application/octet-stream';
+        if (ext === 'pdf') mediaType = 'application/pdf';
+        else if (ext === 'png') mediaType = 'image/png';
+        else if (ext === 'jpg' || ext === 'jpeg') mediaType = 'image/jpeg';
+
+        parts.push({ type: 'file' as const, mediaType, filename: att.filename, url });
+      }
+    }
 
     // Add tool call parts for assistant messages (before text for proper ordering)
     if (msg.role === 'assistant' && msg.tool_calls) {
@@ -56,7 +70,7 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
 
   const runtime = useChatRuntime({
     id: sessionId,
-    messages: convertToUIMessages(initialMessages),
+    messages: convertToUIMessages(initialMessages, sessionId),
     transport: new AssistantChatTransport({
       api: endpoint,
     }),
