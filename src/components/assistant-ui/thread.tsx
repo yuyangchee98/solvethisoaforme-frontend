@@ -22,8 +22,8 @@ import {
   ComposerPrimitive,
   ErrorPrimitive,
   MessagePrimitive,
-  SuggestionPrimitive,
   ThreadPrimitive,
+  useThreadRuntime,
 } from "@assistant-ui/react";
 import {
   ArrowDownIcon,
@@ -38,7 +38,7 @@ import {
   RefreshCwIcon,
   SquareIcon,
 } from "lucide-react";
-import type { FC } from "react";
+import { type FC, useCallback } from "react";
 
 export const Thread: FC = () => {
   return (
@@ -87,16 +87,39 @@ const ThreadScrollToBottom: FC = () => {
   );
 };
 
+const SUGGESTIONS = [
+  {
+    label: "Analyze my office action",
+    description: "Upload an OA and get a full response strategy",
+    prompt: "I have an office action I need help responding to. Let me upload it.",
+  },
+  {
+    label: "Respond to a \u00A7103 rejection",
+    description: "Build arguments against obviousness",
+    prompt: "I need help responding to a \u00A7103 obviousness rejection.",
+  },
+  {
+    label: "Respond to a \u00A7102 rejection",
+    description: "Challenge an anticipation rejection",
+    prompt: "I need help responding to a \u00A7102 anticipation rejection.",
+  },
+  {
+    label: "Start from scratch",
+    description: "Describe your situation in your own words",
+    prompt: "",
+  },
+];
+
 const ThreadWelcome: FC = () => {
   return (
     <div className="aui-thread-welcome-root mx-auto my-auto flex w-full max-w-(--thread-max-width) grow flex-col">
       <div className="aui-thread-welcome-center flex w-full grow flex-col items-center justify-center">
         <div className="aui-thread-welcome-message flex size-full flex-col justify-center px-4">
           <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in font-semibold text-2xl duration-200">
-            Hello there!
+            What office action can I help you with?
           </h1>
-          <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in text-muted-foreground text-xl delay-75 duration-200">
-            How can I help you today?
+          <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in text-muted-foreground text-base delay-75 duration-200">
+            Upload your office action, specification, claims, or prior art — I'll help you build a response strategy.
           </p>
         </div>
       </div>
@@ -106,33 +129,34 @@ const ThreadWelcome: FC = () => {
 };
 
 const ThreadSuggestions: FC = () => {
+  const threadRuntime = useThreadRuntime();
+
+  const handleClick = useCallback(
+    (prompt: string) => {
+      threadRuntime.composer.setText(prompt);
+    },
+    [threadRuntime],
+  );
+
   return (
     <div className="aui-thread-welcome-suggestions grid w-full @md:grid-cols-2 gap-2 pb-4">
-      <ThreadPrimitive.Suggestions
-        components={{
-          Suggestion: ThreadSuggestionItem,
-        }}
-      />
-    </div>
-  );
-};
-
-const ThreadSuggestionItem: FC = () => {
-  return (
-    <div className="aui-thread-welcome-suggestion-display fade-in slide-in-from-bottom-2 @md:nth-[n+3]:block nth-[n+3]:hidden animate-in fill-mode-both duration-200">
-      <SuggestionPrimitive.Trigger send asChild>
-        <Button
-          variant="ghost"
-          className="aui-thread-welcome-suggestion h-auto w-full @md:flex-col flex-wrap items-start justify-start gap-1 rounded-2xl border px-4 py-3 text-left text-sm transition-colors hover:bg-muted"
+      {SUGGESTIONS.map((suggestion) => (
+        <div
+          key={suggestion.label}
+          className="fade-in slide-in-from-bottom-2 animate-in fill-mode-both duration-200"
         >
-          <span className="aui-thread-welcome-suggestion-text-1 font-medium">
-            <SuggestionPrimitive.Title />
-          </span>
-          <span className="aui-thread-welcome-suggestion-text-2 text-muted-foreground">
-            <SuggestionPrimitive.Description />
-          </span>
-        </Button>
-      </SuggestionPrimitive.Trigger>
+          <Button
+            variant="ghost"
+            className="h-auto w-full flex-col items-start justify-start gap-1 rounded-2xl border px-4 py-3 text-left text-sm transition-colors hover:bg-muted"
+            onClick={() => handleClick(suggestion.prompt)}
+          >
+            <span className="font-medium">{suggestion.label}</span>
+            <span className="text-muted-foreground">
+              {suggestion.description}
+            </span>
+          </Button>
+        </div>
+      ))}
     </div>
   );
 };
