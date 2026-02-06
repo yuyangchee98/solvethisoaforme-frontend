@@ -148,6 +148,112 @@ const usePdfFile = () => {
   return { isPdf, src: fileSrc || dataUrl || cachedUrl, file, pdfSource };
 };
 
+const DOCX_MIME =
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+const useIsDocx = () => {
+  return useAuiState(({ attachment }) => {
+    const isDocOrFile =
+      attachment.type === "document" || attachment.type === "file";
+    if (!isDocOrFile) return false;
+    const ct = (attachment as { contentType?: string }).contentType;
+    const ext = attachment.name?.split(".").pop()?.toLowerCase();
+    return ct === DOCX_MIME || ext === "docx";
+  });
+};
+
+// Hook to get DOCX file content as HTML (via mammoth)
+const useDocxFile = () => {
+  const attachmentData = useAuiState(
+    useShallow(({ attachment }) => {
+      const isDocOrFile =
+        attachment.type === "document" || attachment.type === "file";
+      if (!isDocOrFile)
+        return {
+          file: undefined,
+          contentType: undefined,
+          name: undefined,
+          dataUrl: undefined,
+        };
+
+      const file = (attachment as { file?: File }).file;
+      const contentType = (attachment as { contentType?: string }).contentType;
+      const name = attachment.name;
+
+      const content = (
+        attachment as {
+          content?: Array<{ type: string; data?: string; mimeType?: string }>;
+        }
+      ).content;
+      const fileContent = content?.find((c) => c.type === "file");
+      const dataUrl = fileContent?.data;
+
+      return { file, contentType, name, dataUrl };
+    }),
+  );
+
+  const { file, contentType, name, dataUrl } = attachmentData;
+  const ext = name?.split(".").pop()?.toLowerCase();
+  const isDocx = contentType === DOCX_MIME || ext === "docx";
+
+  const [htmlContent, setHtmlContent] = useState<string | undefined>(undefined);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+
+  const cachedUrl = isDocx && name ? getCachedUrl(`input/${name}`) : undefined;
+
+  useEffect(() => {
+    if (!isDocx) {
+      setHtmlContent(undefined);
+      setError(undefined);
+      return;
+    }
+
+    let cancelled = false;
+
+    const convert = async () => {
+      setLoading(true);
+      setError(undefined);
+      try {
+        let arrayBuffer: ArrayBuffer;
+
+        if (file) {
+          // Priority 1: File object (composer)
+          arrayBuffer = await file.arrayBuffer();
+        } else if (dataUrl && dataUrl.startsWith("data:")) {
+          // Priority 2: data URL from content
+          const base64 = dataUrl.split(",")[1];
+          if (!base64) throw new Error("Invalid data URL");
+          const binary = atob(base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          arrayBuffer = bytes.buffer as ArrayBuffer;
+        } else if (cachedUrl) {
+          // Priority 3: cached blob URL
+          const resp = await fetch(cachedUrl);
+          arrayBuffer = await resp.arrayBuffer();
+        } else {
+          setLoading(false);
+          return;
+        }
+
+        const mammoth = await import("mammoth");
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        if (!cancelled) setHtmlContent(result.value);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load document");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    convert();
+    return () => { cancelled = true; };
+  }, [isDocx, file, dataUrl, cachedUrl]);
+
+  return { isDocx, htmlContent, error, loading, name };
+};
+
 // Cache files when they are attached in the composer
 const useCacheAttachmentFile = () => {
   const aui = useAui();
@@ -272,6 +378,61 @@ const PdfThumbnail: FC<{ source: File | string }> = ({ source }) => {
   );
 };
 
+// DOCX Thumbnail - branded Word doc icon
+const DocxThumbnail: FC = () => {
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-0.5 bg-white">
+      <FileText className="size-6 text-blue-600" />
+      <span className="text-[7px] font-semibold leading-none text-blue-600">
+        DOCX
+      </span>
+    </div>
+  );
+};
+
+// DOCX Preview Dialog - shows rendered HTML from mammoth
+const DocxPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
+  const { isDocx, htmlContent, error, loading, name } = useDocxFile();
+
+  if (!isDocx) return children;
+
+  return (
+    <Dialog>
+      <DialogTrigger
+        className="aui-attachment-preview-trigger cursor-pointer transition-colors hover:bg-accent/50"
+        asChild
+      >
+        {children}
+      </DialogTrigger>
+      <DialogContent className="aui-docx-preview-dialog-content p-4 sm:max-w-4xl max-h-[90vh] overflow-hidden [&>button]:rounded-full [&>button]:bg-foreground/60 [&>button]:p-1 [&>button]:opacity-100 [&>button]:ring-0! [&_svg]:text-background [&>button]:hover:[&_svg]:text-destructive">
+        <DialogTitle className="text-sm font-medium mb-2">
+          {name}
+        </DialogTitle>
+        <div className="relative overflow-auto max-h-[calc(90vh-80px)] rounded-lg bg-white">
+          {loading && (
+            <div className="flex h-64 w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+              <FileText className="size-12 animate-pulse text-blue-600" />
+              <span className="text-sm">Loading document...</span>
+            </div>
+          )}
+          {error && (
+            <div className="flex h-64 w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+              <FileText className="size-12" />
+              <span className="text-sm">Failed to load document</span>
+            </div>
+          )}
+          {htmlContent && (
+            <div
+              className="p-6 text-sm leading-relaxed text-foreground [&_h1]:mb-3 [&_h1]:text-xl [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h3]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_p]:mb-2 [&_ul]:mb-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1 [&_table]:mb-3 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-muted [&_td]:px-2 [&_td]:py-1 [&_th]:border [&_th]:border-muted [&_th]:bg-muted/40 [&_th]:px-2 [&_th]:py-1 [&_th]:font-semibold [&_strong]:font-bold [&_em]:italic"
+              dangerouslySetInnerHTML={{ __html: htmlContent }}
+            />
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // PDF Preview Dialog - shows scrollable PDF viewer
 const PdfPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
   const { isPdf, pdfSource } = usePdfFile();
@@ -369,6 +530,7 @@ const AttachmentThumb: FC = () => {
   const isImage = useAuiState(({ attachment }) => attachment.type === "image");
   const src = useAttachmentSrc();
   const { isPdf, pdfSource } = usePdfFile();
+  const isDocx = useIsDocx();
 
   // Show PDF thumbnail for PDFs (works for both composer and sent messages)
   if (isPdf && pdfSource) {
@@ -378,6 +540,9 @@ const AttachmentThumb: FC = () => {
       </div>
     );
   }
+
+  // Show DOCX branded thumbnail
+  if (isDocx) return <DocxThumbnail />;
 
   return (
     <Avatar className="aui-attachment-tile-avatar h-full w-full rounded-none">
@@ -396,12 +561,18 @@ const AttachmentThumb: FC = () => {
 // Wrapper component that chooses the right preview dialog
 const AttachmentDialogWrapper: FC<PropsWithChildren> = ({ children }) => {
   const { isPdf, pdfSource } = usePdfFile();
+  const isDocx = useIsDocx();
   const imageSrc = useAttachmentSrc();
   const { isText, textContent } = useTextFile();
 
   // Use PDF dialog for PDFs (only if we have a source to display)
   if (isPdf && pdfSource) {
     return <PdfPreviewDialog>{children}</PdfPreviewDialog>;
+  }
+
+  // Use DOCX dialog for Word documents
+  if (isDocx) {
+    return <DocxPreviewDialog>{children}</DocxPreviewDialog>;
   }
 
   // Use image dialog for images
@@ -427,6 +598,7 @@ const AttachmentUI: FC = () => {
 
   const isImage = useAuiState(({ attachment }) => attachment.type === "image");
   const { isPdf } = usePdfFile();
+  const isDocx = useIsDocx();
   const typeLabel = useAuiState(({ attachment }) => {
     const type = attachment.type;
     switch (type) {
@@ -458,7 +630,7 @@ const AttachmentUI: FC = () => {
                 "aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[14px] border bg-muted transition-opacity hover:opacity-75",
                 isComposer &&
                   "aui-attachment-tile-composer border-foreground/20",
-                isPdf && "bg-white", // White background for PDF thumbnails
+                (isPdf || isDocx) && "bg-white", // White background for PDF/DOCX thumbnails
               )}
               role="button"
               id="attachment-tile"
