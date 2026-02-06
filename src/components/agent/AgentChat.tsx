@@ -14,23 +14,23 @@ function convertToUIMessages(messages: AgentMessage[]): UIMessage[] {
   return messages.map((msg) => {
     const parts: UIMessage['parts'] = [];
 
-    // Add text part if there's content
-    if (msg.content) {
-      parts.push({ type: 'text' as const, text: msg.content });
-    }
-
-    // Add tool call parts for assistant messages
+    // Add tool call parts for assistant messages (before text for proper ordering)
     if (msg.role === 'assistant' && msg.tool_calls) {
       for (const toolCall of msg.tool_calls) {
         parts.push({
-          type: 'tool-invocation' as const,
+          type: 'dynamic-tool' as const,
           toolName: toolCall.toolName,
           toolCallId: toolCall.toolCallId,
-          state: 'result' as const,
-          args: toolCall.input,
-          result: toolCall.output,
+          state: 'output-available' as const,
+          input: toolCall.input,
+          output: toolCall.output,
         });
       }
+    }
+
+    // Add text part if there's content
+    if (msg.content) {
+      parts.push({ type: 'text' as const, text: msg.content });
     }
 
     return {
