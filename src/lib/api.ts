@@ -150,3 +150,11 @@ export async function getAgentMessages(
 export function getAgentMessagesEndpoint(sessionId: string): string {
   return `${API_BASE}/agents/sessions/${sessionId}/messages`;
 }
+
+export function getFileUrl(sessionId: string, filePath: string): string {
+  // Normalize path - remove leading slash if present
+  const normalizedPath = filePath.startsWith("/")
+    ? filePath.slice(1)
+    : filePath;
+  return `${API_BASE}/agents/sessions/${sessionId}/files/${normalizedPath}`;
+}

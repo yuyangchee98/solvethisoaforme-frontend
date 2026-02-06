@@ -24,6 +24,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { cn } from "@/lib/utils";
+import { cacheFile } from "@/lib/fileCache";
 
 const useFileSrc = (file: File | undefined) => {
   const [src, setSrc] = useState<string | undefined>(undefined);
@@ -43,6 +44,33 @@ const useFileSrc = (file: File | undefined) => {
   }, [file]);
 
   return src;
+};
+
+// Cache files when they are attached in the composer
+const useCacheAttachmentFile = () => {
+  const aui = useAui();
+  const isComposer = aui.attachment.source === "composer";
+
+  const { file, name } = useAuiState(
+    useShallow(({ attachment }) => {
+      const file =
+        attachment.type === "document" || attachment.type === "file"
+          ? (attachment as { file?: File }).file
+          : undefined;
+      return {
+        file,
+        name: attachment.name,
+      };
+    })
+  );
+
+  useEffect(() => {
+    // Only cache files from the composer (user uploads)
+    if (!file || !name || !isComposer) return;
+
+    // Cache with the path format the backend uses: input/<filename>
+    cacheFile(`input/${name}`, file);
+  }, [file, name, isComposer]);
 };
 
 const useAttachmentSrc = () => {
@@ -127,6 +155,9 @@ const AttachmentThumb: FC = () => {
 const AttachmentUI: FC = () => {
   const aui = useAui();
   const isComposer = aui.attachment.source === "composer";
+
+  // Cache the file for instant display when agent reads it
+  useCacheAttachmentFile();
 
   const isImage = useAuiState(({ attachment }) => attachment.type === "image");
   const typeLabel = useAuiState(({ attachment }) => {

@@ -1,11 +1,21 @@
-import { AssistantRuntimeProvider } from '@assistant-ui/react';
-import { useChatRuntime, AssistantChatTransport } from '@assistant-ui/react-ai-sdk';
+import {
+  AssistantRuntimeProvider,
+  CompositeAttachmentAdapter,
+  SimpleImageAttachmentAdapter,
+  SimpleTextAttachmentAdapter,
+} from '@assistant-ui/react';
+import {
+  useChatRuntime,
+  AssistantChatTransport,
+} from '@assistant-ui/react-ai-sdk';
+import { PDFAttachmentAdapter } from '@/lib/pdfAttachmentAdapter';
 import { Thread } from '@/components/assistant-ui/thread';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import type { UIMessage } from '@ai-sdk/react';
 
 import { useSession } from './hooks/useSession';
 import { SessionSidebar } from './SessionSidebar';
+import { SessionProvider } from './contexts/SessionContext';
 import { getAgentMessagesEndpoint, type AgentMessage } from '@/lib/api';
 import { MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -50,6 +60,13 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
     transport: new AssistantChatTransport({
       api: endpoint,
     }),
+    adapters: {
+      attachments: new CompositeAttachmentAdapter([
+        new SimpleImageAttachmentAdapter(),
+        new SimpleTextAttachmentAdapter(),
+        new PDFAttachmentAdapter(),
+      ]),
+    },
   });
 
   return (
@@ -99,7 +116,9 @@ export function AgentChat() {
 
         {currentSession ? (
           <TooltipProvider>
-            <ChatThread key={currentSession.id} sessionId={currentSession.id} initialMessages={messages} />
+            <SessionProvider sessionId={currentSession.id}>
+              <ChatThread key={currentSession.id} sessionId={currentSession.id} initialMessages={messages} />
+            </SessionProvider>
           </TooltipProvider>
         ) : (
           <div className="flex-1 flex items-center justify-center">
