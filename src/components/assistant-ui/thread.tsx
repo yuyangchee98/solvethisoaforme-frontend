@@ -4,6 +4,7 @@ import {
   UserMessageAttachments,
 } from "@/components/assistant-ui/attachment";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import { GrepToolCard } from "@/components/assistant-ui/grep-tool-card";
 import { ReadToolCard } from "@/components/assistant-ui/read-tool-card";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
@@ -209,6 +210,7 @@ const AssistantMessage: FC = () => {
             tools: {
               by_name: {
                 Read: ReadToolCard,
+                Grep: GrepToolCard,
               },
               Fallback: ToolFallback,
             },
