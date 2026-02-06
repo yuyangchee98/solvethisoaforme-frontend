@@ -4,9 +4,13 @@ import {
   UserMessageAttachments,
 } from "@/components/assistant-ui/attachment";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import { BashToolCard } from "@/components/assistant-ui/bash-tool-card";
+import { GlobToolCard } from "@/components/assistant-ui/glob-tool-card";
 import { GrepToolCard } from "@/components/assistant-ui/grep-tool-card";
 import { ReadToolCard } from "@/components/assistant-ui/read-tool-card";
+import { TaskToolCard } from "@/components/assistant-ui/task-tool-card";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
+import { WriteToolCard } from "@/components/assistant-ui/write-tool-card";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -209,8 +213,12 @@ const AssistantMessage: FC = () => {
             Text: MarkdownText,
             tools: {
               by_name: {
-                Read: ReadToolCard,
+                Bash: BashToolCard,
+                Glob: GlobToolCard,
                 Grep: GrepToolCard,
+                Read: ReadToolCard,
+                Task: TaskToolCard,
+                Write: WriteToolCard,
               },
               Fallback: ToolFallback,
             },
