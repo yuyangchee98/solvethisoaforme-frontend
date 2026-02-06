@@ -6,6 +6,7 @@ import type {
 
 /**
  * Attachment adapter that accepts PDF files and converts them to base64 for transmission.
+ * Matches the vercelAttachmentAdapter format for consistency.
  */
 export class PDFAttachmentAdapter implements AttachmentAdapter {
   // Accept PDF files
@@ -28,8 +29,8 @@ export class PDFAttachmentAdapter implements AttachmentAdapter {
       throw new Error("No file attached");
     }
 
-    // Read file as base64
-    const base64 = await fileToBase64(file);
+    // Read file as data URL (matches vercelAttachmentAdapter format)
+    const dataUrl = await getFileDataURL(file);
 
     return {
       ...attachment,
@@ -37,11 +38,9 @@ export class PDFAttachmentAdapter implements AttachmentAdapter {
       content: [
         {
           type: "file",
-          file: {
-            name: attachment.name,
-            contentType: file.type,
-            base64,
-          },
+          mimeType: attachment.contentType,
+          filename: attachment.name,
+          data: dataUrl,
         } as unknown as { type: "text"; text: string },
       ],
     };
@@ -52,15 +51,10 @@ export class PDFAttachmentAdapter implements AttachmentAdapter {
   }
 }
 
-function fileToBase64(file: File): Promise<string> {
+function getFileDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
-      const base64 = result.split(",")[1];
-      resolve(base64);
-    };
+    reader.onload = () => resolve(reader.result as string);
     reader.onerror = (error) => reject(error);
     reader.readAsDataURL(file);
   });
