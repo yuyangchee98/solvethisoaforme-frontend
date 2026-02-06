@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { EditorView, lineNumbers, highlightActiveLine, keymap } from '@codemirror/view';
+import { EditorView, highlightActiveLine, keymap } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { editorTheme } from './extensions/editorTheme';
