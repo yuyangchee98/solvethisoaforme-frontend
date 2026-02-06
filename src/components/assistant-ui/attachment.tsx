@@ -27,7 +27,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { cn } from "@/lib/utils";
-import { cacheFile } from "@/lib/fileCache";
+import { cacheFile, getCachedUrl } from "@/lib/fileCache";
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -52,21 +52,36 @@ const useFileSrc = (file: File | undefined) => {
   return src;
 };
 
-// Hook to get PDF file for preview
+// Hook to get PDF file/URL for preview
 const usePdfFile = () => {
-  const { file, contentType } = useAuiState(
-    useShallow(({ attachment }): { file?: File; contentType?: string } => {
-      if (attachment.type !== "document") return {};
+  const attachmentData = useAuiState(
+    useShallow(({ attachment }) => {
+      // Check for both "document" (composer) and "file" (sent messages) types
+      const isDocOrFile = attachment.type === "document" || attachment.type === "file";
+      if (!isDocOrFile) return { file: undefined, contentType: undefined, name: undefined, dataUrl: undefined };
+
       const file = (attachment as { file?: File }).file;
       const contentType = (attachment as { contentType?: string }).contentType;
-      return { file, contentType };
+      const name = attachment.name;
+
+      // For sent messages, the data URL is in content[0].data
+      const content = (attachment as { content?: Array<{ type: string; data?: string; mimeType?: string }> }).content;
+      const fileContent = content?.find(c => c.type === "file");
+      const dataUrl = fileContent?.data;
+
+      return { file, contentType, name, dataUrl };
     })
   );
 
+  const { file, contentType, name, dataUrl } = attachmentData;
   const isPdf = contentType === "application/pdf";
-  const src = useFileSrc(isPdf ? file : undefined);
+  const fileSrc = useFileSrc(isPdf ? file : undefined);
 
-  return { isPdf, src, file };
+  // Priority: File object > data URL from content > cached URL
+  const cachedUrl = isPdf && name ? getCachedUrl(`input/${name}`) : undefined;
+  const pdfSource = file || dataUrl || cachedUrl;
+
+  return { isPdf, src: fileSrc || dataUrl || cachedUrl, file, pdfSource };
 };
 
 // Cache files when they are attached in the composer
@@ -158,7 +173,8 @@ const AttachmentPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
 };
 
 // PDF Thumbnail component - renders first page as a small preview
-const PdfThumbnail: FC<{ file: File }> = ({ file }) => {
+// Accepts either a File object or a blob URL string
+const PdfThumbnail: FC<{ source: File | string }> = ({ source }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
@@ -167,7 +183,7 @@ const PdfThumbnail: FC<{ file: File }> = ({ file }) => {
 
   return (
     <Document
-      file={file}
+      file={source}
       onLoadSuccess={onDocumentLoadSuccess}
       loading={
         <div className="flex h-full w-full items-center justify-center">
@@ -194,14 +210,17 @@ const PdfThumbnail: FC<{ file: File }> = ({ file }) => {
 
 // PDF Preview Dialog - shows scrollable PDF viewer
 const PdfPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
-  const { isPdf, file } = usePdfFile();
+  const { isPdf, pdfSource } = usePdfFile();
   const [numPages, setNumPages] = useState<number | null>(null);
+
+  // Get the filename for display
+  const fileName = useAuiState(({ attachment }) => attachment.name);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
   }, []);
 
-  if (!isPdf || !file) return children;
+  if (!isPdf || !pdfSource) return children;
 
   return (
     <Dialog>
@@ -213,7 +232,7 @@ const PdfPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
       </DialogTrigger>
       <DialogContent className="aui-pdf-preview-dialog-content p-4 sm:max-w-4xl max-h-[90vh] overflow-hidden [&>button]:rounded-full [&>button]:bg-foreground/60 [&>button]:p-1 [&>button]:opacity-100 [&>button]:ring-0! [&_svg]:text-background [&>button]:hover:[&_svg]:text-destructive">
         <DialogTitle className="text-sm font-medium mb-2 flex items-center justify-between">
-          <span>{file.name}</span>
+          <span>{fileName}</span>
           {numPages && (
             <span className="text-xs text-muted-foreground">
               {numPages} page{numPages > 1 ? "s" : ""}
@@ -222,7 +241,7 @@ const PdfPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
         </DialogTitle>
         <div className="aui-pdf-preview relative overflow-auto max-h-[calc(90vh-80px)] bg-muted/30 rounded-lg">
           <Document
-            file={file}
+            file={pdfSource}
             onLoadSuccess={onDocumentLoadSuccess}
             loading={
               <div className="flex h-64 w-full items-center justify-center">
@@ -257,13 +276,13 @@ const PdfPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
 const AttachmentThumb: FC = () => {
   const isImage = useAuiState(({ attachment }) => attachment.type === "image");
   const src = useAttachmentSrc();
-  const { isPdf, file: pdfFile } = usePdfFile();
+  const { isPdf, pdfSource } = usePdfFile();
 
-  // Show PDF thumbnail for PDFs
-  if (isPdf && pdfFile) {
+  // Show PDF thumbnail for PDFs (works for both composer and sent messages)
+  if (isPdf && pdfSource) {
     return (
       <div className="h-full w-full bg-white flex items-center justify-center overflow-hidden">
-        <PdfThumbnail file={pdfFile} />
+        <PdfThumbnail source={pdfSource} />
       </div>
     );
   }
@@ -284,11 +303,11 @@ const AttachmentThumb: FC = () => {
 
 // Wrapper component that chooses the right preview dialog
 const AttachmentDialogWrapper: FC<PropsWithChildren> = ({ children }) => {
-  const { isPdf } = usePdfFile();
+  const { isPdf, pdfSource } = usePdfFile();
   const imageSrc = useAttachmentSrc();
 
-  // Use PDF dialog for PDFs
-  if (isPdf) {
+  // Use PDF dialog for PDFs (only if we have a source to display)
+  if (isPdf && pdfSource) {
     return <PdfPreviewDialog>{children}</PdfPreviewDialog>;
   }
 
