@@ -11,11 +11,34 @@ import { MessageSquarePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function convertToUIMessages(messages: AgentMessage[]): UIMessage[] {
-  return messages.map((msg) => ({
-    id: msg.id,
-    role: msg.role as 'user' | 'assistant',
-    parts: [{ type: 'text' as const, text: msg.content }],
-  }));
+  return messages.map((msg) => {
+    const parts: UIMessage['parts'] = [];
+
+    // Add text part if there's content
+    if (msg.content) {
+      parts.push({ type: 'text' as const, text: msg.content });
+    }
+
+    // Add tool call parts for assistant messages
+    if (msg.role === 'assistant' && msg.tool_calls) {
+      for (const toolCall of msg.tool_calls) {
+        parts.push({
+          type: 'tool-invocation' as const,
+          toolName: toolCall.toolName,
+          toolCallId: toolCall.toolCallId,
+          state: 'result' as const,
+          args: toolCall.input,
+          result: toolCall.output,
+        });
+      }
+    }
+
+    return {
+      id: msg.id,
+      role: msg.role as 'user' | 'assistant',
+      parts,
+    };
+  });
 }
 
 function ChatThread({ sessionId, initialMessages }: { sessionId: string; initialMessages: AgentMessage[] }) {

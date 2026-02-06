@@ -75,10 +75,18 @@ export interface AgentSession {
   workspace_path: string;
 }
 
+export interface ToolCallData {
+  toolCallId: string;
+  toolName: string;
+  input: Record<string, unknown>;
+  output: string | null;
+}
+
 export interface AgentMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  tool_calls?: ToolCallData[] | null;
   created_at: string;
   attachments?: {
     id: string;
