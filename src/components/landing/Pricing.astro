@@ -1,35 +1,20 @@
 ---
 const tiers = [
   {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Try it out on a single Office Action. No credit card required.",
-    cta: "Get Started Free",
-    ctaStyle: "outline",
-    highlighted: false,
-    features: [
-      "1 Office Action analysis",
-      "Basic rejection classification",
-      "Antecedent basis checking",
-      "PDF document upload",
-      "Conversational follow-ups",
-    ],
-  },
-  {
     name: "Pro",
     price: "$99",
     period: "/month",
     description: "For patent attorneys and agents handling a regular caseload.",
-    cta: "Start Pro Trial",
+    cta: "Get Started",
     ctaStyle: "primary",
     highlighted: true,
     badge: "Most Popular",
     features: [
       "Unlimited Office Action analyses",
       "Prior art evaluation & citation check",
-      "Argue/amend strategy with confidence scores",
+      "Argue/amend strategy with confidence levels",
       "Full document understanding (PDF, images)",
+      "Antecedent basis checking",
       "Export strategy documents",
       "Priority support",
     ],
@@ -63,12 +48,12 @@ const tiers = [
         Simple, transparent pricing
       </h2>
       <p class="text-lg text-stone-500 leading-relaxed">
-        Start free. Upgrade when the AI saves you enough time to justify itself — usually after the first Office Action.
+        One Office Action response typically takes 4-8 hours. At attorney billing rates, the tool pays for itself after a single use.
       </p>
     </div>
 
     <!-- Pricing cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
       {tiers.map((tier) => (
         <div class={`relative flex flex-col rounded-xl p-6 ${
           tier.highlighted
