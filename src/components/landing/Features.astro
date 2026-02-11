@@ -1,33 +1,33 @@
 ---
 const features = [
   {
-    title: "Office Action Analysis",
-    description: "Parses the full Office Action and classifies every rejection by type. Maps each rejection to the specific claims and prior art references cited. Handles both final and non-final rejections.",
+    title: "Every rejection, mapped",
+    description: "Parses the full Office Action and classifies every rejection by type, mapping each one to the specific claims and prior art references cited.",
     icon: "file-search",
   },
   {
-    title: "Prior Art Deep Read",
-    description: "Reads every cited reference in full. Identifies the exact passages the examiner relies on and cross-checks whether they actually teach what the examiner claims they teach.",
+    title: "Prior art, actually read",
+    description: "Reads cited references and follows the examiner's specific citations to the relevant paragraphs and columns. Cross-checks whether the cited passages actually teach what the examiner claims they teach.",
     icon: "book-open",
   },
   {
-    title: "Antecedent Basis Checking",
-    description: "NLP-powered scanner catches missing antecedent basis, dangling references, and §112(b) issues across all claims. Flags problems before the examiner does.",
+    title: "Claim elements, mapped to references",
+    description: "For every rejection, maps each claim limitation to the specific passage the examiner relies on. When multiple references are combined, shows exactly which element comes from which reference.",
+    icon: "link",
+  },
+  {
+    title: "Antecedent basis, checked",
+    description: "Scans every claim for missing antecedent basis, dangling references, and indefiniteness issues. Flags problems before the examiner does.",
     icon: "check-circle",
   },
   {
-    title: "Argue or Amend Recommendations",
-    description: "For each rejection, recommends whether to argue, amend, or both. Includes confidence levels (HIGH/MEDIUM/LOW), draft argument language, and suggested claim amendments with spec support.",
+    title: "Argue, amend, or both",
+    description: "Looks for arguments first, only suggesting amendments when arguing alone isn't enough. You get draft argument language and, where needed, suggested claim amendments with spec support.",
     icon: "scale",
   },
   {
-    title: "Native Document Understanding",
-    description: "Upload Office Actions, patent applications, and prior art as PDFs, DOCX, images, or text. The AI reads them natively. No copy-paste, no OCR errors, no reformatting.",
-    icon: "file-up",
-  },
-  {
-    title: "Fully Transparent Reasoning",
-    description: "Every step is visible in real time. See which document is being read, which page, which passage. You can verify any conclusion against the source material yourself.",
+    title: "Check every conclusion yourself",
+    description: "Every step is visible in real time. See which document is being read, which passage is being analyzed. Click any cited source to jump straight to it and verify the conclusion yourself.",
     icon: "eye",
   },
 ];
@@ -64,8 +64,8 @@ const features = [
             {feature.icon === "scale" && (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
             )}
-            {feature.icon === "file-up" && (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 12v6"/><path d="m15 15-3-3-3 3"/></svg>
+            {feature.icon === "link" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
             )}
             {feature.icon === "eye" && (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>

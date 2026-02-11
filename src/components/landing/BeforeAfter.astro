@@ -1,117 +1,84 @@
 ---
+const fullAnalysisSteps = [
+  {
+    title: "Upload your documents",
+    description: "Drop in the Office Action, your application, and cited prior art. The AI reads PDFs natively.",
+  },
+  {
+    title: "AI reads and maps everything",
+    description: "Every rejection classified, every cited passage located and evaluated, every claim element mapped to references.",
+  },
+  {
+    title: "Get argue/amend recommendations",
+    description: "For each rejection, a strategy with draft argument language and suggested amendments with spec support.",
+  },
+  {
+    title: "Refine and export",
+    description: "Ask follow-ups, drill into specific rejections, then export the strategy as your starting point.",
+  },
+];
+
+const askExamples = [
+  "Read Smith and tell me if it actually teaches the 'dynamic threshold adjustment' of claim 1.",
+  "Check if there's spec support for adding the temperature monitoring limitation from claim 9.",
+  "The examiner says Jones ¶[0053] teaches element 3. Pull it up and tell me if that's right.",
+  "I'm thinking of amending claim 1 to include the priority queue. What would that do to the other rejections?",
+  "Draft an argument that Smith's 'batch processing module' is different from our 'real-time pipeline.'",
+];
 ---
 
-<section class="py-20 md:py-28 bg-white">
+<section id="how-it-works" class="scroll-mt-20 py-20 md:py-28 bg-stone-50/70">
   <div class="max-w-6xl mx-auto px-6">
     <div class="max-w-2xl mx-auto text-center mb-14">
-      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Why This Exists</p>
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">How It Works</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        You already know this workflow is broken
+        A full analysis, or just a question
       </h2>
       <p class="text-lg text-stone-500 leading-relaxed">
-        Every patent attorney has the same experience with Office Actions. Hours of manual work that follows the same pattern every time.
+        Run the complete workflow end to end, or just ask a specific question about a reference, a claim, or an argument.
       </p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-      <!-- Before -->
-      <div class="rounded-xl border border-stone-200 bg-stone-50 p-6 md:p-8">
-        <div class="flex items-center gap-2 mb-6">
-          <div class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-500"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          </div>
-          <span class="text-sm font-semibold text-stone-700">The traditional way</span>
-        </div>
-        <ul class="space-y-4">
-          <li class="flex gap-3">
-            <span class="text-stone-300 text-sm font-mono mt-0.5">01</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Read the Office Action</p>
-              <p class="text-xs text-stone-400 mt-0.5">Parse 10-20 pages of examiner arguments, identify which claims are rejected and why</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-stone-300 text-sm font-mono mt-0.5">02</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Pull up every cited reference</p>
-              <p class="text-xs text-stone-400 mt-0.5">Find the patents on USPTO/Google Patents, locate the specific columns and paragraphs cited</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-stone-300 text-sm font-mono mt-0.5">03</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Cross-reference claims against prior art</p>
-              <p class="text-xs text-stone-400 mt-0.5">Element-by-element comparison, checking if the examiner's characterization is accurate</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-stone-300 text-sm font-mono mt-0.5">04</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Decide argue vs. amend for each rejection</p>
-              <p class="text-xs text-stone-400 mt-0.5">Weigh the strength of arguments against the risk of losing claim scope</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-stone-300 text-sm font-mono mt-0.5">05</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Draft response with amendments</p>
-              <p class="text-xs text-stone-400 mt-0.5">Write arguments, draft claim amendments, verify spec support for any new limitations</p>
-            </div>
-          </li>
-        </ul>
-        <div class="mt-6 pt-4 border-t border-stone-200">
-          <p class="text-xs text-stone-400"><span class="font-semibold text-stone-500">Typical time:</span> 4-8 hours per Office Action, depending on complexity</p>
-        </div>
-      </div>
-
-      <!-- After -->
-      <div class="rounded-xl border-2 border-amber-200 bg-amber-50/30 p-6 md:p-8">
+      <!-- Full analysis -->
+      <div class="rounded-xl border border-stone-200 bg-white p-6 md:p-8">
         <div class="flex items-center gap-2 mb-6">
           <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-600"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
           </div>
-          <span class="text-sm font-semibold text-amber-800">With Solve This OA For Me</span>
+          <span class="text-sm font-semibold text-stone-900">Full analysis</span>
         </div>
-        <ul class="space-y-4">
-          <li class="flex gap-3">
-            <span class="text-amber-300 text-sm font-mono mt-0.5">01</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Upload everything</p>
-              <p class="text-xs text-stone-500 mt-0.5">Drop in the Office Action PDF, your application, and cited references. The AI reads them all natively.</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-amber-300 text-sm font-mono mt-0.5">02</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Get a complete analysis in minutes</p>
-              <p class="text-xs text-stone-500 mt-0.5">Every rejection classified, every cited passage located and evaluated, every claim element mapped.</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-amber-300 text-sm font-mono mt-0.5">03</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Review argue/amend recommendations</p>
-              <p class="text-xs text-stone-500 mt-0.5">Each rejection gets a strategy with confidence levels. See exactly why the AI recommends arguing vs. amending.</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-amber-300 text-sm font-mono mt-0.5">04</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Refine with follow-up questions</p>
-              <p class="text-xs text-stone-500 mt-0.5">"Focus on claim 3." "What if we amend to add the priority queue limitation?" "Check if Jones ¶[0045] actually teaches this."</p>
-            </div>
-          </li>
-          <li class="flex gap-3">
-            <span class="text-amber-300 text-sm font-mono mt-0.5">05</span>
-            <div>
-              <p class="text-sm font-medium text-stone-700">Export and finalize</p>
-              <p class="text-xs text-stone-500 mt-0.5">Use the strategy document as your starting point. You make the final calls — the AI just does the heavy lifting.</p>
-            </div>
-          </li>
+        <p class="text-sm text-stone-500 mb-5">Upload everything and get a complete strategy document.</p>
+        <ol class="space-y-4">
+          {fullAnalysisSteps.map((step, i) => (
+            <li class="flex gap-3">
+              <span class="text-amber-300 text-sm font-mono mt-0.5 shrink-0">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <p class="text-sm font-medium text-stone-700">{step.title}</p>
+                <p class="text-xs text-stone-400 mt-0.5">{step.description}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <!-- Just ask -->
+      <div class="rounded-xl border border-stone-200 bg-white p-6 md:p-8">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <span class="text-sm font-semibold text-stone-900">Just ask</span>
+        </div>
+        <p class="text-sm text-stone-500 mb-5">Already deep in a response? Use it for whatever you need right now.</p>
+        <ul class="space-y-3">
+          {askExamples.map((example) => (
+            <li class="flex gap-2.5 items-start">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-400 shrink-0 mt-0.5"><path d="m9 18 6-6-6-6"/></svg>
+              <p class="text-xs text-stone-500 leading-relaxed italic">"{example}"</p>
+            </li>
+          ))}
         </ul>
-        <div class="mt-6 pt-4 border-t border-amber-200">
-          <p class="text-xs text-stone-500"><span class="font-semibold text-amber-700">Typical time:</span> 20-40 minutes, including your review and refinement</p>
-        </div>
       </div>
     </div>
   </div>
