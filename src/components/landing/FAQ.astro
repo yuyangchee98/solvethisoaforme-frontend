@@ -1,0 +1,48 @@
+---
+const faqs = [
+  {
+    question: "Does the AI hallucinate? How can I trust the analysis?",
+    answer: "This is the right question to ask. The agent is designed around verifiability: every claim it makes references a specific document, page, and passage. Inline tool cards show you exactly what was read. You can click through and verify any conclusion against the source material. We also include confidence scores — lower scores mean the AI is less certain and you should review more carefully. The goal isn't to replace your judgment, it's to do the reading and mapping work so you can focus on the strategic decisions.",
+  },
+  {
+    question: "What types of rejections does it handle?",
+    answer: "The agent handles §101 (subject matter eligibility), §102 (anticipation), §103 (obviousness), and §112 (definiteness and written description) rejections. It works with both final and non-final Office Actions. For §103 combinations, it analyzes each reference individually and then evaluates the examiner's motivation to combine. For §112, the separate antecedent basis checker performs NLP-based analysis of claim language.",
+  },
+  {
+    question: "What about confidentiality? Are my patent documents secure?",
+    answer: "Your documents are processed in your session and are not used to train AI models. Sessions are isolated — other users cannot see your documents or analysis. Documents are stored only for the duration of your session and can be deleted at any time. We understand that patent applications often contain trade secrets and unpublished inventions, and we take that seriously.",
+  },
+  {
+    question: "Can it draft the actual response to the USPTO?",
+    answer: "The AI produces a strategy document with analysis, recommendations, draft arguments, and suggested claim amendments. It's designed as a starting point for your formal response, not a filing-ready document. You still need to exercise professional judgment, review the analysis, and draft the final response in your own voice. Think of it as an extremely thorough first pass that would otherwise take you hours to do manually.",
+  },
+  {
+    question: "How does it compare to other AI patent tools?",
+    answer: "Most AI patent tools are either generic chatbots (paste your claims, get a generic response) or batch-processing tools (upload, wait, get a report). This is a conversational agent that works through the problem with you in real time. You can ask follow-up questions, redirect the analysis, and refine the strategy interactively. You also see every step the AI takes — there's no black box.",
+  },
+  {
+    question: "What if the AI gets something wrong?",
+    answer: "It will sometimes get things wrong — no AI is perfect. That's why transparency is the core design principle. Every conclusion is traceable to a specific source passage. Confidence scores flag areas where the AI is less certain. And because it's conversational, you can challenge any conclusion: 'Are you sure Jones ¶[0067] teaches this? Look again at the context.' The AI will re-examine and correct itself when warranted.",
+  },
+];
+---
+
+<section id="faq" class="scroll-mt-20 py-20 md:py-28 bg-stone-50/70">
+  <div class="max-w-3xl mx-auto px-6">
+    <div class="text-center mb-14">
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">FAQ</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+        Questions patent attorneys actually ask
+      </h2>
+    </div>
+
+    <div class="space-y-6">
+      {faqs.map((faq) => (
+        <div class="p-6 bg-white rounded-xl border border-stone-150">
+          <h3 class="text-base font-semibold text-stone-900 mb-3">{faq.question}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{faq.answer}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

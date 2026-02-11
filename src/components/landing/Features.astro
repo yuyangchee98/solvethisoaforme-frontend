@@ -2,32 +2,38 @@
 const features = [
   {
     title: "Office Action Analysis",
-    description: "Automatically parses and classifies rejections — §101, §102, §103, §112 — and maps each to the relevant claims and prior art references.",
+    description: "Parses the full Office Action and classifies every rejection by type — §101 (subject matter eligibility), §102 (anticipation), §103 (obviousness), §112 (definiteness). Maps each rejection to the specific claims and prior art references cited.",
+    detail: "Handles both final and non-final rejections. Identifies the examiner's specific arguments so you can address each one directly.",
     icon: "file-search",
   },
   {
-    title: "Prior Art Evaluation",
-    description: "Reads cited references, identifies the passages examiners rely on, and evaluates whether the rejection holds up under the broadest reasonable interpretation.",
+    title: "Prior Art Deep Read",
+    description: "Reads every cited reference in full. Identifies the exact passages, columns, and paragraphs the examiner relies on. Cross-checks whether the cited portions actually teach what the examiner claims they teach.",
+    detail: "Citation verification catches examiner errors — misquoted passages, out-of-context citations, and unsupported characterizations of the prior art.",
     icon: "book-open",
   },
   {
     title: "Antecedent Basis Checking",
-    description: "Scans your claims for missing antecedent basis, dangling references, and §112(b) issues before the examiner finds them.",
+    description: "NLP-powered scanner catches missing antecedent basis, dangling references, and §112(b) issues across all claims. Flags problems before the examiner does — including issues that arise from proposed amendments.",
+    detail: "Checks introduction/reference chains across independent and dependent claims. Catches 'said widget' without a prior 'a widget.'",
     icon: "check-circle",
   },
   {
-    title: "Argue or Amend Strategy",
-    description: "For each rejection, recommends whether to argue, amend, or both — with confidence scores and draft language for your response.",
+    title: "Argue or Amend Recommendations",
+    description: "For each rejection, the AI recommends whether to argue, amend, or both. Includes confidence scores, draft argument language, and suggested claim amendments with specification support.",
+    detail: "Confidence scores are based on the strength of the distinction, not on how much the AI 'likes' the argument. Low-confidence flags mean you should review more carefully.",
     icon: "scale",
   },
   {
-    title: "Document Understanding",
-    description: "Upload Office Actions, specifications, and prior art as PDFs. The AI reads them natively — no copy-paste, no reformatting.",
+    title: "Native Document Understanding",
+    description: "Upload Office Actions, patent applications, and prior art references as PDFs. The AI reads them natively — figures, tables, claims, and all. No copy-paste, no OCR errors, no reformatting.",
+    detail: "Supports multi-column layouts, patent drawings with figure descriptions, and complex claim formatting.",
     icon: "file-up",
   },
   {
-    title: "Transparent Reasoning",
-    description: "Every analysis step is visible. See exactly which passages were read, which claims were compared, and how conclusions were reached.",
+    title: "Fully Transparent Reasoning",
+    description: "Every step is visible in real time. Watch the AI read specific document pages, search for relevant passages, and build its analysis. Nothing happens in a black box.",
+    detail: "Inline tool cards show exactly which document, which page, and which passage is being analyzed at every step. You can verify any conclusion.",
     icon: "eye",
   },
 ];
@@ -39,10 +45,10 @@ const features = [
     <div class="max-w-2xl mx-auto text-center mb-14">
       <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Capabilities</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        Everything you need to respond to an Office Action
+        Built specifically for patent prosecution
       </h2>
       <p class="text-lg text-stone-500 leading-relaxed">
-        Built specifically for patent prosecution — not a general-purpose AI with legal prompts bolted on.
+        Not a general-purpose AI with legal prompts bolted on. Every feature is designed around the actual workflow of responding to an Office Action.
       </p>
     </div>
 
@@ -74,7 +80,8 @@ const features = [
 
           <!-- Content -->
           <h3 class="text-base font-semibold text-stone-900 mb-2">{feature.title}</h3>
-          <p class="text-sm text-stone-500 leading-relaxed">{feature.description}</p>
+          <p class="text-sm text-stone-600 leading-relaxed mb-2">{feature.description}</p>
+          <p class="text-xs text-stone-400 leading-relaxed">{feature.detail}</p>
         </div>
       ))}
     </div>

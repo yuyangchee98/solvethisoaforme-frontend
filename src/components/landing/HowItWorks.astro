@@ -1,21 +1,4 @@
 ---
-const steps = [
-  {
-    number: "1",
-    title: "Upload Your Office Action",
-    description: "Drop in the Office Action PDF, your patent application, and any cited prior art. The AI reads everything natively — no manual extraction needed.",
-  },
-  {
-    number: "2",
-    title: "AI Analyzes & Strategizes",
-    description: "The agent identifies each rejection, reads the cited prior art passages, checks your claims for issues, and develops argue-or-amend recommendations with confidence scores.",
-  },
-  {
-    number: "3",
-    title: "Review, Refine & Respond",
-    description: "Review the strategy, ask follow-up questions, and refine the approach conversationally. Export the analysis as a starting point for your formal response.",
-  },
-];
 ---
 
 <section id="how-it-works" class="scroll-mt-20 py-20 md:py-28 bg-stone-50/70">
@@ -24,32 +7,89 @@ const steps = [
     <div class="max-w-2xl mx-auto text-center mb-14">
       <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">How It Works</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        Three steps to a stronger response
+        A conversational agent, not a form
       </h2>
       <p class="text-lg text-stone-500 leading-relaxed">
-        From Office Action to response strategy in a single conversation.
+        You talk to it like you'd talk to a junior associate. Upload documents, ask questions, request deeper analysis on specific claims. It works through the problem with you.
       </p>
     </div>
 
-    <!-- Steps -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
-      {steps.map((step, index) => (
-        <div class="relative text-center md:text-left">
-          <!-- Connector line (visible on desktop between cards) -->
-          {index < steps.length - 1 && (
-            <div class="hidden md:block absolute top-6 left-[calc(50%+2rem)] right-[calc(-50%+2rem)] h-px bg-amber-200"></div>
-          )}
-
-          <!-- Number circle -->
-          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-amber-200 mb-5 relative z-10">
-            <span class="text-lg font-bold text-amber-700">{step.number}</span>
-          </div>
-
-          <!-- Content -->
-          <h3 class="text-lg font-semibold text-stone-900 mb-3">{step.title}</h3>
-          <p class="text-sm text-stone-500 leading-relaxed">{step.description}</p>
+    <!-- Steps with detail -->
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Step 1 -->
+      <div class="flex gap-5 md:gap-8 items-start">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border-2 border-amber-200 flex items-center justify-center">
+          <span class="text-sm font-bold text-amber-700">1</span>
         </div>
-      ))}
+        <div class="flex-1 pb-6 border-b border-stone-200">
+          <h3 class="text-base font-semibold text-stone-900 mb-2">Upload your documents</h3>
+          <p class="text-sm text-stone-500 leading-relaxed mb-3">
+            Drop in the Office Action, your patent application or published spec, and any cited prior art. The AI reads PDFs natively — it sees the same pages you see, including figures, tables, and multi-column layouts.
+          </p>
+          <div class="flex flex-wrap gap-2">
+            <span class="text-xs px-2.5 py-1 rounded-full bg-stone-100 text-stone-500 border border-stone-150">Office Actions</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-stone-100 text-stone-500 border border-stone-150">Patent Applications</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-stone-100 text-stone-500 border border-stone-150">Prior Art References</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-stone-100 text-stone-500 border border-stone-150">Specifications</span>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-stone-100 text-stone-500 border border-stone-150">Images & Figures</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flex gap-5 md:gap-8 items-start">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border-2 border-amber-200 flex items-center justify-center">
+          <span class="text-sm font-bold text-amber-700">2</span>
+        </div>
+        <div class="flex-1 pb-6 border-b border-stone-200">
+          <h3 class="text-base font-semibold text-stone-900 mb-2">The AI reads and analyzes everything</h3>
+          <p class="text-sm text-stone-500 leading-relaxed mb-3">
+            The agent reads the Office Action to identify every rejection. Then it reads the cited prior art — the actual passages, not just abstracts. It maps claim elements to prior art disclosures and checks whether the examiner's characterizations are accurate.
+          </p>
+          <p class="text-sm text-stone-500 leading-relaxed">
+            You see every step in real time. Inline cards show which document is being read, which page, which passage. If the AI reads Smith at column 5, lines 12-34, you see that. Nothing is hidden.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="flex gap-5 md:gap-8 items-start">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border-2 border-amber-200 flex items-center justify-center">
+          <span class="text-sm font-bold text-amber-700">3</span>
+        </div>
+        <div class="flex-1 pb-6 border-b border-stone-200">
+          <h3 class="text-base font-semibold text-stone-900 mb-2">Get argue/amend strategies with confidence scores</h3>
+          <p class="text-sm text-stone-500 leading-relaxed mb-3">
+            For each rejection, the AI recommends a strategy: argue, amend, or both. Each recommendation includes a confidence score, the reasoning behind it, specific claim language for amendments, and draft argument text.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="p-3 bg-white rounded-lg border border-stone-150">
+              <p class="text-xs font-semibold text-stone-700 mb-1">When it says "Argue"</p>
+              <p class="text-xs text-stone-400">The cited art doesn't actually teach the claimed element. The AI explains why and provides draft argument language.</p>
+            </div>
+            <div class="p-3 bg-white rounded-lg border border-stone-150">
+              <p class="text-xs font-semibold text-stone-700 mb-1">When it says "Amend"</p>
+              <p class="text-xs text-stone-400">The rejection has merit. The AI suggests specific limitations from dependent claims or the spec that would distinguish.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="flex gap-5 md:gap-8 items-start">
+        <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 border-2 border-amber-200 flex items-center justify-center">
+          <span class="text-sm font-bold text-amber-700">4</span>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-base font-semibold text-stone-900 mb-2">Refine conversationally, then export</h3>
+          <p class="text-sm text-stone-500 leading-relaxed mb-3">
+            Ask follow-up questions. "What if we amend claim 1 to include the temperature monitoring?" "Is there support in the spec for that limitation?" "Focus on the §102 rejection for claim 7." The AI works through it with you until you're satisfied with the strategy.
+          </p>
+          <p class="text-sm text-stone-500 leading-relaxed">
+            Export the final strategy as your starting point. You make the prosecution decisions — the AI handles the analysis grunt work.
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 </section>

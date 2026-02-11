@@ -2,9 +2,13 @@
 import LandingLayout from '../layouts/LandingLayout.astro';
 import LandingNav from '../components/landing/LandingNav.astro';
 import Hero from '../components/landing/Hero.astro';
+import Stats from '../components/landing/Stats.astro';
 import Features from '../components/landing/Features.astro';
+import BeforeAfter from '../components/landing/BeforeAfter.astro';
 import HowItWorks from '../components/landing/HowItWorks.astro';
+import Testimonials from '../components/landing/Testimonials.astro';
 import Pricing from '../components/landing/Pricing.astro';
+import FAQ from '../components/landing/FAQ.astro';
 import Footer from '../components/landing/Footer.astro';
 ---
 
@@ -12,18 +16,25 @@ import Footer from '../components/landing/Footer.astro';
   <LandingNav />
   <main>
     <Hero />
+    <Stats />
     <Features />
+    <BeforeAfter />
     <HowItWorks />
+    <Testimonials />
     <Pricing />
+    <FAQ />
 
     <!-- Final CTA -->
-    <section class="py-20 md:py-28 bg-stone-50/70">
+    <section class="py-20 md:py-28 bg-white">
       <div class="max-w-2xl mx-auto px-6 text-center">
         <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-          Ready to stop dreading Office Actions?
+          Your next Office Action doesn't have to take all day
         </h2>
-        <p class="text-lg text-stone-500 leading-relaxed mb-8">
-          Upload your next Office Action and see what the AI finds. No credit card, no commitment.
+        <p class="text-lg text-stone-500 leading-relaxed mb-4">
+          Upload it, get a complete analysis with argue/amend recommendations, and start drafting your response from a position of strength. Free to try — no credit card, no commitment.
+        </p>
+        <p class="text-sm text-stone-400 mb-8">
+          The AI does the reading and mapping. You make the prosecution decisions.
         </p>
         <a
           href="/agent"
