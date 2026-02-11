@@ -1,0 +1,55 @@
+---
+const steps = [
+  {
+    number: "1",
+    title: "Upload Your Office Action",
+    description: "Drop in the Office Action PDF, your patent application, and any cited prior art. The AI reads everything natively — no manual extraction needed.",
+  },
+  {
+    number: "2",
+    title: "AI Analyzes & Strategizes",
+    description: "The agent identifies each rejection, reads the cited prior art passages, checks your claims for issues, and develops argue-or-amend recommendations with confidence scores.",
+  },
+  {
+    number: "3",
+    title: "Review, Refine & Respond",
+    description: "Review the strategy, ask follow-up questions, and refine the approach conversationally. Export the analysis as a starting point for your formal response.",
+  },
+];
+---
+
+<section id="how-it-works" class="scroll-mt-20 py-20 md:py-28 bg-stone-50/70">
+  <div class="max-w-6xl mx-auto px-6">
+    <!-- Section header -->
+    <div class="max-w-2xl mx-auto text-center mb-14">
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">How It Works</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+        Three steps to a stronger response
+      </h2>
+      <p class="text-lg text-stone-500 leading-relaxed">
+        From Office Action to response strategy in a single conversation.
+      </p>
+    </div>
+
+    <!-- Steps -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
+      {steps.map((step, index) => (
+        <div class="relative text-center md:text-left">
+          <!-- Connector line (visible on desktop between cards) -->
+          {index < steps.length - 1 && (
+            <div class="hidden md:block absolute top-6 left-[calc(50%+2rem)] right-[calc(-50%+2rem)] h-px bg-amber-200"></div>
+          )}
+
+          <!-- Number circle -->
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-100 border-2 border-amber-200 mb-5 relative z-10">
+            <span class="text-lg font-bold text-amber-700">{step.number}</span>
+          </div>
+
+          <!-- Content -->
+          <h3 class="text-lg font-semibold text-stone-900 mb-3">{step.title}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

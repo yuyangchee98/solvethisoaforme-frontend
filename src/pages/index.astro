@@ -1,7 +1,39 @@
 ---
-// Redirect to /agent as the home page
+import LandingLayout from '../layouts/LandingLayout.astro';
+import LandingNav from '../components/landing/LandingNav.astro';
+import Hero from '../components/landing/Hero.astro';
+import Features from '../components/landing/Features.astro';
+import HowItWorks from '../components/landing/HowItWorks.astro';
+import Pricing from '../components/landing/Pricing.astro';
+import Footer from '../components/landing/Footer.astro';
 ---
 
-<script>
-  window.location.href = '/agent';
-</script>
+<LandingLayout title="Solve This OA For Me — AI-Powered Patent Prosecution">
+  <LandingNav />
+  <main>
+    <Hero />
+    <Features />
+    <HowItWorks />
+    <Pricing />
+
+    <!-- Final CTA -->
+    <section class="py-20 md:py-28 bg-stone-50/70">
+      <div class="max-w-2xl mx-auto px-6 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+          Ready to stop dreading Office Actions?
+        </h2>
+        <p class="text-lg text-stone-500 leading-relaxed mb-8">
+          Upload your next Office Action and see what the AI finds. No credit card, no commitment.
+        </p>
+        <a
+          href="/agent"
+          class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+        >
+          Start Analyzing Free
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</LandingLayout>

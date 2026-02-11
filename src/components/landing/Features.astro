@@ -1,0 +1,82 @@
+---
+const features = [
+  {
+    title: "Office Action Analysis",
+    description: "Automatically parses and classifies rejections — §101, §102, §103, §112 — and maps each to the relevant claims and prior art references.",
+    icon: "file-search",
+  },
+  {
+    title: "Prior Art Evaluation",
+    description: "Reads cited references, identifies the passages examiners rely on, and evaluates whether the rejection holds up under the broadest reasonable interpretation.",
+    icon: "book-open",
+  },
+  {
+    title: "Antecedent Basis Checking",
+    description: "Scans your claims for missing antecedent basis, dangling references, and §112(b) issues before the examiner finds them.",
+    icon: "check-circle",
+  },
+  {
+    title: "Argue or Amend Strategy",
+    description: "For each rejection, recommends whether to argue, amend, or both — with confidence scores and draft language for your response.",
+    icon: "scale",
+  },
+  {
+    title: "Document Understanding",
+    description: "Upload Office Actions, specifications, and prior art as PDFs. The AI reads them natively — no copy-paste, no reformatting.",
+    icon: "file-up",
+  },
+  {
+    title: "Transparent Reasoning",
+    description: "Every analysis step is visible. See exactly which passages were read, which claims were compared, and how conclusions were reached.",
+    icon: "eye",
+  },
+];
+---
+
+<section id="features" class="scroll-mt-20 py-20 md:py-28">
+  <div class="max-w-6xl mx-auto px-6">
+    <!-- Section header -->
+    <div class="max-w-2xl mx-auto text-center mb-14">
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Capabilities</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+        Everything you need to respond to an Office Action
+      </h2>
+      <p class="text-lg text-stone-500 leading-relaxed">
+        Built specifically for patent prosecution — not a general-purpose AI with legal prompts bolted on.
+      </p>
+    </div>
+
+    <!-- Feature grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {features.map((feature) => (
+        <div class="group p-6 rounded-xl border border-stone-100 bg-stone-50/50 hover:bg-white hover:border-stone-200 hover:shadow-md transition-all duration-200">
+          <!-- Icon -->
+          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-4">
+            {feature.icon === "file-search" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><circle cx="11.5" cy="14.5" r="2.5"/><path d="M13.3 16.3 15 18"/></svg>
+            )}
+            {feature.icon === "book-open" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            )}
+            {feature.icon === "check-circle" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            )}
+            {feature.icon === "scale" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+            )}
+            {feature.icon === "file-up" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 12v6"/><path d="m15 15-3-3-3 3"/></svg>
+            )}
+            {feature.icon === "eye" && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            )}
+          </div>
+
+          <!-- Content -->
+          <h3 class="text-base font-semibold text-stone-900 mb-2">{feature.title}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{feature.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

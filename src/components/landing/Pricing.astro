@@ -1,0 +1,122 @@
+---
+const tiers = [
+  {
+    name: "Free",
+    price: "$0",
+    period: "forever",
+    description: "Try it out on a single Office Action. No credit card required.",
+    cta: "Get Started Free",
+    ctaStyle: "outline",
+    highlighted: false,
+    features: [
+      "1 Office Action analysis",
+      "Basic rejection classification",
+      "Antecedent basis checking",
+      "PDF document upload",
+      "Conversational follow-ups",
+    ],
+  },
+  {
+    name: "Pro",
+    price: "$99",
+    period: "/month",
+    description: "For patent attorneys and agents handling a regular caseload.",
+    cta: "Start Pro Trial",
+    ctaStyle: "primary",
+    highlighted: true,
+    badge: "Most Popular",
+    features: [
+      "Unlimited Office Action analyses",
+      "Prior art evaluation & citation check",
+      "Argue/amend strategy with confidence scores",
+      "Full document understanding (PDF, images)",
+      "Export strategy documents",
+      "Priority support",
+    ],
+  },
+  {
+    name: "Team",
+    price: "$249",
+    period: "/month",
+    description: "For prosecution teams that want shared workflows and oversight.",
+    cta: "Contact Us",
+    ctaStyle: "outline",
+    highlighted: false,
+    features: [
+      "Everything in Pro",
+      "5 team member seats",
+      "Shared session history",
+      "Admin dashboard & usage analytics",
+      "Custom prompt configuration",
+      "Dedicated onboarding",
+    ],
+  },
+];
+---
+
+<section id="pricing" class="scroll-mt-20 py-20 md:py-28">
+  <div class="max-w-6xl mx-auto px-6">
+    <!-- Section header -->
+    <div class="max-w-2xl mx-auto text-center mb-14">
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Pricing</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+        Simple, transparent pricing
+      </h2>
+      <p class="text-lg text-stone-500 leading-relaxed">
+        Start free. Upgrade when the AI saves you enough time to justify itself — usually after the first Office Action.
+      </p>
+    </div>
+
+    <!-- Pricing cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      {tiers.map((tier) => (
+        <div class={`relative flex flex-col rounded-xl p-6 ${
+          tier.highlighted
+            ? 'bg-white border-2 border-amber-500 shadow-lg'
+            : 'bg-white border border-stone-200'
+        }`}>
+          {/* Badge */}
+          {tier.badge && (
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span class="inline-block px-3 py-1 text-xs font-semibold text-white bg-amber-600 rounded-full">
+                {tier.badge}
+              </span>
+            </div>
+          )}
+
+          {/* Header */}
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-stone-900 mb-1">{tier.name}</h3>
+            <div class="flex items-baseline gap-1 mb-3">
+              <span class="text-4xl font-bold text-stone-900">{tier.price}</span>
+              <span class="text-sm text-stone-500">{tier.period}</span>
+            </div>
+            <p class="text-sm text-stone-500">{tier.description}</p>
+          </div>
+
+          {/* Features */}
+          <ul class="space-y-3 mb-8 flex-1">
+            {tier.features.map((feature) => (
+              <li class="flex items-start gap-2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-500 mt-0.5 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+                <span class="text-sm text-stone-600">{feature}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA */}
+          <a
+            href="/agent"
+            class={`block w-full text-center py-2.5 px-4 text-sm font-medium rounded-lg transition-colors ${
+              tier.ctaStyle === 'primary'
+                ? 'text-white bg-amber-600 hover:bg-amber-700'
+                : 'text-stone-700 bg-stone-50 hover:bg-stone-100 border border-stone-200'
+            }`}
+          >
+            {tier.cta}
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

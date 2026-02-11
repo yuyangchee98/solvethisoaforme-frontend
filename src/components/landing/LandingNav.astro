@@ -1,0 +1,44 @@
+---
+---
+
+<nav class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-black/5 z-50">
+  <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
+    <!-- Logo -->
+    <a href="/" class="text-lg font-semibold text-stone-900 tracking-tight">
+      Solve This OA For Me
+    </a>
+
+    <!-- Center nav links (hidden on mobile) -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#features" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
+        Features
+      </a>
+      <a href="#how-it-works" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
+        How It Works
+      </a>
+      <a href="#pricing" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
+        Pricing
+      </a>
+    </div>
+
+    <!-- Auth buttons -->
+    <div class="flex items-center gap-3">
+      <a
+        href="/agent"
+        class="text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors hidden sm:inline-block"
+      >
+        Sign In
+      </a>
+      <a
+        href="/agent"
+        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors"
+      >
+        Get Started
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Spacer for fixed nav -->
+<div class="h-16"></div>
