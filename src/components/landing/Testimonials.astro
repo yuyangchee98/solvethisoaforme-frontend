@@ -1,46 +1,36 @@
 ---
-const testimonials = [
+const points = [
   {
-    quote: "I was skeptical about AI for prosecution work — too much room for hallucination. But this tool shows its sources for everything. When it says Smith doesn't teach the claimed element, I can click through and verify the passage myself. That transparency is what won me over.",
-    name: "Sarah M.",
-    title: "Patent Attorney, 12 years experience",
+    text: "Handle more cases without adding headcount",
+    detail: "The reading, mapping, and cross-referencing that takes hours is done in minutes. Same attorney, more throughput.",
   },
   {
-    quote: "The before/after on my workflow is dramatic. I used to spend 3-4 hours just reading and mapping the prior art for a §103 rejection. Now I upload everything and have a complete analysis in 20 minutes. I still review every recommendation, but I'm starting from a solid foundation instead of a blank page.",
-    name: "David K.",
-    title: "Associate, IP Boutique Firm",
+    text: "Respond faster than the competition",
+    detail: "Faster turnaround on Office Actions means happier clients and more room to take on new work.",
   },
   {
-    quote: "The antecedent basis checker alone has saved me from embarrassing §112 rejections. I run every set of amended claims through it before filing. It catches things I miss after staring at claims for hours.",
-    name: "Jennifer L.",
-    title: "Solo Patent Practitioner",
+    text: "Catch what gets missed under time pressure",
+    detail: "The AI reads every cited passage in full. No skimming, no shortcuts, no missed arguments because you ran out of time.",
   },
 ];
 ---
 
 <section class="py-20 md:py-28 bg-white">
-  <div class="max-w-6xl mx-auto px-6">
+  <div class="max-w-5xl mx-auto px-6">
     <div class="max-w-2xl mx-auto text-center mb-14">
-      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">From Patent Attorneys</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        Built by people who've written Office Action responses
+        Your time is the bottleneck
       </h2>
+      <p class="text-lg text-stone-500 leading-relaxed">
+        Every Office Action follows the same pattern: hours of reading, mapping, and cross-referencing before you can start making decisions. That's time you're not spending on strategy, client calls, or the next case.
+      </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-      {testimonials.map((t) => (
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {points.map((point) => (
         <div class="p-6 rounded-xl border border-stone-100 bg-stone-50/50">
-          <!-- Stars -->
-          <div class="flex gap-0.5 mb-4">
-            {[...Array(5)].map(() => (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="text-amber-400"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            ))}
-          </div>
-          <blockquote class="text-sm text-stone-600 leading-relaxed mb-5">"{t.quote}"</blockquote>
-          <div>
-            <p class="text-sm font-semibold text-stone-900">{t.name}</p>
-            <p class="text-xs text-stone-400">{t.title}</p>
-          </div>
+          <h3 class="text-base font-semibold text-stone-900 mb-2">{point.text}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{point.detail}</p>
         </div>
       ))}
     </div>
