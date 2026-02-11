@@ -2,27 +2,23 @@
 const faqs = [
   {
     question: "Does the AI hallucinate? How can I trust the analysis?",
-    answer: "This is the right question to ask. The agent is designed around verifiability: every claim it makes references a specific document, page, and passage. Inline tool cards show you exactly what was read. You can click through and verify any conclusion against the source material. We also include confidence scores — lower scores mean the AI is less certain and you should review more carefully. The goal isn't to replace your judgment, it's to do the reading and mapping work so you can focus on the strategic decisions.",
+    answer: "The agent works directly from your uploaded documents, not from memory or training data. Every conclusion cites a specific passage, and those citations are verified against the source. You can click any reference to jump to the passage and check it yourself. Every claim is traceable and verifiable.",
   },
   {
     question: "What types of rejections does it handle?",
-    answer: "The agent handles §101 (subject matter eligibility), §102 (anticipation), §103 (obviousness), and §112 (definiteness and written description) rejections. It works with both final and non-final Office Actions. For §103 combinations, it analyzes each reference individually and then evaluates the examiner's motivation to combine. For §112, the separate antecedent basis checker performs NLP-based analysis of claim language.",
+    answer: "All major rejection types across all jurisdictions. Novelty, obviousness, subject matter eligibility, written description, definiteness, and their equivalents at the EPO, CNIPA, JPO, KIPO, and PCT. Upload your Office Action and the AI adapts to the relevant framework.",
   },
   {
-    question: "What about confidentiality? Are my patent documents secure?",
-    answer: "Your documents are processed in your session and are not used to train AI models. Sessions are isolated — other users cannot see your documents or analysis. Documents are stored only for the duration of your session and can be deleted at any time. We understand that patent applications often contain trade secrets and unpublished inventions, and we take that seriously.",
-  },
-  {
-    question: "Can it draft the actual response to the USPTO?",
-    answer: "The AI produces a strategy document with analysis, recommendations, draft arguments, and suggested claim amendments. It's designed as a starting point for your formal response, not a filing-ready document. You still need to exercise professional judgment, review the analysis, and draft the final response in your own voice. Think of it as an extremely thorough first pass that would otherwise take you hours to do manually.",
+    question: "Can it draft the actual response?",
+    answer: "Think of it as a thinking tool, not a drafting tool. You get a complete analysis with recommendations, draft arguments, and suggested amendments. It's designed to help you work through the response, not to produce a filing-ready document. You make the final calls and write in your own voice.",
   },
   {
     question: "How does it compare to other AI patent tools?",
-    answer: "Most AI patent tools are either generic chatbots (paste your claims, get a generic response) or batch-processing tools (upload, wait, get a report). This is a conversational agent that works through the problem with you in real time. You can ask follow-up questions, redirect the analysis, and refine the strategy interactively. You also see every step the AI takes — there's no black box.",
+    answer: "Most AI patent tools focus on drafting, proofreading, or prior art search. This is specifically for Office Action responses. You upload an OA and your documents, and the AI reads the cited references, maps claim elements, and produces argue/amend recommendations. We're not aware of another tool that does this end to end.",
   },
   {
-    question: "What if the AI gets something wrong?",
-    answer: "It will sometimes get things wrong — no AI is perfect. That's why transparency is the core design principle. Every conclusion is traceable to a specific source passage. Confidence scores flag areas where the AI is less certain. And because it's conversational, you can challenge any conclusion: 'Are you sure Jones ¶[0067] teaches this? Look again at the context.' The AI will re-examine and correct itself when warranted.",
+    question: "Why not just use ChatGPT or Gemini?",
+    answer: "You can paste an Office Action into ChatGPT, but it can't read your actual prior art PDFs, verify its own citations, or maintain a structured workspace of your documents. This is a specialized agent with tools to read, search, and cross-reference your actual files. It follows the examiner's specific citations to the relevant passages and checks them. A general-purpose chatbot gives you a plausible-sounding answer. This gives you a verifiable one.",
   },
 ];
 ---
@@ -32,7 +28,7 @@ const faqs = [
     <div class="text-center mb-14">
       <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">FAQ</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        Questions patent attorneys actually ask
+        FAQ
       </h2>
     </div>
 
