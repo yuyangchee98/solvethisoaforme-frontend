@@ -1,0 +1,117 @@
+---
+const jurisdictions = [
+  {
+    region: "United States (USPTO)",
+    rejections: [
+      { code: "§101", name: "Subject Matter Eligibility" },
+      { code: "§102", name: "Anticipation (Novelty)" },
+      { code: "§103", name: "Obviousness" },
+      { code: "§112(a)", name: "Written Description / Enablement" },
+      { code: "§112(b)", name: "Definiteness" },
+    ],
+  },
+  {
+    region: "European Patent Office (EPO)",
+    rejections: [
+      { code: "Art. 52", name: "Patentable Inventions" },
+      { code: "Art. 54", name: "Novelty" },
+      { code: "Art. 56", name: "Inventive Step" },
+      { code: "Art. 83", name: "Sufficiency of Disclosure" },
+      { code: "Art. 84", name: "Clarity & Support" },
+      { code: "Art. 123(2)", name: "Added Subject Matter" },
+    ],
+  },
+  {
+    region: "China (CNIPA)",
+    rejections: [
+      { code: "Art. 22.2", name: "Novelty" },
+      { code: "Art. 22.3", name: "Inventiveness (Obviousness)" },
+      { code: "Art. 25", name: "Non-Patentable Subject Matter" },
+      { code: "Art. 26.3", name: "Sufficiency of Disclosure" },
+      { code: "Art. 26.4", name: "Claim Clarity & Support" },
+      { code: "Art. 33", name: "Amendment Beyond Original Scope" },
+    ],
+  },
+  {
+    region: "Japan (JPO)",
+    rejections: [
+      { code: "Art. 29(1)", name: "Novelty" },
+      { code: "Art. 29(2)", name: "Inventive Step" },
+      { code: "Art. 36(4)", name: "Enablement" },
+      { code: "Art. 36(6)", name: "Claim Clarity & Support" },
+      { code: "Art. 29bis", name: "Enlarged Novelty" },
+    ],
+  },
+  {
+    region: "South Korea (KIPO)",
+    rejections: [
+      { code: "Art. 29(1)", name: "Novelty" },
+      { code: "Art. 29(2)", name: "Inventive Step" },
+      { code: "Art. 42(3)", name: "Enablement" },
+      { code: "Art. 42(4)", name: "Claim Clarity & Support" },
+    ],
+  },
+  {
+    region: "PCT (International Phase)",
+    rejections: [
+      { code: "Art. 33(2)", name: "Novelty (Chapter II)" },
+      { code: "Art. 33(3)", name: "Inventive Step (Chapter II)" },
+      { code: "Art. 5 PCT", name: "Written Opinion Objections" },
+      { code: "Rule 66", name: "ISA Written Opinion Responses" },
+    ],
+  },
+  {
+    region: "India (IPO)",
+    rejections: [
+      { code: "Sec. 3", name: "Non-Patentable Subject Matter" },
+      { code: "Sec. 2(1)(j)", name: "Novelty (Prior Art)" },
+      { code: "Sec. 2(1)(ja)", name: "Inventive Step" },
+      { code: "Sec. 10(4)", name: "Sufficiency of Disclosure" },
+    ],
+  },
+  {
+    region: "Canada (CIPO)",
+    rejections: [
+      { code: "Sec. 2", name: "Subject Matter / Utility" },
+      { code: "Sec. 28.2", name: "Novelty (Anticipation)" },
+      { code: "Sec. 28.3", name: "Obviousness" },
+      { code: "Sec. 27(3)", name: "Sufficiency of Disclosure" },
+    ],
+  },
+];
+---
+
+<section id="jurisdictions" class="scroll-mt-20 py-20 md:py-28 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="max-w-2xl mx-auto text-center mb-14">
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Jurisdictions</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+        Works with patent offices worldwide
+      </h2>
+      <p class="text-lg text-stone-500 leading-relaxed">
+        The AI understands rejection types across all major patent jurisdictions. Upload an Office Action from any of these offices and get a strategy that speaks the right language.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {jurisdictions.map((j) => (
+        <div class="p-5 rounded-xl border border-stone-100 bg-stone-50/50">
+          <h3 class="text-sm font-semibold text-stone-900 mb-3">{j.region}</h3>
+          <ul class="space-y-1.5">
+            {j.rejections.map((r) => (
+              <li class="flex items-baseline gap-2">
+                <code class="text-[11px] font-mono font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded shrink-0">{r.code}</code>
+                <span class="text-xs text-stone-500">{r.name}</span>
+              </li>
+            ))}
+            <li class="text-xs text-stone-400 pt-1">and more</li>
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <p class="text-center text-sm text-stone-400 mt-8">
+      Don't see your jurisdiction? The AI has broad knowledge of patent law across jurisdictions. Upload your Office Action and it will adapt.
+    </p>
+  </div>
+</section>

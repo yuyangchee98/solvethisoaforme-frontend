@@ -1,19 +1,32 @@
 ---
-const stats = [
-  { value: "§101, §102, §103, §112", label: "All major rejection types handled" },
-  { value: "~23 min", label: "Average time to first strategy draft" },
-  { value: "PDF-native", label: "Upload docs directly — no reformatting" },
-  { value: "100%", label: "Transparent — see every step the AI takes" },
+const topRow = [
+  { value: "All jurisdictions", label: "US, EP, CN, JP, KR, PCT and more" },
+  { value: "Minutes, not days", label: "From upload to strategy draft" },
+  { value: "PDF, DOCX, images, text", label: "Upload your documents directly" },
+];
+
+const bottomRow = [
+  { value: "Anti-hallucination", label: "Verifies every citation and argument against your actual documents" },
+  { value: "Draft response", label: "Produces an argue/amend plan for your rejection" },
+  { value: "Spec support", label: "Shows where in your spec amendments are supported" },
 ];
 ---
 
-<section class="py-12 border-y border-stone-100 bg-white">
-  <div class="max-w-6xl mx-auto px-6">
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
-      {stats.map((stat) => (
+<section class="border-y border-stone-100 bg-white py-10">
+  <div class="max-w-6xl mx-auto px-6 space-y-8">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      {topRow.map((stat) => (
         <div class="text-center">
-          <p class="text-lg md:text-xl font-bold text-stone-900 mb-1">{stat.value}</p>
-          <p class="text-xs md:text-sm text-stone-500">{stat.label}</p>
+          <p class="text-base font-bold text-stone-900 mb-1">{stat.value}</p>
+          <p class="text-xs text-stone-500">{stat.label}</p>
+        </div>
+      ))}
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      {bottomRow.map((stat) => (
+        <div class="text-center">
+          <p class="text-base font-bold text-stone-900 mb-1">{stat.value}</p>
+          <p class="text-xs text-stone-500">{stat.label}</p>
         </div>
       ))}
     </div>
