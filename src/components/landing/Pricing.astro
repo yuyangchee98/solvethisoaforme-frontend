@@ -35,13 +35,47 @@ const teamFeatures = [
       </p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <!-- Day Pass -->
+      <div class="flex flex-col rounded-xl p-6 bg-white border border-stone-200">
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-stone-900 mb-1">Day Pass</h3>
+          <div class="flex items-baseline gap-1 mb-3">
+            <span class="text-4xl font-bold text-stone-900">$49</span>
+            <span class="text-sm text-stone-500">/day</span>
+          </div>
+          <p class="text-sm text-stone-500">Try it on a real Office Action before committing.</p>
+        </div>
+
+        <ul class="space-y-3 mb-8 flex-1">
+          <li class="flex items-start gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-500 mt-0.5 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="text-sm text-stone-600">All features included</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-500 mt-0.5 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="text-sm text-stone-600">24-hour access</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-500 mt-0.5 shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="text-sm text-stone-600">Cancel anytime</span>
+          </li>
+        </ul>
+
+        <a
+          href="/agent"
+          class="block w-full text-center py-2.5 px-4 text-sm font-medium rounded-lg transition-colors text-stone-700 bg-stone-50 hover:bg-stone-100 border border-stone-200"
+        >
+          Try It Now
+        </a>
+      </div>
+
       <!-- Individual -->
       <div class="relative flex flex-col rounded-xl p-6 bg-white border-2 border-amber-500 shadow-lg">
         <div class="mb-6">
           <h3 class="text-lg font-semibold text-stone-900 mb-1">Individual</h3>
           <div class="flex items-baseline gap-1 mb-3">
-            <span class="text-4xl font-bold text-stone-900">$89</span>
+            <span class="text-4xl font-bold text-stone-900">$189</span>
             <span class="text-sm text-stone-500">/month</span>
           </div>
           <p class="text-sm text-stone-500">For patent attorneys and agents handling their own caseload.</p>
