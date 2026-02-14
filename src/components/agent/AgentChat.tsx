@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   AssistantRuntimeProvider,
   CompositeAttachmentAdapter,
@@ -18,7 +19,9 @@ import { useSession } from './hooks/useSession';
 import { SessionSidebar } from './SessionSidebar';
 import { SessionProvider } from './contexts/SessionContext';
 import { getAgentMessagesEndpoint, getFileUrl, type AgentMessage } from '@/lib/api';
-import { MessageSquarePlus } from 'lucide-react';
+import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
+import { SubscriptionRequired } from '@/components/auth/SubscriptionRequired';
+import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMessage[] {
@@ -78,6 +81,7 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
     messages: convertToUIMessages(initialMessages, sessionId),
     transport: new AssistantChatTransport({
       api: endpoint,
+      headers: authHeaders(),
     }),
     adapters: {
       attachments: new CompositeAttachmentAdapter([
@@ -97,6 +101,27 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
 }
 
 export function AgentChat() {
+  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'no-subscription'>('loading');
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      window.location.href = '/login';
+      return;
+    }
+    getMe()
+      .then((user) => {
+        if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
+          setAuthState('authenticated');
+        } else {
+          setAuthState('no-subscription');
+        }
+      })
+      .catch(() => {
+        window.location.href = '/login';
+      });
+  }, []);
+
   const {
     sessions,
     currentSession,
@@ -112,6 +137,18 @@ export function AgentChat() {
   const handleCreateSession = async () => {
     await createSession();
   };
+
+  if (authState === 'loading') {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
+
+  if (authState === 'no-subscription') {
+    return <SubscriptionRequired />;
+  }
 
   return (
     <div className="flex h-full">

@@ -2,7 +2,27 @@
  * API client for Patent Claim NLP backend
  */
 
+import { authHeaders, clearToken } from './auth';
+
 const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
+
+async function authFetch(url: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      ...authHeaders(),
+      ...init?.headers,
+    },
+  });
+
+  if (res.status === 401) {
+    clearToken();
+    window.location.href = '/login';
+    throw new Error('Session expired');
+  }
+
+  return res;
+}
 
 export interface NounPhrase {
   text: string;
@@ -44,7 +64,7 @@ export interface ParsedClaimForAPI {
 }
 
 export async function analyzeClaims(claims: ParsedClaimForAPI[]): Promise<AnalyzeClaimsResponse> {
-  const response = await fetch(`${API_BASE}/analyze-claims`, {
+  const response = await authFetch(`${API_BASE}/analyze-claims`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ claims }),
@@ -104,7 +124,7 @@ export async function createAgentSession(): Promise<{
   workspace_path: string;
   created_at: string;
 }> {
-  const response = await fetch(`${API_BASE}/agents/sessions`, {
+  const response = await authFetch(`${API_BASE}/agents/sessions`, {
     method: 'POST',
   });
 
@@ -116,7 +136,7 @@ export async function createAgentSession(): Promise<{
 }
 
 export async function listAgentSessions(): Promise<{ sessions: AgentSession[] }> {
-  const response = await fetch(`${API_BASE}/agents/sessions`);
+  const response = await authFetch(`${API_BASE}/agents/sessions`);
 
   if (!response.ok) {
     throw new Error(`Failed to list sessions: ${response.status}`);
@@ -126,7 +146,7 @@ export async function listAgentSessions(): Promise<{ sessions: AgentSession[] }>
 }
 
 export async function deleteAgentSession(sessionId: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/agents/sessions/${sessionId}`, {
+  const response = await authFetch(`${API_BASE}/agents/sessions/${sessionId}`, {
     method: 'DELETE',
   });
 
@@ -138,7 +158,7 @@ export async function deleteAgentSession(sessionId: string): Promise<void> {
 export async function getAgentMessages(
   sessionId: string
 ): Promise<{ messages: AgentMessage[] }> {
-  const response = await fetch(`${API_BASE}/agents/sessions/${sessionId}/messages`);
+  const response = await authFetch(`${API_BASE}/agents/sessions/${sessionId}/messages`);
 
   if (!response.ok) {
     throw new Error(`Failed to get messages: ${response.status}`);

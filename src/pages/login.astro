@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TopNav from '../components/layout/TopNav.astro';
+import { LoginForm } from '../components/auth/LoginForm';
+---
+
+<Layout title="Log In - Solve This OA For Me">
+  <TopNav />
+  <main class="min-h-[calc(100vh-64px)] flex items-center justify-center bg-stone-50 px-4">
+    <LoginForm client:only="react" />
+  </main>
+</Layout>
