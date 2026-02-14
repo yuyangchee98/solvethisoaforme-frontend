@@ -1,0 +1,7 @@
+{
+  "name": "solvethisoaforme-frontend",
+  "compatibility_date": "2026-02-14",
+  "assets": {
+    "directory": "./dist"
+  }
+}
