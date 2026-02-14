@@ -1,6 +1,12 @@
 {
   "name": "solvethisoaforme-frontend",
   "compatibility_date": "2026-02-14",
+  "routes": [
+    {
+      "pattern": "solvethisoaforme.chyuang.com",
+      "custom_domain": true
+    }
+  ],
   "assets": {
     "directory": "./dist"
   }
