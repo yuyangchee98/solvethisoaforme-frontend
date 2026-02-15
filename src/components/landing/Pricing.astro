@@ -1,4 +1,10 @@
 ---
+interface Props {
+  variant?: 'landing' | 'subscribe';
+}
+
+const { variant = 'landing' } = Astro.props;
+
 const capabilitySublist = [
   "Prior art reading and citation verification",
   "Argue/amend recommendations with draft language",
@@ -26,13 +32,26 @@ const teamFeatures = [
 <section id="pricing" class="scroll-mt-20 py-20 md:py-28">
   <div class="max-w-6xl mx-auto px-6">
     <div class="max-w-2xl mx-auto text-center mb-14">
-      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Pricing</p>
-      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        Simple, transparent pricing
-      </h2>
-      <p class="text-lg text-stone-500 leading-relaxed">
-        One Office Action response typically takes 4-8 hours. At attorney billing rates, the tool pays for itself after a single use.
-      </p>
+      {variant === 'subscribe' ? (
+        <>
+          <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+            Choose a plan to get started
+          </h2>
+          <p class="text-lg text-stone-500 leading-relaxed">
+            Pick the plan that fits your workflow. Cancel anytime.
+          </p>
+        </>
+      ) : (
+        <>
+          <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Pricing</p>
+          <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+            Simple, transparent pricing
+          </h2>
+          <p class="text-lg text-stone-500 leading-relaxed">
+            One Office Action response typically takes 4-8 hours. At attorney billing rates, the tool pays for itself after a single use.
+          </p>
+        </>
+      )}
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">

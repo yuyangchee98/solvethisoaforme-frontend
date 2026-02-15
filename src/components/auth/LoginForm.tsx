@@ -25,8 +25,7 @@ export function LoginForm() {
         const url = await createCheckoutSession(plan);
         window.location.href = url;
       } else {
-        // No active sub and no plan selected — show pricing
-        window.location.href = '/#pricing';
+        window.location.href = '/subscribe';
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -46,7 +45,7 @@ export function LoginForm() {
         const url = await createCheckoutSession(plan);
         window.location.href = url;
       } else {
-        window.location.href = '/#pricing';
+        window.location.href = '/subscribe';
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');

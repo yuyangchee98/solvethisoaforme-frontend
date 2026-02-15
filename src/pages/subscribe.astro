@@ -1,16 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { LoginForm } from '../components/auth/LoginForm';
+import Pricing from '../components/landing/Pricing.astro';
 ---
 
-<Layout title="Log In - Solve This OA For Me">
+<Layout title="Choose a Plan - Solve This OA For Me">
   <nav class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-black/5 z-50">
     <div class="max-w-6xl mx-auto px-6 h-full flex items-center">
       <a href="/" class="text-lg font-semibold text-stone-900">Solve This OA For Me</a>
     </div>
   </nav>
   <div class="h-16"></div>
-  <main class="min-h-[calc(100vh-64px)] flex items-center justify-center bg-stone-50 px-4">
-    <LoginForm client:only="react" />
+  <main class="min-h-[calc(100vh-64px)] bg-stone-50">
+    <Pricing variant="subscribe" />
   </main>
 </Layout>

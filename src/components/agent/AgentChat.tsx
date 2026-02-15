@@ -147,7 +147,8 @@ export function AgentChat() {
   }
 
   if (authState === 'no-subscription') {
-    return <SubscriptionRequired />;
+    window.location.href = '/subscribe';
+    return null;
   }
 
   return (
