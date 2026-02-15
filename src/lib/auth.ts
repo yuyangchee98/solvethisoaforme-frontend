@@ -98,6 +98,20 @@ export async function createCheckoutSession(
   return data.url as string;
 }
 
+export async function createPortalSession(): Promise<string> {
+  const res = await fetch(`${API_BASE}/billing/create-portal-session`, {
+    method: 'POST',
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to create portal session');
+  }
+
+  const data = await res.json();
+  return data.url as string;
+}
+
 export function logout(): void {
   clearToken();
   window.location.href = '/login';
