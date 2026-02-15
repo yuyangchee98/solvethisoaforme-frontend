@@ -20,7 +20,6 @@ import { SessionSidebar } from './SessionSidebar';
 import { SessionProvider } from './contexts/SessionContext';
 import { getAgentMessagesEndpoint, getFileUrl, type AgentMessage } from '@/lib/api';
 import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
-import { SubscriptionRequired } from '@/components/auth/SubscriptionRequired';
 import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
