@@ -21,6 +21,11 @@ async function authFetch(url: string, init?: RequestInit): Promise<Response> {
     throw new Error('Session expired');
   }
 
+  if (res.status === 403) {
+    window.location.href = '/subscribe';
+    throw new Error('Active subscription required');
+  }
+
   return res;
 }
 
