@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TopNav from '../components/layout/TopNav.astro';
+import { SettingsPage } from '../components/auth/SettingsPage';
+---
+
+<Layout title="Settings - Solve This OA For Me">
+  <TopNav />
+  <main class="min-h-[calc(100vh-64px)] bg-stone-50 px-4 py-10">
+    <SettingsPage client:only="react" />
+  </main>
+</Layout>
