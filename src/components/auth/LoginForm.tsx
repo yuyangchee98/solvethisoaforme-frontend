@@ -1,16 +1,42 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { login, register, getMe, createCheckoutSession } from '@/lib/auth';
+import { login, register, getMe, getToken, createCheckoutSession } from '@/lib/auth';
+import { Loader2 } from 'lucide-react';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   const params = new URLSearchParams(window.location.search);
   const plan = params.get('plan');
+
+  // If already logged in, skip the form
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setChecking(false);
+      return;
+    }
+    getMe()
+      .then(async (user) => {
+        if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
+          window.location.href = '/agent';
+        } else if (plan) {
+          const url = await createCheckoutSession(plan);
+          window.location.href = url;
+        } else {
+          window.location.href = '/subscribe';
+        }
+      })
+      .catch(() => {
+        // Token invalid/expired, show the form
+        setChecking(false);
+      });
+  }, []);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -90,6 +116,14 @@ export function LoginForm() {
       )}
     </div>
   );
+
+  if (checking) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-sm">
