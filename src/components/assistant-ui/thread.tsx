@@ -10,6 +10,7 @@ import { GrepToolCard } from "@/components/assistant-ui/grep-tool-card";
 import { FetchPatentToolCard } from "@/components/assistant-ui/fetch-patent-tool-card";
 import { ReadToolCard } from "@/components/assistant-ui/read-tool-card";
 import { TaskToolCard } from "@/components/assistant-ui/task-tool-card";
+import { TodoWriteToolCard } from "@/components/assistant-ui/todo-write-tool-card";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { WriteToolCard } from "@/components/assistant-ui/write-tool-card";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
@@ -244,6 +245,7 @@ const AssistantMessage: FC = () => {
                 Grep: GrepToolCard,
                 Read: ReadToolCard,
                 Task: TaskToolCard,
+                TodoWrite: TodoWriteToolCard,
                 Write: WriteToolCard,
               },
               Fallback: ToolFallback,

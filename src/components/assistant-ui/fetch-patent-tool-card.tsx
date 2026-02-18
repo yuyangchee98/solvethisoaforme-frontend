@@ -57,7 +57,7 @@ const FetchPatentToolCardImpl: ToolCallMessagePartComponent = ({
     : hasError
       ? parsed?.error || "Failed to fetch"
       : parsed?.title
-        ? `${parsed.claimCount} claims · ${parsed.filePath}`
+        ? `Full patent · ${parsed.claimCount} claims`
         : "Fetched";
 
   const titleText = isRunning
