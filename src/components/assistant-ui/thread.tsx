@@ -239,7 +239,7 @@ const AssistantMessage: FC = () => {
             tools: {
               by_name: {
                 Bash: BashToolCard,
-                FetchPatent: FetchPatentToolCard,
+                "mcp__patent-tools__FetchPatent": FetchPatentToolCard,
                 Glob: GlobToolCard,
                 Grep: GrepToolCard,
                 Read: ReadToolCard,
