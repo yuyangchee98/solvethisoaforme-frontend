@@ -7,6 +7,7 @@ import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { BashToolCard } from "@/components/assistant-ui/bash-tool-card";
 import { GlobToolCard } from "@/components/assistant-ui/glob-tool-card";
 import { GrepToolCard } from "@/components/assistant-ui/grep-tool-card";
+import { FetchPatentToolCard } from "@/components/assistant-ui/fetch-patent-tool-card";
 import { ReadToolCard } from "@/components/assistant-ui/read-tool-card";
 import { TaskToolCard } from "@/components/assistant-ui/task-tool-card";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
@@ -238,6 +239,7 @@ const AssistantMessage: FC = () => {
             tools: {
               by_name: {
                 Bash: BashToolCard,
+                FetchPatent: FetchPatentToolCard,
                 Glob: GlobToolCard,
                 Grep: GrepToolCard,
                 Read: ReadToolCard,
