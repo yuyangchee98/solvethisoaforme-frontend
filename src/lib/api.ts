@@ -190,3 +190,47 @@ export function getFileUrl(sessionId: string, filePath: string): string {
     : filePath;
   return `${API_BASE}/agents/sessions/${sessionId}/files/${normalizedPath}`;
 }
+
+// Workspace file browser types & functions
+
+export interface WorkspaceFile {
+  name: string;
+  path: string;
+  size: number;
+  is_directory: boolean;
+}
+
+export async function listWorkspaceFiles(
+  sessionId: string,
+  path?: string
+): Promise<WorkspaceFile[]> {
+  const params = path ? `?path=${encodeURIComponent(path)}` : '';
+  const response = await authFetch(
+    `${API_BASE}/agents/sessions/${sessionId}/files${params}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to list files: ${response.status}`);
+  }
+
+  const data = await response.json();
+  return data.files;
+}
+
+export async function getWorkspaceFileContent(
+  sessionId: string,
+  filePath: string
+): Promise<string> {
+  const normalizedPath = filePath.startsWith('/')
+    ? filePath.slice(1)
+    : filePath;
+  const response = await authFetch(
+    `${API_BASE}/agents/sessions/${sessionId}/files/${normalizedPath}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`Failed to get file: ${response.status}`);
+  }
+
+  return response.text();
+}

@@ -227,7 +227,7 @@ export function AgentChat() {
         )}
       </div>
 
-      <PreviewPanel />
+      <PreviewPanel sessionId={currentSession?.id} />
     </div>
   );
 }

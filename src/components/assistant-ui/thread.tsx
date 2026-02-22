@@ -35,11 +35,13 @@ import {
   ChevronRightIcon,
   CopyIcon,
   DownloadIcon,
+  FolderOpenIcon,
   MoreHorizontalIcon,
   PencilIcon,
   RefreshCwIcon,
   SquareIcon,
 } from "lucide-react";
+import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { type FC, useCallback } from "react";
 
 export const Thread: FC = () => {
@@ -181,10 +183,38 @@ const Composer: FC = () => {
   );
 };
 
+const BrowseWorkspaceButton: FC = () => {
+  const { isOpen, mode } = usePreviewPanel();
+  const isActive = isOpen && mode === "browser";
+  return (
+    <button
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted-foreground/15 transition-colors",
+        isActive && "bg-accent text-foreground",
+      )}
+      onClick={() => {
+        const state = usePreviewPanel.getState();
+        if (state.isOpen && state.mode === "browser") {
+          state.close();
+        } else {
+          state.openBrowser();
+        }
+      }}
+      aria-label="Browse workspace files"
+    >
+      <FolderOpenIcon className="size-4" />
+      <span>Files</span>
+    </button>
+  );
+};
+
 const ComposerAction: FC = () => {
   return (
     <div className="aui-composer-action-wrapper relative mx-2 mb-2 flex items-center justify-between">
-      <ComposerAddAttachment />
+      <div className="flex items-center gap-1">
+        <ComposerAddAttachment />
+        <BrowseWorkspaceButton />
+      </div>
       <AuiIf condition={({ thread }) => !thread.isRunning}>
         <ComposerPrimitive.Send asChild>
           <TooltipIconButton

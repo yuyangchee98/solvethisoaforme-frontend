@@ -694,16 +694,13 @@ export const ComposerAttachments: FC = () => {
 export const ComposerAddAttachment: FC = () => {
   return (
     <ComposerPrimitive.AddAttachment asChild>
-      <TooltipIconButton
-        tooltip="Add Attachment"
-        side="bottom"
-        variant="ghost"
-        size="icon"
-        className="aui-composer-add-attachment size-8.5 rounded-full p-1 font-semibold text-xs hover:bg-muted-foreground/15 dark:border-muted-foreground/15 dark:hover:bg-muted-foreground/30"
-        aria-label="Add Attachment"
+      <button
+        className="aui-composer-add-attachment inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted-foreground/15 transition-colors"
+        aria-label="Attach files"
       >
-        <PlusIcon className="aui-attachment-add-icon size-5 stroke-[1.5px]" />
-      </TooltipIconButton>
+        <PlusIcon className="aui-attachment-add-icon size-4 stroke-[1.5px]" />
+        <span>Attach</span>
+      </button>
     </ComposerPrimitive.AddAttachment>
   );
 };
