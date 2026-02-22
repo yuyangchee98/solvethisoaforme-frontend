@@ -18,6 +18,8 @@ import type { UIMessage } from '@ai-sdk/react';
 import { useSession } from './hooks/useSession';
 import { SessionSidebar } from './SessionSidebar';
 import { SessionProvider } from './contexts/SessionContext';
+import { PreviewPanel } from './PreviewPanel';
+import { usePreviewPanel } from '@/lib/previewPanelStore';
 import { getAgentMessagesEndpoint, getFileUrl, type AgentMessage } from '@/lib/api';
 import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
 import { MessageSquarePlus, Loader2 } from 'lucide-react';
@@ -133,6 +135,11 @@ export function AgentChat() {
     clearError,
   } = useSession();
 
+  // Close preview panel on session switch
+  useEffect(() => {
+    usePreviewPanel.getState().close();
+  }, [currentSession?.id]);
+
   const handleCreateSession = async () => {
     await createSession();
   };
@@ -161,7 +168,7 @@ export function AgentChat() {
         onDeleteSession={deleteSession}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {sessionError && (
           <div className="bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700 flex justify-between items-center">
             <span>{sessionError}</span>
@@ -194,6 +201,8 @@ export function AgentChat() {
           </div>
         )}
       </div>
+
+      <PreviewPanel />
     </div>
   );
 }

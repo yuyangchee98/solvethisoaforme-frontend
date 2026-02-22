@@ -3,19 +3,12 @@
 import { memo, useMemo } from "react";
 import {
   CheckIcon,
-  ChevronDownIcon,
+  FileTextIcon,
   LoaderIcon,
-  PencilIcon,
   XCircleIcon,
 } from "lucide-react";
 import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
-import { CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  ToolFallbackRoot,
-  ToolFallbackContent,
-  ToolFallbackResult,
-  ToolFallbackError,
-} from "@/components/assistant-ui/tool-fallback";
+import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { cn } from "@/lib/utils";
 
 interface WriteArgs {
@@ -46,7 +39,6 @@ function getFilename(filePath: string): string {
 
 const WriteToolCardImpl: ToolCallMessagePartComponent = ({
   argsText,
-  result,
   status,
 }) => {
   const args = useMemo(() => parseArgs(argsText), [argsText]);
@@ -54,8 +46,8 @@ const WriteToolCardImpl: ToolCallMessagePartComponent = ({
   const size = formatSize(args.content);
 
   const isRunning = status?.type === "running";
+  const isComplete = status?.type === "complete";
   const isError = status?.type === "incomplete";
-  const isCancelled = isError && status.reason === "cancelled";
 
   const StatusIcon = isRunning
     ? LoaderIcon
@@ -63,56 +55,44 @@ const WriteToolCardImpl: ToolCallMessagePartComponent = ({
       ? XCircleIcon
       : CheckIcon;
 
-  return (
-    <ToolFallbackRoot
-      className={cn(isCancelled && "border-muted-foreground/30 bg-muted/30")}
-    >
-      <CollapsibleTrigger className="aui-tool-fallback-trigger group/trigger flex w-full items-center gap-2 px-4 text-sm transition-colors">
-        <StatusIcon
-          className={cn(
-            "size-4 shrink-0",
-            isCancelled && "text-muted-foreground",
-            isRunning && "animate-spin",
-          )}
-        />
-        <span
-          className={cn(
-            "relative inline-block grow text-left leading-none",
-            isCancelled && "text-muted-foreground line-through",
-          )}
-        >
-          <span>
-            {isRunning ? "Writing" : "Wrote"} <b>{filename}</b>
-            {size && (
-              <span className="text-muted-foreground">
-                {"  \u00B7  "}{size}
-              </span>
-            )}
-          </span>
-          {isRunning && (
-            <span
-              aria-hidden
-              className="aui-tool-fallback-trigger-shimmer shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
-            >
-              Writing <b>{filename}</b>
-            </span>
-          )}
-        </span>
-        <ChevronDownIcon
-          className={cn(
-            "size-4 shrink-0",
-            "transition-transform duration-(--animation-duration) ease-out",
-            "group-data-[state=closed]/trigger:-rotate-90",
-            "group-data-[state=open]/trigger:rotate-0",
-          )}
-        />
-      </CollapsibleTrigger>
+  const canOpen = isComplete && !!args.content;
 
-      <ToolFallbackContent>
-        <ToolFallbackError status={status} />
-        {!isCancelled && <ToolFallbackResult result={result} />}
-      </ToolFallbackContent>
-    </ToolFallbackRoot>
+  const handleClick = () => {
+    if (!canOpen) return;
+    usePreviewPanel.getState().openFile({
+      filePath: args.file_path || filename,
+      filename,
+      content: args.content!,
+    });
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      className={cn(
+        "my-3 flex w-fit items-center gap-3 rounded-lg border px-3 py-2 text-sm transition-colors",
+        canOpen && "cursor-pointer hover:bg-accent/50",
+        isError && "border-destructive/50 bg-destructive/5",
+      )}
+    >
+      <StatusIcon
+        className={cn(
+          "size-4 shrink-0",
+          isRunning && "animate-spin text-muted-foreground",
+          isComplete && "text-green-600 dark:text-green-500",
+          isError && "text-destructive",
+        )}
+      />
+      <span className="font-medium leading-none">
+        {filename}
+      </span>
+      {size && (
+        <span className="text-muted-foreground text-xs">
+          {"\u00B7  "}{size}
+        </span>
+      )}
+      <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
+    </div>
   );
 };
 
