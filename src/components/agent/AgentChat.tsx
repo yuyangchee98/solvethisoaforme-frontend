@@ -47,23 +47,48 @@ function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMes
       }
     }
 
-    // Add tool call parts for assistant messages (before text for proper ordering)
-    if (msg.role === 'assistant' && msg.tool_calls) {
-      for (const toolCall of msg.tool_calls) {
-        parts.push({
-          type: 'dynamic-tool' as const,
-          toolName: toolCall.toolName,
-          toolCallId: toolCall.toolCallId,
-          state: 'output-available' as const,
-          input: toolCall.input,
-          output: toolCall.output,
-        });
-      }
-    }
+    // For assistant messages, use ordered parts if available
+    if (msg.role === 'assistant' && msg.parts?.length) {
+      // Build a lookup for tool calls by ID
+      const toolCallMap = new Map(
+        (msg.tool_calls ?? []).map((tc) => [tc.toolCallId, tc])
+      );
 
-    // Add text part if there's content
-    if (msg.content) {
-      parts.push({ type: 'text' as const, text: msg.content });
+      for (const part of msg.parts) {
+        if (part.type === 'text' && part.text) {
+          parts.push({ type: 'text' as const, text: part.text });
+        } else if (part.type === 'tool-call' && part.toolCallId) {
+          const tc = toolCallMap.get(part.toolCallId);
+          if (tc) {
+            parts.push({
+              type: 'dynamic-tool' as const,
+              toolName: tc.toolName,
+              toolCallId: tc.toolCallId,
+              state: 'output-available' as const,
+              input: tc.input,
+              output: tc.output,
+            });
+          }
+        }
+      }
+    } else {
+      // Fallback for old messages without ordered parts
+      if (msg.role === 'assistant' && msg.tool_calls) {
+        for (const toolCall of msg.tool_calls) {
+          parts.push({
+            type: 'dynamic-tool' as const,
+            toolName: toolCall.toolName,
+            toolCallId: toolCall.toolCallId,
+            state: 'output-available' as const,
+            input: toolCall.input,
+            output: toolCall.output,
+          });
+        }
+      }
+
+      if (msg.content) {
+        parts.push({ type: 'text' as const, text: msg.content });
+      }
     }
 
     return {

@@ -107,11 +107,18 @@ export interface ToolCallData {
   output: string | null;
 }
 
+export interface MessagePart {
+  type: 'text' | 'tool-call';
+  text?: string;
+  toolCallId?: string;
+}
+
 export interface AgentMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   tool_calls?: ToolCallData[] | null;
+  parts?: MessagePart[] | null;
   created_at: string;
   attachments?: {
     id: string;

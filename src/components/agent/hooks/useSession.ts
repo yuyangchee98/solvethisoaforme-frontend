@@ -20,6 +20,21 @@ export interface UseSessionReturn {
   clearError: () => void;
 }
 
+function updateUrlSession(sessionId: string | null) {
+  const url = new URL(window.location.href);
+  if (sessionId) {
+    url.searchParams.set('session', sessionId);
+  } else {
+    url.searchParams.delete('session');
+  }
+  window.history.replaceState({}, '', url.toString());
+}
+
+function getUrlSessionId(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('session');
+}
+
 export function useSession(): UseSessionReturn {
   const [sessions, setSessions] = useState<AgentSession[]>([]);
   const [currentSession, setCurrentSession] = useState<AgentSession | null>(null);
@@ -60,6 +75,7 @@ export function useSession(): UseSessionReturn {
       setSessions((prev) => [newSession, ...prev]);
       setCurrentSession(newSession);
       setMessages([]);
+      updateUrlSession(newSession.id);
       return newSession;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create session');
@@ -84,6 +100,7 @@ export function useSession(): UseSessionReturn {
       const result = await getAgentMessages(sessionId);
       setMessages(result.messages);
       setCurrentSession(session);
+      updateUrlSession(sessionId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load session');
     } finally {
@@ -102,6 +119,7 @@ export function useSession(): UseSessionReturn {
       if (currentSession?.id === sessionId) {
         setCurrentSession(null);
         setMessages([]);
+        updateUrlSession(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete session');
@@ -110,9 +128,34 @@ export function useSession(): UseSessionReturn {
     }
   }, [currentSession]);
 
-  // Load sessions on mount
+  // Load sessions on mount, then restore session from URL if present
   useEffect(() => {
-    refreshSessions();
+    refreshSessions().then(() => {
+      const urlSessionId = getUrlSessionId();
+      if (urlSessionId) {
+        // selectSession depends on sessions state, so we need to
+        // check directly via the API instead of waiting for state
+        getAgentMessages(urlSessionId)
+          .then((result) => {
+            setMessages(result.messages);
+            // Find the session from the freshly-loaded list
+            setSessions((prev) => {
+              const session = prev.find((s) => s.id === urlSessionId);
+              if (session) {
+                setCurrentSession(session);
+              } else {
+                // Session from URL no longer exists, clean up
+                updateUrlSession(null);
+              }
+              return prev;
+            });
+          })
+          .catch(() => {
+            // Invalid session ID in URL, clean up
+            updateUrlSession(null);
+          });
+      }
+    });
   }, [refreshSessions]);
 
   return {

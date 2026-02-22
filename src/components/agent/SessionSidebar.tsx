@@ -20,13 +20,11 @@ function formatDate(dateString: string): string {
   );
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return 'Today, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } else if (diffDays === 1) {
-    return 'Yesterday';
-  } else if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: 'short' });
+    return 'Yesterday, ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   } else {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 }
 
@@ -70,10 +68,7 @@ export function SessionSidebar({
                 >
                   <MessageSquare className="h-4 w-4 text-stone-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-stone-900 truncate">
-                      Session
-                    </div>
-                    <div className="text-xs text-stone-500">
+                    <div className="text-sm text-stone-700 truncate">
                       {formatDate(session.created_at)}
                     </div>
                   </div>
