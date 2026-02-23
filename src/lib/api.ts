@@ -191,6 +191,10 @@ export function getFileUrl(sessionId: string, filePath: string): string {
   return `${API_BASE}/agents/sessions/${sessionId}/files/${normalizedPath}`;
 }
 
+export function getDocxDownloadUrl(sessionId: string, filePath: string): string {
+  return `${getFileUrl(sessionId, filePath)}?format=docx`;
+}
+
 // Workspace file browser types & functions
 
 export interface WorkspaceFile {

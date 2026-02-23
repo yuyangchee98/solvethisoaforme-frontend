@@ -2,9 +2,11 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { X, Download, FileTextIcon, ArrowLeft, FolderOpen } from "lucide-react";
+import { X, Download, FileDown, FileTextIcon, ArrowLeft, FolderOpen } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { getDocxDownloadUrl } from "@/lib/api";
+import { authHeaders } from "@/lib/auth";
 import { FileBrowser } from "./FileBrowser";
 import { cn } from "@/lib/utils";
 
@@ -203,12 +205,28 @@ function FilePreviewContent({
   close,
   backToBrowser,
 }: {
-  file: { filename: string; content: string };
+  file: { filePath: string; filename: string; content: string };
   sessionId?: string;
   close: () => void;
   backToBrowser: () => void;
 }) {
   const ext = getExtension(file.filename);
+  const isMd = isMarkdownFile(file.filename);
+
+  async function handleDocxDownload() {
+    if (!sessionId || !file.filePath) return;
+    const url = getDocxDownloadUrl(sessionId, file.filePath);
+    const res = await fetch(url, { headers: authHeaders() });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = file.filename.replace(/\.mdx?$/, ".docx");
+    a.click();
+    URL.revokeObjectURL(blobUrl);
+  }
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -229,6 +247,15 @@ function FilePreviewContent({
           <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-muted-foreground">
             {ext}
           </span>
+        )}
+        {isMd && sessionId && (
+          <button
+            onClick={handleDocxDownload}
+            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            title="Download as Word document"
+          >
+            <FileDown className="size-4" />
+          </button>
         )}
         <button
           onClick={() => handleDownload(file.filename, file.content)}
