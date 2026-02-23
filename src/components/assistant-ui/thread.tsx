@@ -42,7 +42,46 @@ import {
   SquareIcon,
 } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
-import { type FC, useCallback } from "react";
+import { type FC, useCallback, useEffect } from "react";
+
+const GeneratingWarning: FC = () => {
+  const threadRuntime = useThreadRuntime();
+
+  useEffect(() => {
+    return threadRuntime.unstable_on("run-start", () => {
+      const handler = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+      };
+      window.addEventListener("beforeunload", handler);
+
+      const unsub = threadRuntime.unstable_on("run-end", () => {
+        window.removeEventListener("beforeunload", handler);
+        unsub();
+      });
+
+      return () => {
+        window.removeEventListener("beforeunload", handler);
+        unsub();
+      };
+    });
+  }, [threadRuntime]);
+
+  return (
+    <AuiIf condition={({ thread }) => thread.isRunning}>
+      <div className="sticky top-0 z-10 mx-auto w-full max-w-(--thread-max-width) px-2 pb-2">
+        <div className="flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 shadow-sm dark:border-amber-700 dark:bg-amber-950/50 dark:text-amber-200">
+          <span className="shrink-0 text-base" role="img" aria-label="warning">
+            ⚠
+          </span>
+          <span>
+            Response in progress — refreshing or navigating away will lose the
+            current response.
+          </span>
+        </div>
+      </div>
+    </AuiIf>
+  );
+};
 
 export const Thread: FC = () => {
   return (
@@ -56,6 +95,8 @@ export const Thread: FC = () => {
         turnAnchor="top"
         className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-2 md:px-4 pt-4"
       >
+        <GeneratingWarning />
+
         <AuiIf condition={({ thread }) => thread.isEmpty}>
           <ThreadWelcome />
         </AuiIf>
