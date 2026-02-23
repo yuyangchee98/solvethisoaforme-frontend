@@ -215,7 +215,9 @@ function FilePreviewContent({
 
   async function handleDocxDownload() {
     if (!sessionId || !file.filePath) return;
-    const url = getDocxDownloadUrl(sessionId, file.filePath);
+    const pathParts = file.filePath.split(`/sessions/${sessionId}/`);
+    const relativePath = pathParts.length > 1 ? pathParts[pathParts.length - 1] : file.filePath;
+    const url = getDocxDownloadUrl(sessionId, relativePath);
     const res = await fetch(url, { headers: authHeaders() });
     if (!res.ok) return;
     const blob = await res.blob();
