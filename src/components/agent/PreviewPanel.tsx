@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { X, Download, FileTextIcon, ArrowLeft, FolderOpen } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
+import { useIsMobile } from "@/lib/useIsMobile";
 import { FileBrowser } from "./FileBrowser";
 import { cn } from "@/lib/utils";
 
@@ -175,9 +176,130 @@ const markdownComponents = {
   },
 };
 
+function BrowserContent({ sessionId, close }: { sessionId: string; close: () => void }) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        <FolderOpen className="size-4 shrink-0 text-muted-foreground" />
+        <span className="flex-1 text-sm font-medium">Workspace Files</span>
+        <button
+          onClick={close}
+          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          title="Close panel"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+      <div className="flex-1 overflow-auto">
+        <FileBrowser sessionId={sessionId} />
+      </div>
+    </div>
+  );
+}
+
+function FilePreviewContent({
+  file,
+  sessionId,
+  close,
+  backToBrowser,
+}: {
+  file: { filename: string; content: string };
+  sessionId?: string;
+  close: () => void;
+  backToBrowser: () => void;
+}) {
+  const ext = getExtension(file.filename);
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+        {sessionId && (
+          <button
+            onClick={backToBrowser}
+            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            title="Back to files"
+          >
+            <ArrowLeft className="size-4" />
+          </button>
+        )}
+        <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
+        <span className="flex-1 truncate text-sm font-medium">
+          {file.filename}
+        </span>
+        {ext && (
+          <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-muted-foreground">
+            {ext}
+          </span>
+        )}
+        <button
+          onClick={() => handleDownload(file.filename, file.content)}
+          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          title="Download file"
+        >
+          <Download className="size-4" />
+        </button>
+        <button
+          onClick={close}
+          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          title="Close panel"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+      <div className="flex-1 overflow-auto p-6 text-sm">
+        {isMarkdownFile(file.filename) ? (
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={markdownComponents}
+          >
+            {file.content}
+          </ReactMarkdown>
+        ) : (
+          <pre className="whitespace-pre-wrap break-all font-mono text-sm">
+            {file.content}
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function PreviewPanel({ sessionId }: { sessionId?: string }) {
   const { isOpen, mode, file, close, backToBrowser } = usePreviewPanel();
-  const ext = file ? getExtension(file.filename) : "";
+  const isMobile = useIsMobile();
+
+  const content = isOpen ? (
+    mode === 'browser' && sessionId ? (
+      <BrowserContent sessionId={sessionId} close={close} />
+    ) : mode === 'preview' && file ? (
+      <FilePreviewContent
+        file={file}
+        sessionId={sessionId}
+        close={close}
+        backToBrowser={backToBrowser}
+      />
+    ) : null
+  ) : null;
+
+  if (isMobile) {
+    return (
+      <>
+        <div
+          className={cn(
+            "fixed inset-y-0 right-0 z-50 w-full bg-background transform transition-transform duration-300 ease-in-out",
+            isOpen && content ? "translate-x-0" : "translate-x-full",
+          )}
+        >
+          {content}
+        </div>
+        {isOpen && content && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50"
+            onClick={close}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div
@@ -186,83 +308,7 @@ export function PreviewPanel({ sessionId }: { sessionId?: string }) {
         isOpen ? "w-[32rem]" : "w-0 overflow-hidden border-l-0",
       )}
     >
-      {isOpen && mode === 'browser' && sessionId && (
-        <div className="flex h-full w-[32rem] flex-col">
-          {/* Browser header */}
-          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-            <FolderOpen className="size-4 shrink-0 text-muted-foreground" />
-            <span className="flex-1 text-sm font-medium">Workspace Files</span>
-            <button
-              onClick={close}
-              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              title="Close panel"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-
-          {/* File browser */}
-          <div className="flex-1 overflow-auto">
-            <FileBrowser sessionId={sessionId} />
-          </div>
-        </div>
-      )}
-
-      {isOpen && mode === 'preview' && file && (
-        <div className="flex h-full w-[32rem] flex-col">
-          {/* Preview header */}
-          <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-            {sessionId && (
-              <button
-                onClick={backToBrowser}
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-                title="Back to files"
-              >
-                <ArrowLeft className="size-4" />
-              </button>
-            )}
-            <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
-            <span className="flex-1 truncate text-sm font-medium">
-              {file.filename}
-            </span>
-            {ext && (
-              <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-muted-foreground">
-                {ext}
-              </span>
-            )}
-            <button
-              onClick={() => handleDownload(file.filename, file.content)}
-              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              title="Download file"
-            >
-              <Download className="size-4" />
-            </button>
-            <button
-              onClick={close}
-              className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-              title="Close panel"
-            >
-              <X className="size-4" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-auto p-6 text-sm">
-            {isMarkdownFile(file.filename) ? (
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={markdownComponents}
-              >
-                {file.content}
-              </ReactMarkdown>
-            ) : (
-              <pre className="whitespace-pre-wrap break-all font-mono text-sm">
-                {file.content}
-              </pre>
-            )}
-          </div>
-        </div>
-      )}
+      {content && <div className="w-[32rem] h-full">{content}</div>}
     </div>
   );
 }

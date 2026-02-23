@@ -20,10 +20,13 @@ import { SessionSidebar } from './SessionSidebar';
 import { SessionProvider } from './contexts/SessionContext';
 import { PreviewPanel } from './PreviewPanel';
 import { usePreviewPanel } from '@/lib/previewPanelStore';
+import { useMobileSidebar } from '@/lib/mobileSidebarStore';
+import { useIsMobile } from '@/lib/useIsMobile';
 import { getAgentMessagesEndpoint, getFileUrl, type AgentMessage } from '@/lib/api';
 import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
 import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMessage[] {
   return messages.map((msg) => {
@@ -160,6 +163,10 @@ export function AgentChat() {
     clearError,
   } = useSession();
 
+  const isMobile = useIsMobile();
+  const sidebarOpen = useMobileSidebar((s) => s.isOpen);
+  const closeSidebar = useMobileSidebar((s) => s.close);
+
   // Close preview panel on session switch
   useEffect(() => {
     usePreviewPanel.getState().close();
@@ -167,6 +174,11 @@ export function AgentChat() {
 
   const handleCreateSession = async () => {
     await createSession();
+  };
+
+  const handleSelectSession = (sessionId: string) => {
+    selectSession(sessionId);
+    closeSidebar();
   };
 
   if (authState === 'loading') {
@@ -184,14 +196,44 @@ export function AgentChat() {
 
   return (
     <div className="flex h-full">
-      <SessionSidebar
-        sessions={sessions}
-        currentSessionId={currentSession?.id || null}
-        isLoading={sessionLoading}
-        onCreateSession={handleCreateSession}
-        onSelectSession={selectSession}
-        onDeleteSession={deleteSession}
-      />
+      {/* Desktop sidebar */}
+      <div className="hidden md:block">
+        <SessionSidebar
+          sessions={sessions}
+          currentSessionId={currentSession?.id || null}
+          isLoading={sessionLoading}
+          onCreateSession={handleCreateSession}
+          onSelectSession={selectSession}
+          onDeleteSession={deleteSession}
+        />
+      </div>
+
+      {/* Mobile sidebar drawer */}
+      {isMobile && (
+        <>
+          <div
+            className={cn(
+              "fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out",
+              sidebarOpen ? "translate-x-0" : "-translate-x-full",
+            )}
+          >
+            <SessionSidebar
+              sessions={sessions}
+              currentSessionId={currentSession?.id || null}
+              isLoading={sessionLoading}
+              onCreateSession={handleCreateSession}
+              onSelectSession={handleSelectSession}
+              onDeleteSession={deleteSession}
+            />
+          </div>
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black/50"
+              onClick={closeSidebar}
+            />
+          )}
+        </>
+      )}
 
       <div className="flex-1 flex flex-col min-w-0">
         {sessionError && (
