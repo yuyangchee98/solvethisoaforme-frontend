@@ -69,26 +69,35 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = ({
     return JSON.stringify(result, null, 2);
   }, [result]);
 
+  // Extract the workspace-relative path from an absolute file path.
+  // The Read tool uses absolute paths like /Users/.../data/sessions/{id}/input/file.pdf
+  // but cache keys and server URLs need the relative portion (e.g. "input/file.pdf").
+  const workspacePath = useMemo(() => {
+    if (!filePath) return "";
+    // Find the workspace-relative segment by looking for known workspace dirs
+    for (const dir of ["input/", "rejections/", "prior_art_working/"]) {
+      const idx = filePath.indexOf(dir);
+      if (idx !== -1) return filePath.slice(idx);
+    }
+    // Fallback: use just the filename
+    return filePath;
+  }, [filePath]);
+
   // For PDFs, try cache first, then fall back to server URL
   const pdfSrc = useMemo(() => {
-    if (!isPDF || !filePath) return null;
-
-    // Normalize path for cache lookup (remove leading slash)
-    const normalizedPath = filePath.startsWith("/")
-      ? filePath.slice(1)
-      : filePath;
+    if (!isPDF || !workspacePath) return null;
 
     // Try cache first (for user-uploaded files)
-    const cachedUrl = getCachedUrl(normalizedPath);
+    const cachedUrl = getCachedUrl(workspacePath);
     if (cachedUrl) return cachedUrl;
 
     // Fall back to server URL
     if (sessionId) {
-      return getFileUrl(sessionId, filePath);
+      return getFileUrl(sessionId, workspacePath);
     }
 
     return null;
-  }, [isPDF, filePath, sessionId]);
+  }, [isPDF, workspacePath, sessionId]);
 
   const fileSize = resultText ? formatFileSize(new Blob([resultText]).size) : "";
 
