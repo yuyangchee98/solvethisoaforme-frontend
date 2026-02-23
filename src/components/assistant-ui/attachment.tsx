@@ -28,6 +28,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { TooltipIconButton } from "@/components/assistant-ui/tooltip-icon-button";
 import { cn } from "@/lib/utils";
 import { cacheFile, getCachedUrl } from "@/lib/fileCache";
+import { authHeaders } from "@/lib/auth";
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -143,7 +144,11 @@ const usePdfFile = () => {
 
   // Priority: File object > data URL from content > cached URL
   const cachedUrl = isPdf && name ? getCachedUrl(`input/${name}`) : undefined;
-  const pdfSource = file || dataUrl || cachedUrl;
+
+  // Server URLs need auth headers for react-pdf to fetch them
+  const pdfSource = file
+    || (dataUrl && dataUrl.startsWith("http") ? { url: dataUrl, httpHeaders: authHeaders() } : dataUrl)
+    || cachedUrl;
 
   return { isPdf, src: fileSrc || dataUrl || cachedUrl, file, pdfSource };
 };
