@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import {
   CheckIcon,
   FileTextIcon,
@@ -54,6 +54,17 @@ const WriteToolCardImpl: ToolCallMessagePartComponent = ({
     : isError
       ? XCircleIcon
       : CheckIcon;
+
+  // Auto-open strategy.md in the preview panel when writing completes
+  useEffect(() => {
+    if (isComplete && filename === "strategy.md" && args.content) {
+      usePreviewPanel.getState().openFile({
+        filePath: args.file_path || filename,
+        filename,
+        content: args.content,
+      });
+    }
+  }, [isComplete, filename, args.file_path, args.content]);
 
   const canOpen = isComplete && !!args.content;
 
