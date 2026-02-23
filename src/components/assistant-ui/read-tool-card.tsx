@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { getCachedUrl } from "@/lib/fileCache";
 import { getFileUrl } from "@/lib/api";
+import { authHeaders } from "@/lib/auth";
 import { useSessionId } from "@/components/agent/contexts/SessionContext";
 import { PDFViewer } from "./pdf-viewer";
 
@@ -83,17 +84,20 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = ({
     return filePath;
   }, [filePath]);
 
-  // For PDFs, try cache first, then fall back to server URL
+  // For PDFs, try cache first, then fall back to server URL (with auth headers)
   const pdfSrc = useMemo(() => {
     if (!isPDF || !workspacePath) return null;
 
-    // Try cache first (for user-uploaded files)
+    // Try cache first (for user-uploaded files) — blob URLs need no auth
     const cachedUrl = getCachedUrl(workspacePath);
     if (cachedUrl) return cachedUrl;
 
-    // Fall back to server URL
+    // Fall back to server URL with auth headers for react-pdf
     if (sessionId) {
-      return getFileUrl(sessionId, workspacePath);
+      return {
+        url: getFileUrl(sessionId, workspacePath),
+        httpHeaders: authHeaders(),
+      };
     }
 
     return null;
@@ -157,7 +161,7 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = ({
   return (
     <Dialog>
       <DialogTrigger asChild>{card}</DialogTrigger>
-      <DialogContent className="flex max-h-[80vh] max-w-3xl flex-col">
+      <DialogContent className="flex max-h-[90vh] w-[90vw] max-w-6xl flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <FileDisplayIcon className="size-5" />
