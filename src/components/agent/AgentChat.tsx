@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useCallback, useMemo, type Dispatch, type SetStateAction } from 'react';
 import {
   AssistantRuntimeProvider,
   CompositeAttachmentAdapter,
   SimpleImageAttachmentAdapter,
+  useThreadRuntime,
 } from '@assistant-ui/react';
 import {
   useChatRuntime,
@@ -28,8 +29,24 @@ import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMessage[] {
-  return messages.map((msg) => {
+// ---- Compaction context ----
+// Set of message IDs that have a compaction marker associated with them.
+// A compaction notice renders above these messages.
+export const CompactionContext = createContext<Set<string>>(new Set());
+
+/**
+ * Convert backend messages to assistant-ui UIMessages.
+ * Also returns a set of message IDs that have a compaction marker
+ * (i.e. a compaction notice should render above that message).
+ */
+function convertToUIMessages(
+  messages: AgentMessage[],
+  sessionId: string,
+): { uiMessages: UIMessage[]; compactionIds: Set<string> } {
+  const compactionIds = new Set<string>();
+  const uiMessages: UIMessage[] = [];
+
+  for (const msg of messages) {
     const parts: UIMessage['parts'] = [];
 
     // Add file parts for user messages with attachments (before text for proper ordering)
@@ -51,6 +68,7 @@ function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMes
     }
 
     // For assistant messages, use ordered parts if available
+    let hasCompaction = false;
     if (msg.role === 'assistant' && msg.parts?.length) {
       // Build a lookup for tool calls by ID
       const toolCallMap = new Map(
@@ -72,6 +90,8 @@ function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMes
               output: tc.output,
             });
           }
+        } else if (part.type === 'compaction') {
+          hasCompaction = true;
         }
       }
     } else {
@@ -94,23 +114,120 @@ function convertToUIMessages(messages: AgentMessage[], sessionId: string): UIMes
       }
     }
 
-    return {
+    uiMessages.push({
       id: msg.id,
       role: msg.role as 'user' | 'assistant',
       parts,
-    };
-  });
+    });
+
+    if (hasCompaction) {
+      compactionIds.add(msg.id);
+    }
+  }
+
+  return { uiMessages, compactionIds };
+}
+
+/**
+ * Create a fetch wrapper that intercepts SSE compaction events from the
+ * response stream and calls `onCompaction` while still passing the full
+ * stream through to the transport.
+ */
+function createCompactionFetch(onCompaction: () => void): typeof globalThis.fetch {
+  return async (input, init) => {
+    const response = await fetch(input, init);
+
+    // Only intercept SSE streams
+    const ct = response.headers.get('content-type') ?? '';
+    if (!ct.includes('text/event-stream') || !response.body) {
+      return response;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    const transformed = new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        const { done, value } = await reader.read();
+        if (done) {
+          // Process any remaining buffer line
+          if (buffer.startsWith('data: ') && buffer.includes('"compaction"')) {
+            try {
+              const data = JSON.parse(buffer.slice(6));
+              if (data.type === 'compaction') onCompaction();
+            } catch { /* ignore */ }
+          }
+          controller.close();
+          return;
+        }
+        // Scan each chunk for compaction events
+        buffer += decoder.decode(value, { stream: true });
+        // Check complete lines for compaction events
+        const lines = buffer.split('\n');
+        // Keep the last (potentially incomplete) line in the buffer
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (line.startsWith('data: ') && line.includes('"compaction"')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.type === 'compaction') {
+                onCompaction();
+              }
+            } catch {
+              // Not valid JSON, ignore
+            }
+          }
+        }
+        // Pass through the original bytes unchanged
+        controller.enqueue(value);
+      },
+      cancel() {
+        reader.cancel();
+      },
+    });
+
+    return new Response(transformed, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    });
+  };
 }
 
 function ChatThread({ sessionId, initialMessages }: { sessionId: string; initialMessages: AgentMessage[] }) {
   const endpoint = getAgentMessagesEndpoint(sessionId);
+  const { uiMessages, compactionIds: initialCompaction } = useMemo(
+    () => convertToUIMessages(initialMessages, sessionId),
+    [initialMessages, sessionId],
+  );
+
+  const [compactionIds, setCompactionIds] = useState<Set<string>>(initialCompaction);
+
+  // For live streaming, we use a sentinel ID since we don't know the
+  // assistant-ui generated message ID ahead of time. We use a special
+  // marker "__streaming__" that the Thread component resolves to the
+  // last assistant message.
+  const handleCompaction = useCallback(() => {
+    setCompactionIds((prev) => {
+      const next = new Set(prev);
+      next.add('__streaming__');
+      return next;
+    });
+  }, []);
+
+  const compactionFetch = useMemo(
+    () => createCompactionFetch(handleCompaction),
+    [handleCompaction],
+  );
 
   const runtime = useChatRuntime({
     id: sessionId,
-    messages: convertToUIMessages(initialMessages, sessionId),
+    messages: uiMessages,
     transport: new AssistantChatTransport({
       api: endpoint,
       headers: authHeaders(),
+      fetch: compactionFetch,
     }),
     adapters: {
       attachments: new CompositeAttachmentAdapter([
@@ -123,10 +240,48 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
   });
 
   return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      <Thread />
-    </AssistantRuntimeProvider>
+    <CompactionContext.Provider value={compactionIds}>
+      <AssistantRuntimeProvider runtime={runtime}>
+        <CompactionStreamingCleanup setCompactionIds={setCompactionIds} />
+        <Thread />
+      </AssistantRuntimeProvider>
+    </CompactionContext.Provider>
   );
+}
+
+/**
+ * Resolves the "__streaming__" compaction sentinel to the actual last
+ * assistant message ID when a run completes, so the marker persists
+ * correctly and doesn't affect future messages.
+ */
+function CompactionStreamingCleanup({
+  setCompactionIds,
+}: {
+  setCompactionIds: Dispatch<SetStateAction<Set<string>>>;
+}) {
+  const threadRuntime = useThreadRuntime();
+
+  useEffect(() => {
+    return threadRuntime.unstable_on("runEnd", () => {
+      setCompactionIds((prev) => {
+        if (!prev.has("__streaming__")) return prev;
+        const next = new Set(prev);
+        next.delete("__streaming__");
+        // Resolve to the last message's ID
+        const state = threadRuntime.getState();
+        const messages = state.messages;
+        if (messages.length > 0) {
+          const lastMsg = messages[messages.length - 1];
+          if (lastMsg.role === "assistant") {
+            next.add(lastMsg.id);
+          }
+        }
+        return next;
+      });
+    });
+  }, [threadRuntime, setCompactionIds]);
+
+  return null;
 }
 
 export function AgentChat() {

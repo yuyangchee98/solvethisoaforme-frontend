@@ -108,9 +108,10 @@ export interface ToolCallData {
 }
 
 export interface MessagePart {
-  type: 'text' | 'tool-call';
+  type: 'text' | 'tool-call' | 'compaction';
   text?: string;
   toolCallId?: string;
+  trigger?: string;
 }
 
 export interface AgentMessage {

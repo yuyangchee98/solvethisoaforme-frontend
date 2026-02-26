@@ -25,6 +25,7 @@ import {
   ErrorPrimitive,
   MessagePrimitive,
   ThreadPrimitive,
+  useMessage,
   useThreadRuntime,
 } from "@assistant-ui/react";
 import {
@@ -42,7 +43,8 @@ import {
   SquareIcon,
 } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
-import { type FC, useCallback, useEffect } from "react";
+import { CompactionContext } from "@/components/agent/AgentChat";
+import { type FC, useCallback, useContext, useEffect } from "react";
 
 const GeneratingWarning: FC = () => {
   const threadRuntime = useThreadRuntime();
@@ -298,12 +300,38 @@ const MessageError: FC = () => {
   );
 };
 
+const CompactionNotice: FC = () => (
+  <div className="mx-auto flex w-full max-w-(--thread-max-width) items-center gap-3 px-4 py-3">
+    <div className="h-px flex-1 bg-border" />
+    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <RefreshCwIcon className="h-3 w-3" />
+      Context compacted
+    </span>
+    <div className="h-px flex-1 bg-border" />
+  </div>
+);
+
+const MaybeCompactionNotice: FC = () => {
+  const compactionIds = useContext(CompactionContext);
+  const messageId = useMessage((s) => s.id);
+  const isLast = useMessage((s) => s.isLast);
+
+  // Show if this message ID is explicitly marked
+  const explicit = compactionIds.has(messageId);
+  // Or if we have a streaming marker and this is the last message
+  const streaming = compactionIds.has("__streaming__") && isLast;
+
+  if (!explicit && !streaming) return null;
+  return <CompactionNotice />;
+};
+
 const AssistantMessage: FC = () => {
   return (
     <MessagePrimitive.Root
       className="aui-assistant-message-root fade-in slide-in-from-bottom-1 relative mx-auto w-full max-w-(--thread-max-width) animate-in py-3 duration-150"
       data-role="assistant"
     >
+      <MaybeCompactionNotice />
       <div className="aui-assistant-message-content wrap-break-word px-2 text-foreground leading-relaxed">
         <MessagePrimitive.Parts
           components={{
