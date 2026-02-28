@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkUnderline from "remark-underline";
 import { X, Download, FileDown, FileTextIcon, ArrowLeft, FolderOpen } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { useIsMobile } from "@/lib/useIsMobile";
@@ -277,7 +278,7 @@ function FilePreviewContent({
       <div className="flex-1 overflow-auto p-6 text-sm">
         {isMarkdownFile(file.filename) ? (
           <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
+            remarkPlugins={[remarkGfm, remarkUnderline]}
             components={markdownComponents}
           >
             {file.content}
