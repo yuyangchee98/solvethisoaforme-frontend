@@ -166,7 +166,7 @@ const ThreadWelcome: FC = () => {
             What office action can I help you with?
           </h1>
           <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in text-muted-foreground text-base delay-75 duration-200">
-            Upload your office action, specification, claims, or prior art — I'll help you build a response strategy.
+            Upload your office action and supporting documents. This agent reads everything, analyzes each rejection against your claims and specification, and produces a response strategy you can act on.
           </p>
         </div>
       </div>
