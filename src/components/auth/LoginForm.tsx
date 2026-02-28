@@ -24,7 +24,7 @@ export function LoginForm() {
     getMe()
       .then(async (user) => {
         if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
-          window.location.href = '/agent';
+          window.location.href = '/oa-response';
         } else if (plan) {
           const url = await createCheckoutSession(plan);
           window.location.href = url;
@@ -46,7 +46,7 @@ export function LoginForm() {
       await login(email, password);
       const user = await getMe();
       if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
-        window.location.href = '/agent';
+        window.location.href = '/oa-response';
       } else if (plan) {
         const url = await createCheckoutSession(plan);
         window.location.href = url;

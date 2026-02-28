@@ -43,7 +43,7 @@ import {
   SquareIcon,
 } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
-import { CompactionContext } from "@/components/agent/AgentChat";
+import { CompactionContext } from "@/components/oa-response/OAResponseChat";
 import { type FC, useCallback, useContext, useEffect } from "react";
 
 const GeneratingWarning: FC = () => {

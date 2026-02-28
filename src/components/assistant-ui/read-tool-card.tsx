@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { getCachedUrl } from "@/lib/fileCache";
 import { getFileUrl } from "@/lib/api";
 import { authHeaders } from "@/lib/auth";
-import { useSessionId } from "@/components/agent/contexts/SessionContext";
+import { useSessionId } from "@/components/oa-response/contexts/SessionContext";
 import { PDFViewer } from "./pdf-viewer";
 
 function formatFileSize(bytes: number): string {

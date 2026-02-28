@@ -1,12 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TopNav from '../components/layout/TopNav.astro';
-import { AgentChat } from '../components/agent/AgentChat';
+import { OAResponseChat } from '../components/oa-response/OAResponseChat';
 ---
 
-<Layout title="Agent - Solve This OA For Me">
+<Layout title="OA Response AI Agent - Solve This OA For Me">
   <TopNav />
   <main class="h-[calc(100vh-64px)] overflow-hidden bg-stone-50">
-    <AgentChat client:only="react" />
+    <OAResponseChat client:only="react" />
   </main>
 </Layout>

@@ -1,10 +1,10 @@
 import { Plus, Trash2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { AgentSession } from '@/lib/api';
+import type { OAResponseSession } from '@/lib/api';
 
 interface SessionSidebarProps {
-  sessions: AgentSession[];
+  sessions: OAResponseSession[];
   currentSessionId: string | null;
   isLoading: boolean;
   onCreateSession: () => void;

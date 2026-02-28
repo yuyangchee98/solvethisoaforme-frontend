@@ -91,8 +91,8 @@ export async function checkHealth(): Promise<boolean> {
   }
 }
 
-// Agent Session Types
-export interface AgentSession {
+// OA Response Session Types
+export interface OAResponseSession {
   id: string;
   status: 'active' | 'completed' | 'archived';
   created_at: string;
@@ -114,7 +114,7 @@ export interface MessagePart {
   trigger?: string;
 }
 
-export interface AgentMessage {
+export interface OAResponseMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
@@ -131,13 +131,13 @@ export interface AgentMessage {
   }[];
 }
 
-// Agent Session API Functions
-export async function createAgentSession(): Promise<{
+// OA Response Session API Functions
+export async function createOAResponseSession(): Promise<{
   id: string;
   workspace_path: string;
   created_at: string;
 }> {
-  const response = await authFetch(`${API_BASE}/agents/sessions`, {
+  const response = await authFetch(`${API_BASE}/oa-response/sessions`, {
     method: 'POST',
   });
 
@@ -148,8 +148,8 @@ export async function createAgentSession(): Promise<{
   return response.json();
 }
 
-export async function listAgentSessions(): Promise<{ sessions: AgentSession[] }> {
-  const response = await authFetch(`${API_BASE}/agents/sessions`);
+export async function listOAResponseSessions(): Promise<{ sessions: OAResponseSession[] }> {
+  const response = await authFetch(`${API_BASE}/oa-response/sessions`);
 
   if (!response.ok) {
     throw new Error(`Failed to list sessions: ${response.status}`);
@@ -158,8 +158,8 @@ export async function listAgentSessions(): Promise<{ sessions: AgentSession[] }>
   return response.json();
 }
 
-export async function deleteAgentSession(sessionId: string): Promise<void> {
-  const response = await authFetch(`${API_BASE}/agents/sessions/${sessionId}`, {
+export async function deleteOAResponseSession(sessionId: string): Promise<void> {
+  const response = await authFetch(`${API_BASE}/oa-response/sessions/${sessionId}`, {
     method: 'DELETE',
   });
 
@@ -168,10 +168,10 @@ export async function deleteAgentSession(sessionId: string): Promise<void> {
   }
 }
 
-export async function getAgentMessages(
+export async function getOAResponseMessages(
   sessionId: string
-): Promise<{ messages: AgentMessage[] }> {
-  const response = await authFetch(`${API_BASE}/agents/sessions/${sessionId}/messages`);
+): Promise<{ messages: OAResponseMessage[] }> {
+  const response = await authFetch(`${API_BASE}/oa-response/sessions/${sessionId}/messages`);
 
   if (!response.ok) {
     throw new Error(`Failed to get messages: ${response.status}`);
@@ -180,8 +180,8 @@ export async function getAgentMessages(
   return response.json();
 }
 
-export function getAgentMessagesEndpoint(sessionId: string): string {
-  return `${API_BASE}/agents/sessions/${sessionId}/messages`;
+export function getOAResponseMessagesEndpoint(sessionId: string): string {
+  return `${API_BASE}/oa-response/sessions/${sessionId}/messages`;
 }
 
 export function getFileUrl(sessionId: string, filePath: string): string {
@@ -189,7 +189,7 @@ export function getFileUrl(sessionId: string, filePath: string): string {
   const normalizedPath = filePath.startsWith("/")
     ? filePath.slice(1)
     : filePath;
-  return `${API_BASE}/agents/sessions/${sessionId}/files/${normalizedPath}`;
+  return `${API_BASE}/oa-response/sessions/${sessionId}/files/${normalizedPath}`;
 }
 
 export function getDocxDownloadUrl(sessionId: string, filePath: string): string {
@@ -211,7 +211,7 @@ export async function listWorkspaceFiles(
 ): Promise<WorkspaceFile[]> {
   const params = path ? `?path=${encodeURIComponent(path)}` : '';
   const response = await authFetch(
-    `${API_BASE}/agents/sessions/${sessionId}/files${params}`
+    `${API_BASE}/oa-response/sessions/${sessionId}/files${params}`
   );
 
   if (!response.ok) {
@@ -230,7 +230,7 @@ export async function getWorkspaceFileContent(
     ? filePath.slice(1)
     : filePath;
   const response = await authFetch(
-    `${API_BASE}/agents/sessions/${sessionId}/files/${normalizedPath}`
+    `${API_BASE}/oa-response/sessions/${sessionId}/files/${normalizedPath}`
   );
 
   if (!response.ok) {

@@ -23,7 +23,7 @@ import { PreviewPanel } from './PreviewPanel';
 import { usePreviewPanel } from '@/lib/previewPanelStore';
 import { useMobileSidebar } from '@/lib/mobileSidebarStore';
 import { useIsMobile } from '@/lib/useIsMobile';
-import { getAgentMessagesEndpoint, getFileUrl, type AgentMessage } from '@/lib/api';
+import { getOAResponseMessagesEndpoint, getFileUrl, type OAResponseMessage } from '@/lib/api';
 import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
 import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +40,7 @@ export const CompactionContext = createContext<Set<string>>(new Set());
  * (i.e. a compaction notice should render above that message).
  */
 function convertToUIMessages(
-  messages: AgentMessage[],
+  messages: OAResponseMessage[],
   sessionId: string,
 ): { uiMessages: UIMessage[]; compactionIds: Set<string> } {
   const compactionIds = new Set<string>();
@@ -195,8 +195,8 @@ function createCompactionFetch(onCompaction: () => void): typeof globalThis.fetc
   };
 }
 
-function ChatThread({ sessionId, initialMessages }: { sessionId: string; initialMessages: AgentMessage[] }) {
-  const endpoint = getAgentMessagesEndpoint(sessionId);
+function ChatThread({ sessionId, initialMessages }: { sessionId: string; initialMessages: OAResponseMessage[] }) {
+  const endpoint = getOAResponseMessagesEndpoint(sessionId);
   const { uiMessages, compactionIds: initialCompaction } = useMemo(
     () => convertToUIMessages(initialMessages, sessionId),
     [initialMessages, sessionId],
@@ -284,7 +284,7 @@ function CompactionStreamingCleanup({
   return null;
 }
 
-export function AgentChat() {
+export function OAResponseChat() {
   const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'no-subscription'>('loading');
 
   useEffect(() => {
