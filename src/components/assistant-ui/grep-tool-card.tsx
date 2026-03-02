@@ -14,6 +14,7 @@ import {
   ToolFallbackContent,
   ToolFallbackResult,
   ToolFallbackError,
+  handleButtonKeyDown,
 } from "@/components/assistant-ui/tool-fallback";
 import { cn } from "@/lib/utils";
 
@@ -68,44 +69,28 @@ const GrepToolCardImpl: ToolCallMessagePartComponent = ({
     <ToolFallbackRoot
       className={cn(isCancelled && "border-muted-foreground/30 bg-muted/30")}
     >
-      <CollapsibleTrigger
-        className="aui-tool-fallback-trigger group/trigger flex w-full items-center gap-2 px-4 text-sm transition-colors"
-      >
-        <StatusIcon
-          className={cn(
-            "size-4 shrink-0",
-            isCancelled && "text-muted-foreground",
-            isRunning && "animate-spin",
-          )}
-        />
-        <span
-          className={cn(
-            "relative inline-block grow text-left leading-none",
-            isCancelled && "text-muted-foreground line-through",
-          )}
+      <CollapsibleTrigger asChild>
+        <div
+          role="button"
+          tabIndex={0}
+          className="aui-tool-fallback-trigger group/trigger flex w-full items-center gap-2 px-4 text-sm transition-colors cursor-pointer"
+          onKeyDown={handleButtonKeyDown}
         >
-          <span>
-            {isRunning ? "Searching" : "Searched"}{" "}
-            {args.pattern ? (
-              <>
-                &ldquo;<b>{args.pattern}</b>&rdquo;
-              </>
-            ) : (
-              <b>files</b>
+          <StatusIcon
+            className={cn(
+              "size-4 shrink-0",
+              isCancelled && "text-muted-foreground",
+              isRunning && "animate-spin",
             )}
-            {segments.length > 0 && (
-              <span className="text-muted-foreground">
-                {"  \u00B7  "}
-                {segments.join("  \u00B7  ")}
-              </span>
+          />
+          <span
+            className={cn(
+              "relative inline-block grow text-left leading-none",
+              isCancelled && "text-muted-foreground line-through",
             )}
-          </span>
-          {isRunning && (
-            <span
-              aria-hidden
-              className="aui-tool-fallback-trigger-shimmer shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
-            >
-              {`Searching `}
+          >
+            <span>
+              {isRunning ? "Searching" : "Searched"}{" "}
               {args.pattern ? (
                 <>
                   &ldquo;<b>{args.pattern}</b>&rdquo;
@@ -113,17 +98,38 @@ const GrepToolCardImpl: ToolCallMessagePartComponent = ({
               ) : (
                 <b>files</b>
               )}
+              {segments.length > 0 && (
+                <span className="text-muted-foreground">
+                  {"  \u00B7  "}
+                  {segments.join("  \u00B7  ")}
+                </span>
+              )}
             </span>
-          )}
-        </span>
-        <ChevronDownIcon
-          className={cn(
-            "size-4 shrink-0",
-            "transition-transform duration-(--animation-duration) ease-out",
-            "group-data-[state=closed]/trigger:-rotate-90",
-            "group-data-[state=open]/trigger:rotate-0",
-          )}
-        />
+            {isRunning && (
+              <span
+                aria-hidden
+                className="aui-tool-fallback-trigger-shimmer shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
+              >
+                {`Searching `}
+                {args.pattern ? (
+                  <>
+                    &ldquo;<b>{args.pattern}</b>&rdquo;
+                  </>
+                ) : (
+                  <b>files</b>
+                )}
+              </span>
+            )}
+          </span>
+          <ChevronDownIcon
+            className={cn(
+              "size-4 shrink-0",
+              "transition-transform duration-(--animation-duration) ease-out",
+              "group-data-[state=closed]/trigger:-rotate-90",
+              "group-data-[state=open]/trigger:rotate-0",
+            )}
+          />
+        </div>
       </CollapsibleTrigger>
 
       <ToolFallbackContent>

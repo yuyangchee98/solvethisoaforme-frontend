@@ -22,6 +22,14 @@ import { cn } from "@/lib/utils";
 
 const ANIMATION_DURATION = 200;
 
+/** Keyboard handler for div[role="button"] elements that need Enter/Space to trigger click */
+export function handleButtonKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    e.currentTarget.click();
+  }
+}
+
 export type ToolFallbackRootProps = Omit<
   React.ComponentProps<typeof Collapsible>,
   "open" | "onOpenChange"
@@ -95,7 +103,7 @@ function ToolFallbackTrigger({
   status,
   className,
   ...props
-}: React.ComponentProps<typeof CollapsibleTrigger> & {
+}: React.ComponentProps<"div"> & {
   toolName: string;
   status?: ToolCallMessagePartStatus;
 }) {
@@ -108,51 +116,56 @@ function ToolFallbackTrigger({
   const label = isCancelled ? "Cancelled tool" : "Used tool";
 
   return (
-    <CollapsibleTrigger
-      data-slot="tool-fallback-trigger"
-      className={cn(
-        "aui-tool-fallback-trigger group/trigger flex w-full items-center gap-2 px-4 text-sm transition-colors",
-        className,
-      )}
-      {...props}
-    >
-      <Icon
-        data-slot="tool-fallback-trigger-icon"
+    <CollapsibleTrigger asChild>
+      <div
+        role="button"
+        tabIndex={0}
+        data-slot="tool-fallback-trigger"
         className={cn(
-          "aui-tool-fallback-trigger-icon size-4 shrink-0",
-          isCancelled && "text-muted-foreground",
-          isRunning && "animate-spin",
+          "aui-tool-fallback-trigger group/trigger flex w-full items-center gap-2 px-4 text-sm transition-colors cursor-pointer",
+          className,
         )}
-      />
-      <span
-        data-slot="tool-fallback-trigger-label"
-        className={cn(
-          "aui-tool-fallback-trigger-label-wrapper relative inline-block grow text-left leading-none",
-          isCancelled && "text-muted-foreground line-through",
-        )}
+        onKeyDown={handleButtonKeyDown}
+        {...props}
       >
-        <span>
-          {label}: <b>{toolName}</b>
-        </span>
-        {isRunning && (
-          <span
-            aria-hidden
-            data-slot="tool-fallback-trigger-shimmer"
-            className="aui-tool-fallback-trigger-shimmer shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
-          >
+        <Icon
+          data-slot="tool-fallback-trigger-icon"
+          className={cn(
+            "aui-tool-fallback-trigger-icon size-4 shrink-0",
+            isCancelled && "text-muted-foreground",
+            isRunning && "animate-spin",
+          )}
+        />
+        <span
+          data-slot="tool-fallback-trigger-label"
+          className={cn(
+            "aui-tool-fallback-trigger-label-wrapper relative inline-block grow text-left leading-none",
+            isCancelled && "text-muted-foreground line-through",
+          )}
+        >
+          <span>
             {label}: <b>{toolName}</b>
           </span>
-        )}
-      </span>
-      <ChevronDownIcon
-        data-slot="tool-fallback-trigger-chevron"
-        className={cn(
-          "aui-tool-fallback-trigger-chevron size-4 shrink-0",
-          "transition-transform duration-(--animation-duration) ease-out",
-          "group-data-[state=closed]/trigger:-rotate-90",
-          "group-data-[state=open]/trigger:rotate-0",
-        )}
-      />
+          {isRunning && (
+            <span
+              aria-hidden
+              data-slot="tool-fallback-trigger-shimmer"
+              className="aui-tool-fallback-trigger-shimmer shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
+            >
+              {label}: <b>{toolName}</b>
+            </span>
+          )}
+        </span>
+        <ChevronDownIcon
+          data-slot="tool-fallback-trigger-chevron"
+          className={cn(
+            "aui-tool-fallback-trigger-chevron size-4 shrink-0",
+            "transition-transform duration-(--animation-duration) ease-out",
+            "group-data-[state=closed]/trigger:-rotate-90",
+            "group-data-[state=open]/trigger:rotate-0",
+          )}
+        />
+      </div>
     </CollapsibleTrigger>
   );
 }
