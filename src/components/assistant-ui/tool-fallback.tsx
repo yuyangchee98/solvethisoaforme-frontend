@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useRef, useState } from "react";
+import { createContext, memo, useCallback, useContext, useRef, useState, type FC } from "react";
 import {
   AlertCircleIcon,
   CheckIcon,
@@ -21,6 +21,18 @@ import {
 import { cn } from "@/lib/utils";
 
 const ANIMATION_DURATION = 200;
+
+export const SubagentContext = createContext(false);
+
+export const SubagentLabel: FC<{ className?: string }> = ({ className }) => {
+  const isSubagent = useContext(SubagentContext);
+  if (!isSubagent) return null;
+  return (
+    <span className={cn("text-muted-foreground font-normal", className)}>
+      {"  \u00B7  subagent"}
+    </span>
+  );
+};
 
 /** Keyboard handler for div[role="button"] elements that need Enter/Space to trigger click */
 export function handleButtonKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
@@ -145,6 +157,7 @@ function ToolFallbackTrigger({
         >
           <span>
             {label}: <b>{toolName}</b>
+            <SubagentLabel />
           </span>
           {isRunning && (
             <span

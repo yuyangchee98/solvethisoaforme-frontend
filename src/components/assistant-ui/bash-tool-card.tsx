@@ -15,6 +15,7 @@ import {
   ToolFallbackContent,
   ToolFallbackResult,
   ToolFallbackError,
+  SubagentLabel,
   handleButtonKeyDown,
 } from "@/components/assistant-ui/tool-fallback";
 import { cn } from "@/lib/utils";
@@ -88,6 +89,7 @@ const BashToolCardImpl: ToolCallMessagePartComponent = ({
             <span>
               {isRunning ? "Running" : "Ran"}{" "}
               <b>{label}</b>
+              <SubagentLabel />
             </span>
             {isRunning && (
               <span

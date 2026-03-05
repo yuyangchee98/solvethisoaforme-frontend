@@ -10,6 +10,7 @@ import {
 import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { cn } from "@/lib/utils";
+import { SubagentLabel } from "@/components/assistant-ui/tool-fallback";
 
 interface WriteArgs {
   file_path?: string;
@@ -102,6 +103,7 @@ const WriteToolCardImpl: ToolCallMessagePartComponent = ({
           {"\u00B7  "}{size}
         </span>
       )}
+      <SubagentLabel className="text-xs" />
       <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
     </div>
   );

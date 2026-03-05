@@ -15,6 +15,7 @@ import {
   ToolFallbackContent,
   ToolFallbackResult,
   ToolFallbackError,
+  SubagentLabel,
   handleButtonKeyDown,
 } from "@/components/assistant-ui/tool-fallback";
 import { cn } from "@/lib/utils";
@@ -105,6 +106,7 @@ const GlobToolCardImpl: ToolCallMessagePartComponent = ({
                   {segments.join("  \u00B7  ")}
                 </span>
               )}
+              <SubagentLabel />
             </span>
             {isRunning && (
               <span

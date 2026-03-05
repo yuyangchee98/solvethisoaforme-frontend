@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { CompactionContext } from "@/components/oa-response/OAResponseChat";
+import { SubagentContext } from "@/components/assistant-ui/tool-fallback";
 import { type ComponentType, type FC, useCallback, useContext, useEffect } from "react";
 
 function withSubagentBadge<P extends { argsText?: string }>(
@@ -67,14 +68,9 @@ function withSubagentBadge<P extends { argsText?: string }>(
     }
 
     return (
-      <>
-        {isSubagent && (
-          <span className="mb-1 inline-block rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
-            subagent
-          </span>
-        )}
+      <SubagentContext.Provider value={isSubagent}>
         <Component {...props} argsText={cleanedArgsText} />
-      </>
+      </SubagentContext.Provider>
     );
   };
   Wrapped.displayName = `withSubagentBadge(${Component.displayName || Component.name || "Component"})`;

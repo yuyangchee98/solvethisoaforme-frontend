@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { SubagentLabel } from "@/components/assistant-ui/tool-fallback";
 import { getCachedUrl } from "@/lib/fileCache";
 import { getFileUrl } from "@/lib/api";
 import { authHeaders } from "@/lib/auth";
@@ -134,6 +135,7 @@ const ReadToolCardImpl: ToolCallMessagePartComponent = ({
         <span className="font-medium leading-none">{filename || "File"}</span>
         <span className="text-muted-foreground text-xs leading-none">
           {statusText}
+          <SubagentLabel />
         </span>
       </div>
       <StatusIcon
