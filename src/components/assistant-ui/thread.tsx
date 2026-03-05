@@ -44,7 +44,42 @@ import {
 } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { CompactionContext } from "@/components/oa-response/OAResponseChat";
-import { type FC, useCallback, useContext, useEffect } from "react";
+import { type ComponentType, type FC, useCallback, useContext, useEffect } from "react";
+
+function withSubagentBadge<P extends { argsText?: string }>(
+  Component: ComponentType<P>,
+): FC<P> {
+  const Wrapped: FC<P> = (props) => {
+    let isSubagent = false;
+    let cleanedArgsText = props.argsText;
+
+    if (props.argsText) {
+      try {
+        const parsed = JSON.parse(props.argsText);
+        if (parsed._isSubagent) {
+          isSubagent = true;
+          const { _isSubagent, ...rest } = parsed;
+          cleanedArgsText = JSON.stringify(rest);
+        }
+      } catch {
+        // not valid JSON, pass through
+      }
+    }
+
+    return (
+      <>
+        {isSubagent && (
+          <span className="mb-1 inline-block rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">
+            subagent
+          </span>
+        )}
+        <Component {...props} argsText={cleanedArgsText} />
+      </>
+    );
+  };
+  Wrapped.displayName = `withSubagentBadge(${Component.displayName || Component.name || "Component"})`;
+  return Wrapped;
+}
 
 const GeneratingWarning: FC = () => {
   const threadRuntime = useThreadRuntime();
@@ -338,16 +373,16 @@ const AssistantMessage: FC = () => {
             Text: MarkdownText,
             tools: {
               by_name: {
-                Bash: BashToolCard,
-                "mcp__patent-tools__FetchPatent": FetchPatentToolCard,
-                Glob: GlobToolCard,
-                Grep: GrepToolCard,
-                Read: ReadToolCard,
-                Task: TaskToolCard,
-                TodoWrite: TodoWriteToolCard,
-                Write: WriteToolCard,
+                Bash: withSubagentBadge(BashToolCard),
+                "mcp__patent-tools__FetchPatent": withSubagentBadge(FetchPatentToolCard),
+                Glob: withSubagentBadge(GlobToolCard),
+                Grep: withSubagentBadge(GrepToolCard),
+                Read: withSubagentBadge(ReadToolCard),
+                Task: withSubagentBadge(TaskToolCard),
+                TodoWrite: withSubagentBadge(TodoWriteToolCard),
+                Write: withSubagentBadge(WriteToolCard),
               },
-              Fallback: ToolFallback,
+              Fallback: withSubagentBadge(ToolFallback),
             },
           }}
         />
