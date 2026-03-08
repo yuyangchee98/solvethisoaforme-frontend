@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import { X, Download, FileDown, FileTextIcon, ArrowLeft, FolderOpen } from "lucide-react";
+import { X, ArrowLeft, FolderOpen } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { getDocxDownloadUrl } from "@/lib/api";
@@ -249,30 +249,24 @@ function FilePreviewContent({
             <ArrowLeft className="size-4" />
           </button>
         )}
-        <FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
         <span className="flex-1 truncate text-sm font-medium">
           {file.filename}
         </span>
-        {ext && (
-          <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono text-muted-foreground">
-            {ext}
-          </span>
-        )}
         {isMd && sessionId && (
           <button
             onClick={handleDocxDownload}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+            className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
             title="Download as Word document"
           >
-            <FileDown className="size-4" />
+            Download .docx
           </button>
         )}
         <button
           onClick={() => handleDownload(file.filename, file.content)}
-          className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
           title="Download file"
         >
-          <Download className="size-4" />
+          Download .md
         </button>
         <button
           onClick={close}
