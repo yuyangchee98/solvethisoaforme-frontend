@@ -12,6 +12,12 @@ import { authHeaders } from "@/lib/auth";
 import { FileBrowser } from "./FileBrowser";
 import { cn } from "@/lib/utils";
 
+function preprocessMarkdown(md: string): string {
+  return md
+    .replace(/~~(.+?)~~/g, "<del>$1</del>")
+    .replace(/([^\n])\n(&emsp;)/g, "$1<br>\n$2");
+}
+
 function getExtension(filename: string): string {
   const lastDot = filename.lastIndexOf(".");
   return lastDot > 0 ? filename.slice(lastDot).toLowerCase() : "";
@@ -280,10 +286,10 @@ function FilePreviewContent({
         {isMarkdownFile(file.filename) ? (
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            rehypePlugins={[rehypeRaw, [rehypeSanitize, { ...defaultSchema, tagNames: [...(defaultSchema.tagNames || []), "u"] }]]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, { ...defaultSchema, tagNames: [...(defaultSchema.tagNames || []), "u", "del", "br"] }]]}
             components={markdownComponents}
           >
-            {file.content}
+            {preprocessMarkdown(file.content)}
           </ReactMarkdown>
         ) : (
           <pre className="whitespace-pre-wrap break-all font-mono text-sm">
