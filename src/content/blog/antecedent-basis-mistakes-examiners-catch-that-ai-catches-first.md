@@ -1,7 +1,7 @@
 ---
 title: "The Antecedent Basis Mistakes Examiners Catch (That AI Can Catch First)"
 description: "Common antecedent basis errors in patent claims that lead to 112(b) rejections, and how automated checking tools catch them before filing."
-pubDate: 2026-04-12
+pubDate: 2026-03-09
 author: "Solve This OA For Me"
 tags: ["antecedent basis", "patent claims", "112 rejections", "claim drafting", "ai for patents"]
 ---

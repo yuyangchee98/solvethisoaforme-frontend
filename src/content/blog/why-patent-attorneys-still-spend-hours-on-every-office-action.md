@@ -1,7 +1,7 @@
 ---
 title: "Why Patent Attorneys Still Spend 6 Hours on Every Office Action"
 description: "The Office Action response workflow hasn't changed in decades. Most of those hours go to reading and mapping — work that AI can now handle reliably."
-pubDate: 2026-03-22
+pubDate: 2026-01-26
 author: "Solve This OA For Me"
 tags: ["patent prosecution", "office actions", "productivity", "ai for patents"]
 ---

@@ -1,7 +1,7 @@
 ---
 title: "How Agentic AI Reads Prior Art Differently Than ChatGPT"
 description: "Why pasting a patent into ChatGPT gives you unreliable analysis, and how agentic AI tools that read documents with verifiable tool calls solve the problem."
-pubDate: 2026-04-05
+pubDate: 2026-02-23
 author: "Solve This OA For Me"
 tags: ["agentic ai", "prior art", "patent prosecution", "chatgpt", "office actions"]
 ---

@@ -1,7 +1,7 @@
 ---
 title: "Best AI Tools for Responding to Patent Office Actions (2026)"
 description: "An honest look at what AI tools are available for patent office action responses, what they actually do well, and where the field is heading."
-pubDate: 2026-03-15
+pubDate: 2026-01-12
 author: "Solve This OA For Me"
 tags: ["ai tools", "patent prosecution", "office actions", "ai for patents"]
 ---

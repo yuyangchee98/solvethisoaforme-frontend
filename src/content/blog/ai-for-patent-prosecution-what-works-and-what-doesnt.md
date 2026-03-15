@@ -1,7 +1,7 @@
 ---
 title: "AI for Patent Prosecution: What Actually Works and What Doesn't"
 description: "An honest breakdown of where AI genuinely helps in patent prosecution and where it still falls short, from someone building in this space."
-pubDate: 2026-03-29
+pubDate: 2026-02-09
 author: "Solve This OA For Me"
 tags: ["ai for patents", "patent prosecution", "patent technology", "office actions"]
 ---
