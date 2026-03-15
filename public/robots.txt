@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://solvethisoaforme.com/sitemap-index.xml
+Sitemap: https://solvethisoaforme.chyuang.com/sitemap-index.xml
