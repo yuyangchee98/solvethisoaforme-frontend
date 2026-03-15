@@ -14,9 +14,37 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+
+const blogPostingSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  author: {
+    "@type": "Organization",
+    name: "Solve This OA For Me",
+    url: "https://solvethisoaforme.chyuang.com",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "Solve This OA For Me",
+    url: "https://solvethisoaforme.chyuang.com",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://solvethisoaforme.chyuang.com/favicon.svg",
+    },
+  },
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": new URL(`/blog/${post.id}`, "https://solvethisoaforme.chyuang.com").href,
+  },
+  keywords: post.data.tags.join(", "),
+};
 ---
 
 <LandingLayout title={`${post.data.title} - Solve This OA For Me`} description={post.data.description}>
+  <script type="application/ld+json" set:html={JSON.stringify(blogPostingSchema)} />
   <LandingNav />
   <main class="py-16 md:py-24">
     <article class="max-w-3xl mx-auto px-6">
