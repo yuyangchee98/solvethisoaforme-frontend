@@ -1,0 +1,84 @@
+---
+import LandingLayout from '../../layouts/LandingLayout.astro';
+import LandingNav from '../../components/landing/LandingNav.astro';
+import Footer from '../../components/landing/Footer.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<LandingLayout title={`${post.data.title} - Solve This OA For Me`} description={post.data.description}>
+  <LandingNav />
+  <main class="py-16 md:py-24">
+    <article class="max-w-3xl mx-auto px-6">
+      <!-- Back link -->
+      <a href="/blog" class="inline-flex items-center gap-1.5 text-sm font-medium text-stone-400 hover:text-stone-600 transition-colors mb-8">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        All posts
+      </a>
+
+      <!-- Header -->
+      <header class="mb-10">
+        <time
+          datetime={post.data.pubDate.toISOString()}
+          class="text-xs font-medium text-stone-400 uppercase tracking-wider"
+        >
+          {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </time>
+        <h1 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mt-2 mb-4 leading-tight">
+          {post.data.title}
+        </h1>
+        <p class="text-lg text-stone-500 leading-relaxed">
+          {post.data.description}
+        </p>
+        {post.data.tags.length > 0 && (
+          <div class="flex flex-wrap gap-2 mt-4">
+            {post.data.tags.map((tag: string) => (
+              <span class="text-xs font-medium text-stone-400 bg-stone-100 px-2 py-0.5 rounded">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <!-- Content -->
+      <div class="prose prose-stone prose-lg max-w-none
+        prose-headings:tracking-tight prose-headings:font-semibold
+        prose-h2:text-2xl prose-h2:mt-10 prose-h2:mb-4
+        prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+        prose-p:leading-relaxed prose-p:text-stone-600
+        prose-a:text-amber-700 prose-a:no-underline hover:prose-a:underline
+        prose-strong:text-stone-800
+        prose-li:text-stone-600
+        prose-ul:my-4 prose-ol:my-4
+        prose-blockquote:border-amber-300 prose-blockquote:text-stone-500
+        prose-em:text-stone-500
+      ">
+        <Content />
+      </div>
+
+      <!-- CTA -->
+      <div class="mt-16 pt-10 border-t border-stone-200">
+        <p class="text-stone-500 text-sm mb-4">Ready to try AI-assisted patent prosecution?</p>
+        <a
+          href="/login?plan=individual"
+          class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+        >
+          Analyze Your First OA
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </article>
+  </main>
+  <Footer />
+</LandingLayout>

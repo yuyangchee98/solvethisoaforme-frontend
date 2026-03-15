@@ -1,0 +1,60 @@
+---
+import LandingLayout from '../../layouts/LandingLayout.astro';
+import LandingNav from '../../components/landing/LandingNav.astro';
+import Footer from '../../components/landing/Footer.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<LandingLayout title="Blog - Solve This OA For Me" description="Patent prosecution tips, strategies for responding to Office Actions, and AI-powered patent analysis insights.">
+  <LandingNav />
+  <main class="py-16 md:py-24">
+    <div class="max-w-4xl mx-auto px-6">
+      <!-- Header -->
+      <div class="mb-14">
+        <h1 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-3">Blog</h1>
+        <p class="text-lg text-stone-500 max-w-2xl">
+          Practical guides for patent prosecution — Office Action strategies, claim drafting tips, and how AI fits into the workflow.
+        </p>
+      </div>
+
+      <!-- Posts -->
+      {posts.length === 0 ? (
+        <p class="text-stone-400 text-sm">No posts yet. Check back soon.</p>
+      ) : (
+        <div class="space-y-10">
+          {posts.map((post) => (
+            <article class="group">
+              <a href={`/blog/${post.id}`} class="block">
+                <time
+                  datetime={post.data.pubDate.toISOString()}
+                  class="text-xs font-medium text-stone-400 uppercase tracking-wider"
+                >
+                  {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </time>
+                <h2 class="text-xl font-semibold text-stone-900 mt-1.5 mb-2 group-hover:text-amber-700 transition-colors">
+                  {post.data.title}
+                </h2>
+                <p class="text-stone-500 text-sm leading-relaxed line-clamp-2">
+                  {post.data.description}
+                </p>
+                {post.data.tags.length > 0 && (
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    {post.data.tags.map((tag: string) => (
+                      <span class="text-xs font-medium text-stone-400 bg-stone-100 px-2 py-0.5 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </a>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  </main>
+  <Footer />
+</LandingLayout>
