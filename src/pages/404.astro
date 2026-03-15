@@ -1,0 +1,33 @@
+---
+import LandingLayout from '../layouts/LandingLayout.astro';
+import LandingNav from '../components/landing/LandingNav.astro';
+import Footer from '../components/landing/Footer.astro';
+---
+
+<LandingLayout title="Page Not Found - Solve This OA For Me" noindex>
+  <LandingNav />
+  <main class="flex items-center justify-center min-h-[calc(100vh-16rem)]">
+    <div class="max-w-md mx-auto px-6 text-center">
+      <p class="text-6xl font-bold text-amber-600 mb-4">404</p>
+      <h1 class="text-2xl font-bold text-stone-900 mb-3">Page not found</h1>
+      <p class="text-stone-500 mb-8">
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <div class="flex items-center justify-center gap-4">
+        <a
+          href="/"
+          class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors"
+        >
+          Back to Home
+        </a>
+        <a
+          href="/blog"
+          class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 border border-stone-200 rounded-lg transition-colors"
+        >
+          Read the Blog
+        </a>
+      </div>
+    </div>
+  </main>
+  <Footer />
+</LandingLayout>

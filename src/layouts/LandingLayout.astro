@@ -2,9 +2,10 @@
 interface Props {
   title: string;
   description?: string;
+  noindex?: boolean;
 }
 
-const { title, description = "AI-powered patent prosecution assistant. Respond to Office Actions in minutes, not days." } = Astro.props;
+const { title, description = "AI-powered patent prosecution assistant. Respond to Office Actions in minutes, not days.", noindex = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -14,8 +15,10 @@ const { title, description = "AI-powered patent prosecution assistant. Respond t
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
