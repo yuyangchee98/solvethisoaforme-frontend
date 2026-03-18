@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import type { Patent, PatentClaim } from "./fake-patent";
+import type { Patent, PatentClaim } from "./types";
 
 interface LeftSidebarProps {
   patent: Patent;
@@ -84,7 +84,7 @@ export function LeftSidebar({
     (c) => c.type === "independent"
   );
   const getDependents = (parentNum: number) =>
-    patent.claims.filter((c) => c.dependsOn === parentNum);
+    patent.claims.filter((c) => c.depends_on === parentNum);
 
   if (collapsed) {
     return (

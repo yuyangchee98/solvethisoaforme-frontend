@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { Patent } from "./fake-patent";
+import type { Patent } from "./types";
 
 interface CenterPanelProps {
   patent: Patent;
@@ -16,11 +16,11 @@ export function CenterPanel({ patent }: CenterPanelProps) {
           </h1>
           <div className="flex flex-wrap gap-2 text-xs text-stone-500">
             <Badge variant="outline" className="font-mono">
-              {patent.patentNumber}
+              {patent.patent_number}
             </Badge>
-            <span>Filed: {patent.filingDate}</span>
+            <span>Filed: {patent.filing_date}</span>
             <span className="text-stone-300">|</span>
-            <span>Published: {patent.publicationDate}</span>
+            <span>Published: {patent.publication_date}</span>
           </div>
           <div className="text-sm text-stone-600">
             <span className="font-medium">Inventors:</span>{" "}

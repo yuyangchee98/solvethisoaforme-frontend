@@ -239,3 +239,20 @@ export async function getWorkspaceFileContent(
 
   return response.text();
 }
+
+// Patent Reader API (public, no auth)
+
+export async function fetchPatent(publicationNumber: string) {
+  const response = await fetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}`
+  );
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Patent not found');
+    }
+    throw new Error(`Failed to fetch patent: ${response.status}`);
+  }
+
+  return response.json();
+}

@@ -1,7 +1,7 @@
-import { Info, Tag, Scale, PanelRightClose } from "lucide-react";
+import { Info, Tag, Scale, PanelRightClose, FileDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Patent } from "./fake-patent";
+import type { Patent } from "./types";
 
 interface RightSidebarProps {
   patent: Patent;
@@ -37,16 +37,22 @@ export function RightSidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-5">
-        {/* Classification */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
-            <Tag className="size-3" />
-            Classification
+        {/* Classifications */}
+        {patent.classifications.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
+              <Tag className="size-3" />
+              Classification
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {patent.classifications.map((code) => (
+                <Badge key={code} variant="secondary" className="font-mono text-xs">
+                  {code}
+                </Badge>
+              ))}
+            </div>
           </div>
-          <Badge variant="secondary" className="font-mono text-xs">
-            {patent.classification}
-          </Badge>
-        </div>
+        )}
 
         {/* Claim summary */}
         <div className="space-y-1.5">
@@ -74,32 +80,23 @@ export function RightSidebar({
           </div>
         </div>
 
-        {/* Key terms (placeholder) */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
-            <Info className="size-3" />
-            Key Terms
+        {/* PDF link */}
+        {patent.pdf_url && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
+              <FileDown className="size-3" />
+              Document
+            </div>
+            <a
+              href={patent.pdf_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-amber-700 hover:text-amber-900 underline underline-offset-2"
+            >
+              Download PDF
+            </a>
           </div>
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              "neural network",
-              "entropy score",
-              "pruning mask",
-              "compression ratio",
-              "kernel density estimation",
-              "fine-tuning",
-              "activation distribution",
-            ].map((term) => (
-              <Badge
-                key={term}
-                variant="outline"
-                className="text-xs font-normal"
-              >
-                {term}
-              </Badge>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* Annotations placeholder */}
         <div className="space-y-1.5">
