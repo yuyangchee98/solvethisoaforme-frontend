@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { Search, Loader2, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LeftSidebar } from "./LeftSidebar";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
 import { fetchPatent } from "@/lib/api";
@@ -46,7 +45,6 @@ function SearchForm({
 }
 
 export function PatentReader() {
-  const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [patent, setPatent] = useState<Patent | null>(null);
   const [query, setQuery] = useState("");
@@ -185,19 +183,14 @@ export function PatentReader() {
         />
       </div>
 
-      {/* Three-panel content */}
+      {/* Two-panel content */}
       <div className="flex flex-1 min-h-0">
-        <LeftSidebar
-          patent={patent}
-          collapsed={leftCollapsed}
-          onToggle={() => setLeftCollapsed((c) => !c)}
-          onScrollTo={handleScrollTo}
-        />
         <CenterPanel patent={patent} />
         <RightSidebar
           patent={patent}
           collapsed={rightCollapsed}
           onToggle={() => setRightCollapsed((c) => !c)}
+          onScrollTo={handleScrollTo}
         />
       </div>
     </div>

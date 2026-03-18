@@ -22,4 +22,5 @@ export interface Patent {
   claims: PatentClaim[];
   description: PatentSection[];
   pdf_url: string;
+  figure_urls: string[];
 }
