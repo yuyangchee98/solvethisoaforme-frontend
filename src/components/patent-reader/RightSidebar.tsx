@@ -9,6 +9,7 @@ import {
   FileText,
   ChevronRight,
   ChevronDown,
+  ChevronLeft,
   PanelRightClose,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -88,9 +89,15 @@ function titleCase(s: string): string {
 
 // ── Tab content components ───────────────────────────────────────────────
 
-function FiguresTab({ patent }: { patent: Patent }) {
-  const [selected, setSelected] = useState<number | null>(null);
-
+function FiguresTab({
+  patent,
+  selectedFigure,
+  onSelectFigure,
+}: {
+  patent: Patent;
+  selectedFigure: number | null;
+  onSelectFigure: (i: number | null) => void;
+}) {
   if (patent.figure_urls.length === 0) {
     return (
       <p className="text-xs text-stone-400 italic p-3">
@@ -100,27 +107,16 @@ function FiguresTab({ patent }: { patent: Patent }) {
   }
 
   return (
-    <div className="p-2 space-y-2 overflow-y-auto">
-      {selected !== null && (
-        <button
-          onClick={() => setSelected(null)}
-          className="w-full bg-white border border-stone-200 rounded-lg overflow-hidden"
-        >
-          <img
-            src={patent.figure_urls[selected]}
-            alt={`Figure ${selected}`}
-            className="w-full h-auto"
-          />
-        </button>
-      )}
-      <div className="grid grid-cols-2 gap-1.5">
+    <div className="flex flex-col h-full">
+      {/* Thumbnail strip */}
+      <div className="flex gap-1.5 p-2 overflow-x-auto border-b border-stone-100 shrink-0">
         {patent.figure_urls.map((url, i) => (
           <button
             key={url}
-            onClick={() => setSelected(selected === i ? null : i)}
+            onClick={() => onSelectFigure(selectedFigure === i ? null : i)}
             className={cn(
-              "rounded-md border overflow-hidden bg-white transition-all hover:border-amber-400",
-              selected === i
+              "rounded border overflow-hidden bg-white shrink-0 transition-all hover:border-amber-400",
+              selectedFigure === i
                 ? "border-amber-500 ring-1 ring-amber-500/30"
                 : "border-stone-200"
             )}
@@ -128,12 +124,52 @@ function FiguresTab({ patent }: { patent: Patent }) {
             <img
               src={url}
               alt={`Figure ${i}`}
-              className="w-full h-auto"
+              className="h-14 w-auto"
               loading="lazy"
             />
           </button>
         ))}
       </div>
+
+      {/* Selected figure — large view */}
+      {selectedFigure !== null ? (
+        <div className="flex-1 overflow-auto p-3 flex flex-col items-center">
+          <div className="flex items-center justify-between w-full mb-2">
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              disabled={selectedFigure <= 0}
+              onClick={() => onSelectFigure(Math.max(0, selectedFigure - 1))}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="text-xs text-stone-500">
+              Figure {selectedFigure} of {patent.figure_urls.length - 1}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              disabled={selectedFigure >= patent.figure_urls.length - 1}
+              onClick={() =>
+                onSelectFigure(
+                  Math.min(patent.figure_urls.length - 1, selectedFigure + 1)
+                )
+              }
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+          <img
+            src={patent.figure_urls[selectedFigure]}
+            alt={`Figure ${selectedFigure}`}
+            className="max-w-full h-auto rounded border border-stone-200 bg-white"
+          />
+        </div>
+      ) : (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xs text-stone-400">Select a figure above</p>
+        </div>
+      )}
     </div>
   );
 }
@@ -141,7 +177,6 @@ function FiguresTab({ patent }: { patent: Patent }) {
 function DetailsTab({ patent }: { patent: Patent }) {
   return (
     <div className="p-3 space-y-5 overflow-y-auto">
-      {/* Classifications */}
       {patent.classifications.length > 0 && (
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
@@ -158,7 +193,6 @@ function DetailsTab({ patent }: { patent: Patent }) {
         </div>
       )}
 
-      {/* Claim summary */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
           <Scale className="size-3" />
@@ -183,7 +217,6 @@ function DetailsTab({ patent }: { patent: Patent }) {
         </div>
       </div>
 
-      {/* PDF link */}
       {patent.pdf_url && (
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
@@ -217,7 +250,6 @@ function OutlineTab({
 
   return (
     <div className="p-2 space-y-4 overflow-y-auto">
-      {/* Document sections */}
       <div className="space-y-0.5">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 px-2 mb-1">
           Sections
@@ -245,7 +277,6 @@ function OutlineTab({
         ))}
       </div>
 
-      {/* Claims tree */}
       <div className="space-y-0.5">
         <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 px-2 mb-1">
           Claims
@@ -271,6 +302,11 @@ export function RightSidebar({
   onToggle,
   onScrollTo,
 }: RightSidebarProps) {
+  const [activeTab, setActiveTab] = useState("figures");
+  const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
+
+  const isExpanded = activeTab === "figures" && selectedFigure !== null;
+
   if (collapsed) {
     return (
       <div className="flex flex-col items-center py-3 gap-2 border-l border-stone-200 bg-white w-10">
@@ -282,7 +318,14 @@ export function RightSidebar({
   }
 
   return (
-    <Tabs defaultValue="figures" className="flex flex-col border-l border-stone-200 bg-white w-80 shrink-0">
+    <Tabs
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className={cn(
+        "flex flex-col border-l border-stone-200 bg-white shrink-0 transition-[width] duration-200",
+        isExpanded ? "w-[45vw]" : "w-80"
+      )}
+    >
       {/* Tab bar + collapse */}
       <div className="flex items-center justify-between px-2 py-1.5 border-b border-stone-100">
         <TabsList className="h-7">
@@ -304,18 +347,20 @@ export function RightSidebar({
         </Button>
       </div>
 
-      {/* Tab content — scrollable */}
-      <div className="flex-1 overflow-y-auto">
-        <TabsContent value="figures" className="mt-0">
-          <FiguresTab patent={patent} />
-        </TabsContent>
-        <TabsContent value="details" className="mt-0">
-          <DetailsTab patent={patent} />
-        </TabsContent>
-        <TabsContent value="outline" className="mt-0">
-          <OutlineTab patent={patent} onScrollTo={onScrollTo} />
-        </TabsContent>
-      </div>
+      {/* Tab content — fills remaining height */}
+      <TabsContent value="figures" className="mt-0 flex-1 min-h-0">
+        <FiguresTab
+          patent={patent}
+          selectedFigure={selectedFigure}
+          onSelectFigure={setSelectedFigure}
+        />
+      </TabsContent>
+      <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">
+        <DetailsTab patent={patent} />
+      </TabsContent>
+      <TabsContent value="outline" className="mt-0 flex-1 overflow-y-auto">
+        <OutlineTab patent={patent} onScrollTo={onScrollTo} />
+      </TabsContent>
     </Tabs>
   );
 }
