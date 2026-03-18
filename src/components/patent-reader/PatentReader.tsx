@@ -3,7 +3,8 @@ import { Search, Loader2, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
-import { fetchPatent } from "@/lib/api";
+import { fetchPatent, fetchReferenceNumerals } from "@/lib/api";
+import type { ReferenceNumeral } from "@/lib/api";
 import type { Patent } from "./types";
 
 const EXAMPLE_PATENTS = [
@@ -47,6 +48,7 @@ function SearchForm({
 export function PatentReader() {
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [patent, setPatent] = useState<Patent | null>(null);
+  const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,9 +61,12 @@ export function PatentReader() {
 
       setLoading(true);
       setError(null);
+      setReferenceNumerals([]);
       try {
         const data = await fetchPatent(trimmed);
         setPatent(data);
+        // Fire async reference numeral extraction (non-blocking)
+        fetchReferenceNumerals(trimmed).then(setReferenceNumerals);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch patent");
         setPatent(null);
@@ -76,8 +81,12 @@ export function PatentReader() {
     setQuery(number);
     setLoading(true);
     setError(null);
+    setReferenceNumerals([]);
     fetchPatent(number)
-      .then((data) => setPatent(data))
+      .then((data) => {
+        setPatent(data);
+        fetchReferenceNumerals(number).then(setReferenceNumerals);
+      })
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Failed to fetch patent");
         setPatent(null);
@@ -188,6 +197,7 @@ export function PatentReader() {
         <CenterPanel patent={patent} />
         <RightSidebar
           patent={patent}
+          referenceNumerals={referenceNumerals}
           collapsed={rightCollapsed}
           onToggle={() => setRightCollapsed((c) => !c)}
           onScrollTo={handleScrollTo}

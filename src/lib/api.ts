@@ -256,3 +256,22 @@ export async function fetchPatent(publicationNumber: string) {
 
   return response.json();
 }
+
+export interface ReferenceNumeral {
+  numeral: string;
+  label: string;
+  count: number;
+}
+
+export async function fetchReferenceNumerals(
+  publicationNumber: string
+): Promise<ReferenceNumeral[]> {
+  const response = await fetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/reference-numerals`
+  );
+
+  if (!response.ok) return [];
+
+  const data = await response.json();
+  return data.numerals ?? [];
+}

@@ -9,7 +9,6 @@ import {
   FileText,
   ChevronRight,
   ChevronDown,
-  ChevronLeft,
   PanelRightClose,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,9 +16,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Patent, PatentClaim } from "./types";
+import type { ReferenceNumeral } from "@/lib/api";
 
 interface RightSidebarProps {
   patent: Patent;
+  referenceNumerals: ReferenceNumeral[];
   collapsed: boolean;
   onToggle: () => void;
   onScrollTo: (id: string) => void;
@@ -131,38 +132,13 @@ function FiguresTab({
         ))}
       </div>
 
-      {/* Selected figure — large view */}
+      {/* Selected figure — sized to fit vertically */}
       {selectedFigure !== null ? (
-        <div className="flex-1 overflow-auto p-3 flex flex-col items-center">
-          <div className="flex items-center justify-between w-full mb-2">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              disabled={selectedFigure <= 0}
-              onClick={() => onSelectFigure(Math.max(0, selectedFigure - 1))}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-            <span className="text-xs text-stone-500">
-              Figure {selectedFigure} of {patent.figure_urls.length - 1}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              disabled={selectedFigure >= patent.figure_urls.length - 1}
-              onClick={() =>
-                onSelectFigure(
-                  Math.min(patent.figure_urls.length - 1, selectedFigure + 1)
-                )
-              }
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </div>
+        <div className="flex-1 min-h-0 flex items-center justify-center p-3">
           <img
             src={patent.figure_urls[selectedFigure]}
             alt={`Figure ${selectedFigure}`}
-            className="max-w-full h-auto rounded border border-stone-200 bg-white"
+            className="max-w-full max-h-full object-contain rounded border border-stone-200 bg-white"
           />
         </div>
       ) : (
@@ -174,9 +150,39 @@ function FiguresTab({
   );
 }
 
-function DetailsTab({ patent }: { patent: Patent }) {
+function DetailsTab({
+  patent,
+  referenceNumerals,
+}: {
+  patent: Patent;
+  referenceNumerals: ReferenceNumeral[];
+}) {
   return (
     <div className="p-3 space-y-5 overflow-y-auto">
+      {/* Reference numerals */}
+      {referenceNumerals.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
+            <Tag className="size-3" />
+            Reference Numerals
+          </div>
+          <div className="border border-stone-200 rounded-md overflow-hidden">
+            <table className="w-full text-xs">
+              <tbody>
+                {referenceNumerals.map((ref) => (
+                  <tr key={ref.numeral} className="border-b border-stone-100 last:border-b-0">
+                    <td className="px-2 py-1 font-mono text-stone-500 w-12 text-right">
+                      {ref.numeral}
+                    </td>
+                    <td className="px-2 py-1 text-stone-700">{ref.label}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {patent.classifications.length > 0 && (
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
@@ -298,6 +304,7 @@ function OutlineTab({
 
 export function RightSidebar({
   patent,
+  referenceNumerals,
   collapsed,
   onToggle,
   onScrollTo,
@@ -327,23 +334,23 @@ export function RightSidebar({
       )}
     >
       {/* Tab bar + collapse */}
-      <div className="flex items-center justify-between px-2 py-1.5 border-b border-stone-100">
-        <TabsList className="h-7">
-          <TabsTrigger value="figures" className="text-xs px-2 py-0.5 h-5 gap-1">
-            <Image className="size-3" />
+      <div className="flex items-center justify-between px-2 py-2 border-b border-stone-100">
+        <TabsList className="h-9">
+          <TabsTrigger value="figures" className="text-sm px-3 py-1.5 gap-1.5">
+            <Image className="size-4" />
             Figures
           </TabsTrigger>
-          <TabsTrigger value="details" className="text-xs px-2 py-0.5 h-5 gap-1">
-            <Info className="size-3" />
+          <TabsTrigger value="details" className="text-sm px-3 py-1.5 gap-1.5">
+            <Info className="size-4" />
             Details
           </TabsTrigger>
-          <TabsTrigger value="outline" className="text-xs px-2 py-0.5 h-5 gap-1">
-            <List className="size-3" />
+          <TabsTrigger value="outline" className="text-sm px-3 py-1.5 gap-1.5">
+            <List className="size-4" />
             Outline
           </TabsTrigger>
         </TabsList>
-        <Button variant="ghost" size="icon-xs" onClick={onToggle} title="Collapse sidebar">
-          <PanelRightClose className="size-3.5 text-stone-400" />
+        <Button variant="ghost" size="icon-sm" onClick={onToggle} title="Collapse sidebar">
+          <PanelRightClose className="size-4 text-stone-400" />
         </Button>
       </div>
 
@@ -356,7 +363,7 @@ export function RightSidebar({
         />
       </TabsContent>
       <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">
-        <DetailsTab patent={patent} />
+        <DetailsTab patent={patent} referenceNumerals={referenceNumerals} />
       </TabsContent>
       <TabsContent value="outline" className="mt-0 flex-1 overflow-y-auto">
         <OutlineTab patent={patent} onScrollTo={onScrollTo} />
