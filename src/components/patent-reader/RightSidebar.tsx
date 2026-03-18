@@ -21,6 +21,9 @@ import type { ReferenceNumeral } from "@/lib/api";
 interface RightSidebarProps {
   patent: Patent;
   referenceNumerals: ReferenceNumeral[];
+  activeNumeral: string | null;
+  onNumeralHover: (numeral: string | null) => void;
+  onNumeralClick: (numeral: string | null) => void;
   collapsed: boolean;
   onToggle: () => void;
   onScrollTo: (id: string) => void;
@@ -153,10 +156,46 @@ function FiguresTab({
 function DetailsTab({
   patent,
   referenceNumerals,
+  activeNumeral,
+  onNumeralHover,
+  onNumeralClick,
 }: {
   patent: Patent;
   referenceNumerals: ReferenceNumeral[];
+  activeNumeral: string | null;
+  onNumeralHover: (numeral: string | null) => void;
+  onNumeralClick: (numeral: string | null) => void;
 }) {
+  const handleRowClick = (numeral: string) => {
+    // Set this numeral as active (highlights all occurrences in spec)
+    onNumeralClick(activeNumeral === numeral ? null : numeral);
+
+    // Scroll to the next occurrence in the center panel
+    const allSpans = document.querySelectorAll<HTMLElement>(
+      `[data-ref-num="${numeral}"]`
+    );
+    if (allSpans.length === 0) return;
+
+    // Find the first one not currently visible, or cycle back to the first
+    const container = document.querySelector(".flex-1.overflow-y-auto.bg-stone-50");
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+
+    let target: HTMLElement | null = null;
+    for (const span of allSpans) {
+      const rect = span.getBoundingClientRect();
+      // Pick first one below the visible area, or below the middle
+      if (rect.top > containerRect.top + containerRect.height / 3) {
+        target = span;
+        break;
+      }
+    }
+    // Fallback to first occurrence
+    if (!target) target = allSpans[0];
+
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <div className="p-3 space-y-5 overflow-y-auto">
       {/* Reference numerals */}
@@ -170,7 +209,18 @@ function DetailsTab({
             <table className="w-full text-xs">
               <tbody>
                 {referenceNumerals.map((ref) => (
-                  <tr key={ref.numeral} className="border-b border-stone-100 last:border-b-0">
+                  <tr
+                    key={ref.numeral}
+                    onMouseEnter={() => onNumeralHover(ref.numeral)}
+                    onMouseLeave={() => onNumeralHover(null)}
+                    onClick={() => handleRowClick(ref.numeral)}
+                    className={cn(
+                      "border-b border-stone-100 last:border-b-0 cursor-pointer transition-colors",
+                      activeNumeral === ref.numeral
+                        ? "bg-amber-100/70"
+                        : "hover:bg-stone-50"
+                    )}
+                  >
                     <td className="px-2 py-1 font-mono text-stone-500 w-12 text-right">
                       {ref.numeral}
                     </td>
@@ -305,6 +355,9 @@ function OutlineTab({
 export function RightSidebar({
   patent,
   referenceNumerals,
+  activeNumeral,
+  onNumeralHover,
+  onNumeralClick,
   collapsed,
   onToggle,
   onScrollTo,
@@ -363,7 +416,13 @@ export function RightSidebar({
         />
       </TabsContent>
       <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">
-        <DetailsTab patent={patent} referenceNumerals={referenceNumerals} />
+        <DetailsTab
+          patent={patent}
+          referenceNumerals={referenceNumerals}
+          activeNumeral={activeNumeral}
+          onNumeralHover={onNumeralHover}
+          onNumeralClick={onNumeralClick}
+        />
       </TabsContent>
       <TabsContent value="outline" className="mt-0 flex-1 overflow-y-auto">
         <OutlineTab patent={patent} onScrollTo={onScrollTo} />

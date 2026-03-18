@@ -49,6 +49,7 @@ export function PatentReader() {
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [patent, setPatent] = useState<Patent | null>(null);
   const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
+  const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -194,10 +195,18 @@ export function PatentReader() {
 
       {/* Two-panel content */}
       <div className="flex flex-1 min-h-0">
-        <CenterPanel patent={patent} />
+        <CenterPanel
+          patent={patent}
+          activeNumeral={activeNumeral}
+          onNumeralHover={setActiveNumeral}
+          onNumeralClick={setActiveNumeral}
+        />
         <RightSidebar
           patent={patent}
           referenceNumerals={referenceNumerals}
+          activeNumeral={activeNumeral}
+          onNumeralHover={setActiveNumeral}
+          onNumeralClick={setActiveNumeral}
           collapsed={rightCollapsed}
           onToggle={() => setRightCollapsed((c) => !c)}
           onScrollTo={handleScrollTo}
