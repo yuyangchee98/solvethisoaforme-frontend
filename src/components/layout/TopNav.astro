@@ -27,6 +27,20 @@ const currentPath = Astro.url.pathname;
           )}
         </a>
 
+        <a
+          href="/patent-reader"
+          class={`text-sm font-medium transition-colors relative pb-1 ${
+            currentPath === '/patent-reader'
+              ? 'text-amber-600'
+              : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          Patent Reader
+          {currentPath === '/patent-reader' && (
+            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600 rounded-full"></span>
+          )}
+        </a>
+
         <!-- TODO: Re-add when antecedent basis feature is ready
         <a
           href="/check-antecedent-basis"
