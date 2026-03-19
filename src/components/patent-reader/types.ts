@@ -5,9 +5,14 @@ export interface PatentClaim {
   type: "independent" | "dependent";
 }
 
+export interface PatentParagraph {
+  text: string;
+  number: string | null;
+}
+
 export interface PatentSection {
   heading: string;
-  paragraphs: string[];
+  paragraphs: PatentParagraph[];
 }
 
 export interface Patent {

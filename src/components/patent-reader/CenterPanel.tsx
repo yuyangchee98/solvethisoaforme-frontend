@@ -116,9 +116,9 @@ export function CenterPanel({
           <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-400 mb-2">
             Abstract
           </h2>
-          <p className="text-sm leading-relaxed text-stone-700">
+          <div className="text-sm leading-relaxed text-stone-700">
             <RichText text={patent.abstract} {...richTextProps} />
-          </p>
+          </div>
         </section>
 
         {/* Description sections */}
@@ -132,12 +132,16 @@ export function CenterPanel({
             </h2>
             <div className="space-y-3">
               {section.paragraphs.map((para, i) => (
-                <p
-                  key={i}
-                  className="text-sm leading-relaxed text-stone-700"
-                >
-                  <RichText text={para} {...richTextProps} />
-                </p>
+                <div key={i} className="flex gap-2">
+                  {para.number && (
+                    <span className="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">
+                      [{para.number}]
+                    </span>
+                  )}
+                  <p className="text-sm leading-relaxed text-stone-700 flex-1">
+                    <RichText text={para.text} {...richTextProps} />
+                  </p>
+                </div>
               ))}
             </div>
           </section>
