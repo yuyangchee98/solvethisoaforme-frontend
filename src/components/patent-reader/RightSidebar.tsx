@@ -22,6 +22,8 @@ interface RightSidebarProps {
   patent: Patent;
   referenceNumerals: ReferenceNumeral[];
   activeNumeral: string | null;
+  activeTab: string;
+  onTabChange: (tab: string) => void;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   collapsed: boolean;
@@ -153,6 +155,39 @@ function FiguresTab({
   );
 }
 
+/** Build context snippets for a numeral from all patent text sections. */
+function getOccurrences(patent: Patent, numeral: string) {
+  const regex = new RegExp(
+    `(?:\\(\\s*${numeral}\\s*\\))|(?<=\\b[a-zA-Z][\\w-]*\\s)${numeral}(?=[\\s,;.\\)\\]]|$)`,
+    "g"
+  );
+  const results: { text: string; section: string; occurrenceIndex: number }[] = [];
+  let globalIdx = 0;
+
+  const addFromText = (text: string, section: string) => {
+    for (const match of text.matchAll(regex)) {
+      const start = Math.max(0, match.index! - 40);
+      const end = Math.min(text.length, match.index! + match[0].length + 40);
+      let snippet = text.slice(start, end).replace(/\s+/g, " ");
+      if (start > 0) snippet = "…" + snippet;
+      if (end < text.length) snippet = snippet + "…";
+      results.push({ text: snippet, section, occurrenceIndex: globalIdx });
+      globalIdx++;
+    }
+  };
+
+  addFromText(patent.abstract, "Abstract");
+  for (const sec of patent.description) {
+    for (const para of sec.paragraphs) {
+      addFromText(para.text, titleCase(sec.heading));
+    }
+  }
+  for (const claim of patent.claims) {
+    addFromText(claim.text, `Claim ${claim.number}`);
+  }
+  return results;
+}
+
 function DetailsTab({
   patent,
   referenceNumerals,
@@ -166,35 +201,30 @@ function DetailsTab({
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
 }) {
-  const handleRowClick = (numeral: string) => {
-    // Set this numeral as active (highlights all occurrences in spec)
-    onNumeralClick(activeNumeral === numeral ? null : numeral);
+  const [expandedNumeral, setExpandedNumeral] = useState<string | null>(null);
 
-    // Scroll to the next occurrence in the center panel
+  const handleRowClick = (numeral: string) => {
+    const toggling = expandedNumeral === numeral;
+    setExpandedNumeral(toggling ? null : numeral);
+    onNumeralClick(toggling ? null : numeral);
+  };
+
+  const handleSnippetClick = (occurrenceIndex: number, numeral: string) => {
+    onNumeralClick(numeral);
     const allSpans = document.querySelectorAll<HTMLElement>(
       `[data-ref-num="${numeral}"]`
     );
-    if (allSpans.length === 0) return;
-
-    // Find the first one not currently visible, or cycle back to the first
-    const container = document.querySelector(".flex-1.overflow-y-auto.bg-stone-50");
-    if (!container) return;
-    const containerRect = container.getBoundingClientRect();
-
-    let target: HTMLElement | null = null;
-    for (const span of allSpans) {
-      const rect = span.getBoundingClientRect();
-      // Pick first one below the visible area, or below the middle
-      if (rect.top > containerRect.top + containerRect.height / 3) {
-        target = span;
-        break;
-      }
+    const target = allSpans[occurrenceIndex];
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Brief pulse to show which occurrence was jumped to
+      target.classList.add("ring-2", "ring-amber-400");
+      setTimeout(() => target.classList.remove("ring-2", "ring-amber-400"), 1500);
     }
-    // Fallback to first occurrence
-    if (!target) target = allSpans[0];
-
-    target.scrollIntoView({ behavior: "smooth", block: "center" });
   };
+
+  const occurrences =
+    expandedNumeral ? getOccurrences(patent, expandedNumeral) : [];
 
   return (
     <div className="p-3 space-y-5 overflow-y-auto">
@@ -206,29 +236,60 @@ function DetailsTab({
             Reference Numerals
           </div>
           <div className="border border-stone-200 rounded-md overflow-hidden">
-            <table className="w-full text-xs">
-              <tbody>
-                {referenceNumerals.map((ref) => (
-                  <tr
-                    key={ref.numeral}
-                    onMouseEnter={() => onNumeralHover(ref.numeral)}
-                    onMouseLeave={() => onNumeralHover(null)}
-                    onClick={() => handleRowClick(ref.numeral)}
+            {referenceNumerals.map((ref) => (
+              <div
+                key={ref.numeral}
+                data-ref-row={ref.numeral}
+                className="border-b border-stone-100 last:border-b-0"
+              >
+                <div
+                  onMouseEnter={() => onNumeralHover(ref.numeral)}
+                  onMouseLeave={() => onNumeralHover(null)}
+                  onClick={() => handleRowClick(ref.numeral)}
+                  className={cn(
+                    "flex items-center cursor-pointer transition-colors px-2 py-1 text-xs",
+                    activeNumeral === ref.numeral
+                      ? "bg-amber-100/70"
+                      : "hover:bg-stone-50"
+                  )}
+                >
+                  <ChevronRight
                     className={cn(
-                      "border-b border-stone-100 last:border-b-0 cursor-pointer transition-colors",
-                      activeNumeral === ref.numeral
-                        ? "bg-amber-100/70"
-                        : "hover:bg-stone-50"
+                      "size-3 shrink-0 text-stone-400 transition-transform mr-1",
+                      expandedNumeral === ref.numeral && "rotate-90"
                     )}
-                  >
-                    <td className="px-2 py-1 font-mono text-stone-500 w-12 text-right">
-                      {ref.numeral}
-                    </td>
-                    <td className="px-2 py-1 text-stone-700">{ref.label}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  />
+                  <span className="font-mono text-stone-500 w-10 text-right mr-2">
+                    {ref.numeral}
+                  </span>
+                  <span className="text-stone-700 truncate">{ref.label}</span>
+                  <span className="ml-auto text-stone-400 text-[10px] pl-2">
+                    {ref.count}
+                  </span>
+                </div>
+                {expandedNumeral === ref.numeral && occurrences.length > 0 && (
+                  <div className="bg-stone-50 border-t border-stone-100 py-1">
+                    {occurrences.map((occ, i) => (
+                      <button
+                        key={i}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSnippetClick(occ.occurrenceIndex, ref.numeral);
+                        }}
+                        className="w-full text-left px-3 py-1 hover:bg-amber-50 transition-colors flex gap-2 items-start"
+                      >
+                        <span className="text-[10px] text-amber-600 font-medium shrink-0 mt-0.5 w-24 truncate">
+                          {occ.section}
+                        </span>
+                        <span className="text-[11px] text-stone-500 leading-snug line-clamp-2">
+                          {occ.text}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -356,16 +417,17 @@ export function RightSidebar({
   patent,
   referenceNumerals,
   activeNumeral,
+  activeTab,
+  onTabChange,
   onNumeralHover,
   onNumeralClick,
   collapsed,
   onToggle,
   onScrollTo,
 }: RightSidebarProps) {
-  const [activeTab, setActiveTab] = useState("figures");
   const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
 
-  const isExpanded = activeTab === "figures" && selectedFigure !== null;
+  // Removed: dynamic width expansion is gone — sidebar is always w-96
 
   if (collapsed) {
     return (
@@ -380,10 +442,9 @@ export function RightSidebar({
   return (
     <Tabs
       value={activeTab}
-      onValueChange={setActiveTab}
+      onValueChange={onTabChange}
       className={cn(
-        "flex flex-col border-l border-stone-200 bg-white shrink-0 transition-[width] duration-200",
-        isExpanded ? "w-[45vw]" : "w-80"
+        "flex flex-col border-l border-stone-200 bg-white shrink-0 w-96"
       )}
     >
       {/* Tab bar + collapse */}

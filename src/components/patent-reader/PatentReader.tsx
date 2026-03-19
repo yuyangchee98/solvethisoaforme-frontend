@@ -47,6 +47,7 @@ function SearchForm({
 
 export function PatentReader() {
   const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState("figures");
   const [patent, setPatent] = useState<Patent | null>(null);
   const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
   const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
@@ -93,6 +94,21 @@ export function PatentReader() {
         setPatent(null);
       })
       .finally(() => setLoading(false));
+  }, []);
+
+  const handleNumeralClickFromSpec = useCallback((numeral: string | null) => {
+    setActiveNumeral(numeral);
+    if (numeral) {
+      setSidebarTab("details");
+      // Scroll the table row into view — use two rAFs to ensure React has rendered
+      // the tab switch before we query the DOM
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const row = document.querySelector(`[data-ref-row="${numeral}"]`);
+          row?.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+      });
+    }
   }, []);
 
   const handleScrollTo = useCallback((id: string) => {
@@ -199,12 +215,14 @@ export function PatentReader() {
           patent={patent}
           activeNumeral={activeNumeral}
           onNumeralHover={setActiveNumeral}
-          onNumeralClick={setActiveNumeral}
+          onNumeralClick={handleNumeralClickFromSpec}
         />
         <RightSidebar
           patent={patent}
           referenceNumerals={referenceNumerals}
           activeNumeral={activeNumeral}
+          activeTab={sidebarTab}
+          onTabChange={setSidebarTab}
           onNumeralHover={setActiveNumeral}
           onNumeralClick={setActiveNumeral}
           collapsed={rightCollapsed}

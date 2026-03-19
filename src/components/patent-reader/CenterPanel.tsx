@@ -2,8 +2,11 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent } from "./types";
 
-// Matches reference numerals like ( 110 ), ( 100a ), ( 7025 )
-const REF_NUM_REGEX = /\(\s*(\d+[a-zA-Z]?)\s*\)/g;
+// Matches reference numerals:
+//   Parenthesized: ( 110 ), ( 100a )
+//   Bare after a word: "camera 110", "layers 602"
+// Excludes FIG./claim/step prefixes via the negative lookbehind group
+const REF_NUM_REGEX = /(?:\(\s*(\d{1,5}[a-zA-Z]?)\s*\))|(?<=\b[a-zA-Z][\w-]*\s)(\d{1,5}[a-zA-Z]?)(?=[\s,;.\)\]]|$)/g;
 
 interface CenterPanelProps {
   patent: Patent;
@@ -34,7 +37,8 @@ function RichText({
     if (matchStart > lastIndex) {
       parts.push(text.slice(lastIndex, matchStart));
     }
-    parts.push({ numeral: match[1], raw: match[0] });
+    // Group 1 = parenthesized, Group 2 = bare
+    parts.push({ numeral: match[1] || match[2], raw: match[0] });
     lastIndex = matchStart + match[0].length;
   }
   if (lastIndex < text.length) {
