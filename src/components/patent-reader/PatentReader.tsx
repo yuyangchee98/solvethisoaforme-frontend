@@ -48,6 +48,7 @@ function SearchForm({
 export function PatentReader() {
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [sidebarTab, setSidebarTab] = useState("figures");
+  const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
   const [patent, setPatent] = useState<Patent | null>(null);
   const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
   const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
@@ -110,6 +111,17 @@ export function PatentReader() {
       });
     }
   }, []);
+
+  const handleFigureClick = useCallback(
+    (figIndex: number) => {
+      // FIG. N maps to figure_urls[N] (index 0 is cover sheet D00000)
+      if (patent && figIndex >= 0 && figIndex < patent.figure_urls.length) {
+        setSidebarTab("figures");
+        setSelectedFigure(figIndex);
+      }
+    },
+    [patent]
+  );
 
   const handleScrollTo = useCallback((id: string) => {
     document
@@ -216,6 +228,7 @@ export function PatentReader() {
           activeNumeral={activeNumeral}
           onNumeralHover={setActiveNumeral}
           onNumeralClick={handleNumeralClickFromSpec}
+          onFigureClick={handleFigureClick}
         />
         <RightSidebar
           patent={patent}
@@ -223,6 +236,8 @@ export function PatentReader() {
           activeNumeral={activeNumeral}
           activeTab={sidebarTab}
           onTabChange={setSidebarTab}
+          selectedFigure={selectedFigure}
+          onSelectFigure={setSelectedFigure}
           onNumeralHover={setActiveNumeral}
           onNumeralClick={setActiveNumeral}
           collapsed={rightCollapsed}

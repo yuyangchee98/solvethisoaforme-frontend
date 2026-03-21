@@ -24,6 +24,8 @@ interface RightSidebarProps {
   activeNumeral: string | null;
   activeTab: string;
   onTabChange: (tab: string) => void;
+  selectedFigure: number | null;
+  onSelectFigure: (i: number | null) => void;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   collapsed: boolean;
@@ -114,27 +116,30 @@ function FiguresTab({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Thumbnail strip */}
+      {/* Thumbnail strip — skip index 0 (cover sheet) */}
       <div className="flex gap-1.5 p-2 overflow-x-auto border-b border-stone-100 shrink-0">
-        {patent.figure_urls.map((url, i) => (
-          <button
-            key={url}
-            onClick={() => onSelectFigure(selectedFigure === i ? null : i)}
-            className={cn(
-              "rounded border overflow-hidden bg-white shrink-0 transition-all hover:border-amber-400",
-              selectedFigure === i
-                ? "border-amber-500 ring-1 ring-amber-500/30"
-                : "border-stone-200"
-            )}
-          >
-            <img
-              src={url}
-              alt={`Figure ${i}`}
-              className="h-14 w-auto"
-              loading="lazy"
-            />
-          </button>
-        ))}
+        {patent.figure_urls.map((url, i) => {
+          if (i === 0) return null; // skip cover sheet
+          return (
+            <button
+              key={url}
+              onClick={() => onSelectFigure(selectedFigure === i ? null : i)}
+              className={cn(
+                "rounded border overflow-hidden bg-white shrink-0 transition-all hover:border-amber-400",
+                selectedFigure === i
+                  ? "border-amber-500 ring-1 ring-amber-500/30"
+                  : "border-stone-200"
+              )}
+            >
+              <img
+                src={url}
+                alt={`Figure ${i}`}
+                className="h-14 w-auto"
+                loading="lazy"
+              />
+            </button>
+          );
+        })}
       </div>
 
       {/* Selected figure — sized to fit vertically */}
@@ -419,13 +424,14 @@ export function RightSidebar({
   activeNumeral,
   activeTab,
   onTabChange,
+  selectedFigure,
+  onSelectFigure,
   onNumeralHover,
   onNumeralClick,
   collapsed,
   onToggle,
   onScrollTo,
 }: RightSidebarProps) {
-  const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
 
   // Removed: dynamic width expansion is gone — sidebar is always w-96
 
@@ -473,7 +479,7 @@ export function RightSidebar({
         <FiguresTab
           patent={patent}
           selectedFigure={selectedFigure}
-          onSelectFigure={setSelectedFigure}
+          onSelectFigure={onSelectFigure}
         />
       </TabsContent>
       <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">

@@ -2,50 +2,66 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent } from "./types";
 
-// Matches reference numerals:
-//   Parenthesized: ( 110 ), ( 100a )
-//   Bare after a word: "camera 110", "layers 602"
-// Excludes FIG./claim/step prefixes via the negative lookbehind group
-const REF_NUM_REGEX = /(?:\(\s*(\d{1,5}[a-zA-Z]?)\s*\))|(?<=\b[a-zA-Z][\w-]*\s)(\d{1,5}[a-zA-Z]?)(?=[\s,;.\)\]]|$)/g;
+// Combined regex matching both reference numerals and FIG references.
+// Groups:
+//   1 = parenthesized ref numeral: ( 110 )
+//   2 = bare ref numeral after a word: camera 110
+//   3 = figure number from FIG reference: FIG. 3, FIGS. 3A
+const RICH_TEXT_REGEX =
+  /(?:\(\s*(\d{1,5}[a-zA-Z]?)\s*\))|(?<=\b[a-zA-Z][\w-]*\s)(\d{1,5}[a-zA-Z]?)(?=[\s,;.\)\]]|$)|(?:FIGS?\.?\s*(\d+[a-zA-Z]?))/gi;
+
+type RichPart =
+  | string
+  | { type: "numeral"; numeral: string; raw: string }
+  | { type: "figure"; figNum: string; raw: string };
 
 interface CenterPanelProps {
   patent: Patent;
   activeNumeral: string | null;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
+  onFigureClick: (figIndex: number) => void;
 }
 
-/**
- * Split text on reference numeral patterns and render them as interactive spans.
- */
 function RichText({
   text,
   activeNumeral,
   onNumeralHover,
   onNumeralClick,
+  onFigureClick,
 }: {
   text: string;
   activeNumeral: string | null;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
+  onFigureClick: (figIndex: number) => void;
 }) {
-  const parts: (string | { numeral: string; raw: string })[] = [];
+  const parts: RichPart[] = [];
   let lastIndex = 0;
 
-  for (const match of text.matchAll(REF_NUM_REGEX)) {
+  for (const match of text.matchAll(RICH_TEXT_REGEX)) {
     const matchStart = match.index!;
     if (matchStart > lastIndex) {
       parts.push(text.slice(lastIndex, matchStart));
     }
-    // Group 1 = parenthesized, Group 2 = bare
-    parts.push({ numeral: match[1] || match[2], raw: match[0] });
+
+    if (match[3] != null) {
+      // FIG reference
+      parts.push({ type: "figure", figNum: match[3], raw: match[0] });
+    } else {
+      // Reference numeral (parenthesized or bare)
+      parts.push({
+        type: "numeral",
+        numeral: match[1] || match[2],
+        raw: match[0],
+      });
+    }
     lastIndex = matchStart + match[0].length;
   }
   if (lastIndex < text.length) {
     parts.push(text.slice(lastIndex));
   }
 
-  // No reference numerals found — return plain text
   if (parts.length === 1 && typeof parts[0] === "string") {
     return <>{text}</>;
   }
@@ -56,6 +72,24 @@ function RichText({
         if (typeof part === "string") {
           return <span key={i}>{part}</span>;
         }
+
+        if (part.type === "figure") {
+          const figIndex = parseInt(part.figNum, 10);
+          return (
+            <span
+              key={i}
+              onClick={(e) => {
+                e.stopPropagation();
+                onFigureClick(figIndex);
+              }}
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer rounded px-0.5 transition-colors font-medium"
+            >
+              {part.raw}
+            </span>
+          );
+        }
+
+        // Reference numeral
         const isActive = activeNumeral === part.numeral;
         return (
           <span
@@ -87,8 +121,14 @@ export function CenterPanel({
   activeNumeral,
   onNumeralHover,
   onNumeralClick,
+  onFigureClick,
 }: CenterPanelProps) {
-  const richTextProps = { activeNumeral, onNumeralHover, onNumeralClick };
+  const richTextProps = {
+    activeNumeral,
+    onNumeralHover,
+    onNumeralClick,
+    onFigureClick,
+  };
 
   return (
     <div className="flex-1 overflow-y-auto bg-stone-50">
