@@ -263,6 +263,19 @@ export interface ReferenceNumeral {
   count: number;
 }
 
+export async function fetchFigureMap(
+  publicationNumber: string
+): Promise<Record<string, number>> {
+  const response = await fetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/figure-map`
+  );
+
+  if (!response.ok) return {};
+
+  const data = await response.json();
+  return data.figure_map ?? {};
+}
+
 export async function fetchReferenceNumerals(
   publicationNumber: string
 ): Promise<ReferenceNumeral[]> {

@@ -3,7 +3,7 @@ import { Search, Loader2, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
-import { fetchPatent, fetchReferenceNumerals } from "@/lib/api";
+import { fetchPatent, fetchReferenceNumerals, fetchFigureMap } from "@/lib/api";
 import type { ReferenceNumeral } from "@/lib/api";
 import type { Patent } from "./types";
 
@@ -51,6 +51,7 @@ export function PatentReader() {
   const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
   const [patent, setPatent] = useState<Patent | null>(null);
   const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
+  const [figureMap, setFigureMap] = useState<Record<string, number>>({});
   const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,11 +66,16 @@ export function PatentReader() {
       setLoading(true);
       setError(null);
       setReferenceNumerals([]);
+      setFigureMap({});
       try {
         const data = await fetchPatent(trimmed);
         setPatent(data);
-        // Fire async reference numeral extraction (non-blocking)
+        // Fire async enrichments (non-blocking)
         fetchReferenceNumerals(trimmed).then(setReferenceNumerals);
+        fetchFigureMap(trimmed).then((map) => {
+          console.log("[FigureMap] OCR result:", map);
+          setFigureMap(map);
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch patent");
         setPatent(null);
@@ -85,10 +91,15 @@ export function PatentReader() {
     setLoading(true);
     setError(null);
     setReferenceNumerals([]);
+    setFigureMap({});
     fetchPatent(number)
       .then((data) => {
         setPatent(data);
         fetchReferenceNumerals(number).then(setReferenceNumerals);
+        fetchFigureMap(number).then((map) => {
+          console.log("[FigureMap] OCR result:", map);
+          setFigureMap(map);
+        });
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : "Failed to fetch patent");
@@ -113,14 +124,19 @@ export function PatentReader() {
   }, []);
 
   const handleFigureClick = useCallback(
-    (figIndex: number) => {
-      // FIG. N maps to figure_urls[N] (index 0 is cover sheet D00000)
-      if (patent && figIndex >= 0 && figIndex < patent.figure_urls.length) {
+    (figNum: number) => {
+      if (!patent) return;
+      const figStr = String(figNum);
+      // Use OCR-derived figure map if available, otherwise fall back to index
+      const mapped = figureMap[figStr];
+      const sheetIndex = mapped ?? figNum;
+      console.log(`[FigureClick] FIG. ${figStr} → sheet ${sheetIndex}${mapped != null ? " (from OCR)" : " (fallback)"}`);
+      if (sheetIndex >= 0 && sheetIndex < patent.figure_urls.length) {
         setSidebarTab("figures");
-        setSelectedFigure(figIndex);
+        setSelectedFigure(sheetIndex);
       }
     },
-    [patent]
+    [patent, figureMap]
   );
 
   const handleScrollTo = useCallback((id: string) => {
