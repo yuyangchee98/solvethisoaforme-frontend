@@ -2,18 +2,22 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent } from "./types";
 
-// Combined regex matching both reference numerals and FIG references.
-// Groups:
-//   1 = parenthesized ref numeral: ( 110 )
-//   2 = bare ref numeral after a word: camera 110
-//   3 = figure number from FIG reference: FIG. 3, FIGS. 3A
-const RICH_TEXT_REGEX =
-  /(?:\(\s*(\d{1,5}[a-zA-Z]?)\s*\))|(?<=\b[a-zA-Z][\w-]*\s)(\d{1,5}[a-zA-Z]?)(?=[\s,;.\)\]]|$)|(?:FIGS?\.?\s*(\d+[a-zA-Z]?))/gi;
+// Figure enumerations: "FIG. 1", "FIGS. 2 and 3", "FIGS. 2, 3 and 8", "FIGS. 2-5"
+// Matches the entire enumeration as one unit so continuation numbers aren't misidentified.
+const FIG_ENUM_REGEX =
+  /(?:figures?|figs?\.?)\s*\d+[a-zA-Z]?(?:\s*[-–]\s*\d+[a-zA-Z]?|(?:\s*,\s*\d+[a-zA-Z]?)*(?:\s+(?:and|or|to|through)\s+\d+[a-zA-Z]?)?)/gi;
+
+// Reference numerals: parenthesized (110) or bare after a word
+const REF_NUM_REGEX =
+  /(?:\(\s*(\d{1,5}[a-zA-Z]?)\s*\))|(?<=\b[a-zA-Z][\w-]*\s)(\d{1,5}[a-zA-Z]?)(?=[\s,;.\)\]]|$)/gi;
+
+// Extract individual figure numbers from a FIG enumeration match
+const FIG_NUM_EXTRACT = /\d+[a-zA-Z]?/g;
 
 type RichPart =
   | string
   | { type: "numeral"; numeral: string; raw: string }
-  | { type: "figure"; figNum: string; raw: string };
+  | { type: "figure"; figNums: string[]; raw: string };
 
 interface CenterPanelProps {
   patent: Patent;
@@ -36,27 +40,52 @@ function RichText({
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
 }) {
+  // Pass 1: find all FIG enumerations and mark their spans as consumed
+  const figSpans: { start: number; end: number; figNums: string[]; raw: string }[] = [];
+  for (const match of text.matchAll(FIG_ENUM_REGEX)) {
+    const nums = match[0].match(FIG_NUM_EXTRACT) || [];
+    figSpans.push({
+      start: match.index!,
+      end: match.index! + match[0].length,
+      figNums: nums,
+      raw: match[0],
+    });
+  }
+
+  // Pass 2: find ref numerals, skipping any that fall inside a FIG span
+  const refSpans: { start: number; end: number; numeral: string; raw: string }[] = [];
+  for (const match of text.matchAll(REF_NUM_REGEX)) {
+    const mStart = match.index!;
+    const mEnd = mStart + match[0].length;
+    // Skip if overlapping with any FIG enumeration
+    if (figSpans.some((f) => mStart < f.end && mEnd > f.start)) continue;
+    refSpans.push({
+      start: mStart,
+      end: mEnd,
+      numeral: match[1] || match[2],
+      raw: match[0],
+    });
+  }
+
+  // Merge and sort all spans by position
+  const allSpans: (typeof figSpans[number] | typeof refSpans[number])[] = [
+    ...figSpans,
+    ...refSpans,
+  ].sort((a, b) => a.start - b.start);
+
+  // Build parts array
   const parts: RichPart[] = [];
   let lastIndex = 0;
-
-  for (const match of text.matchAll(RICH_TEXT_REGEX)) {
-    const matchStart = match.index!;
-    if (matchStart > lastIndex) {
-      parts.push(text.slice(lastIndex, matchStart));
+  for (const span of allSpans) {
+    if (span.start > lastIndex) {
+      parts.push(text.slice(lastIndex, span.start));
     }
-
-    if (match[3] != null) {
-      // FIG reference
-      parts.push({ type: "figure", figNum: match[3], raw: match[0] });
+    if ("figNums" in span) {
+      parts.push({ type: "figure", figNums: span.figNums, raw: span.raw });
     } else {
-      // Reference numeral (parenthesized or bare)
-      parts.push({
-        type: "numeral",
-        numeral: match[1] || match[2],
-        raw: match[0],
-      });
+      parts.push({ type: "numeral", numeral: span.numeral, raw: span.raw });
     }
-    lastIndex = matchStart + match[0].length;
+    lastIndex = span.end;
   }
   if (lastIndex < text.length) {
     parts.push(text.slice(lastIndex));
@@ -74,19 +103,52 @@ function RichText({
         }
 
         if (part.type === "figure") {
-          const figIndex = parseInt(part.figNum, 10);
-          return (
-            <span
-              key={i}
-              onClick={(e) => {
-                e.stopPropagation();
-                onFigureClick(figIndex);
-              }}
-              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer rounded px-0.5 transition-colors font-medium"
-            >
-              {part.raw}
-            </span>
-          );
+          // Render the entire FIG text, making each figure number clickable
+          const raw = part.raw;
+          const numMatches = [...raw.matchAll(FIG_NUM_EXTRACT)];
+          if (numMatches.length === 0) {
+            return <span key={i}>{raw}</span>;
+          }
+
+          // Split the raw text around each figure number
+          const fragments: React.ReactNode[] = [];
+          let fi = 0;
+          for (let ni = 0; ni < numMatches.length; ni++) {
+            const nm = numMatches[ni];
+            const nmStart = nm.index!;
+            // Text before this number (e.g. "FIGS. ", ", ", " and ")
+            if (nmStart > fi) {
+              fragments.push(
+                <span key={`${i}-t${ni}`} className="text-blue-600 font-medium">
+                  {raw.slice(fi, nmStart)}
+                </span>
+              );
+            }
+            const figIndex = parseInt(nm[0], 10);
+            fragments.push(
+              <span
+                key={`${i}-n${ni}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFigureClick(figIndex);
+                }}
+                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer rounded px-0.5 transition-colors font-medium"
+              >
+                {nm[0]}
+              </span>
+            );
+            fi = nmStart + nm[0].length;
+          }
+          // Trailing text after last number
+          if (fi < raw.length) {
+            fragments.push(
+              <span key={`${i}-te`} className="text-blue-600 font-medium">
+                {raw.slice(fi)}
+              </span>
+            );
+          }
+
+          return <span key={i}>{fragments}</span>;
         }
 
         // Reference numeral
