@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
 import { fetchPatent, fetchReferenceNumerals, fetchFigureMap } from "@/lib/api";
-import type { ReferenceNumeral, NumeralLocation } from "@/lib/api";
+import type { ReferenceNumeral, ReferenceNumeralHighlights, NumeralLocation } from "@/lib/api";
 import type { Patent } from "./types";
 
 const EXAMPLE_PATENTS = [
@@ -51,6 +51,7 @@ export function PatentReader() {
   const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
   const [patent, setPatent] = useState<Patent | null>(null);
   const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
+  const [numeralHighlights, setNumeralHighlights] = useState<ReferenceNumeralHighlights>({ abstract: [], description: [], claims: [] });
   const [figureMap, setFigureMap] = useState<Record<string, number>>({});
   const [numeralLocations, setNumeralLocations] = useState<Record<string, NumeralLocation[]>>({});
   const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
@@ -76,8 +77,11 @@ export function PatentReader() {
       if (id !== searchIdRef.current) return; // stale
       setPatent(data);
       // Fire async enrichments (non-blocking) with staleness guard
-      fetchReferenceNumerals(pubNumber).then((nums) => {
-        if (id === searchIdRef.current) setReferenceNumerals(nums);
+      fetchReferenceNumerals(pubNumber).then(({ numerals, highlights }) => {
+        if (id === searchIdRef.current) {
+          setReferenceNumerals(numerals);
+          setNumeralHighlights(highlights);
+        }
       });
       fetchFigureMap(pubNumber).then(({ figureMap: fm, numeralLocations: nl }) => {
         if (id !== searchIdRef.current) return; // stale
@@ -169,6 +173,7 @@ export function PatentReader() {
     }
     return map;
   }, [referenceNumerals]);
+
 
   // Welcome screen when no patent is loaded
   if (!patent) {
@@ -267,6 +272,7 @@ export function PatentReader() {
         <CenterPanel
           patent={patent}
           activeNumeral={activeNumeral}
+          highlights={numeralHighlights}
           onNumeralHover={setActiveNumeral}
           onNumeralClick={handleNumeralClickFromSpec}
           onFigureClick={handleFigureClick}

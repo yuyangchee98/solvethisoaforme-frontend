@@ -1,15 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent } from "./types";
+import type { ReferenceNumeralHighlights, HighlightSpan } from "@/lib/api";
 
 // Figure enumerations: "FIG. 1", "FIGS. 2 and 3", "FIGS. 2, 3 and 8", "FIGS. 2-5"
 // Matches the entire enumeration as one unit so continuation numbers aren't misidentified.
 const FIG_ENUM_REGEX =
   /(?:figures?|figs?\.?)\s*\d+[a-zA-Z]?(?:\s*[-–]\s*\d+[a-zA-Z]?|(?:\s*,\s*\d+[a-zA-Z]?)*(?:\s+(?:and|or|to|through)\s+\d+[a-zA-Z]?)?)/gi;
-
-// Reference numerals: parenthesized (110) or bare after a word
-const REF_NUM_REGEX =
-  /(?:\(\s*(\d{1,5}[a-zA-Z]?)\s*\))|(?<=\b[a-zA-Z][\w-]*\s)(\d{1,5}[a-zA-Z]?)(?=[\s,;.\)\]]|$)/gi;
 
 // Extract individual figure numbers from a FIG enumeration match
 const FIG_NUM_EXTRACT = /\d+[a-zA-Z]?/g;
@@ -22,6 +19,7 @@ type RichPart =
 interface CenterPanelProps {
   patent: Patent;
   activeNumeral: string | null;
+  highlights: ReferenceNumeralHighlights;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
@@ -30,17 +28,19 @@ interface CenterPanelProps {
 function RichText({
   text,
   activeNumeral,
+  spans,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
 }: {
   text: string;
   activeNumeral: string | null;
+  spans: HighlightSpan[];
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
 }) {
-  // Pass 1: find all FIG enumerations and mark their spans as consumed
+  // Pass 1: find all FIG enumerations
   const figSpans: { start: number; end: number; figNums: string[]; raw: string }[] = [];
   for (const match of text.matchAll(FIG_ENUM_REGEX)) {
     const nums = match[0].match(FIG_NUM_EXTRACT) || [];
@@ -52,18 +52,15 @@ function RichText({
     });
   }
 
-  // Pass 2: find ref numerals, skipping any that fall inside a FIG span
+  // Pass 2: use backend highlight spans, skipping any inside a FIG span
   const refSpans: { start: number; end: number; numeral: string; raw: string }[] = [];
-  for (const match of text.matchAll(REF_NUM_REGEX)) {
-    const mStart = match.index!;
-    const mEnd = mStart + match[0].length;
-    // Skip if overlapping with any FIG enumeration
-    if (figSpans.some((f) => mStart < f.end && mEnd > f.start)) continue;
+  for (const span of spans) {
+    if (figSpans.some((f) => span.start < f.end && span.end > f.start)) continue;
     refSpans.push({
-      start: mStart,
-      end: mEnd,
-      numeral: match[1] || match[2],
-      raw: match[0],
+      start: span.start,
+      end: span.end,
+      numeral: span.numeral,
+      raw: text.slice(span.start, span.end),
     });
   }
 
@@ -77,6 +74,7 @@ function RichText({
   const parts: RichPart[] = [];
   let lastIndex = 0;
   for (const span of allSpans) {
+    if (span.start < lastIndex) continue; // overlapping span, skip
     if (span.start > lastIndex) {
       parts.push(text.slice(lastIndex, span.start));
     }
@@ -103,20 +101,17 @@ function RichText({
         }
 
         if (part.type === "figure") {
-          // Render the entire FIG text, making each figure number clickable
           const raw = part.raw;
           const numMatches = [...raw.matchAll(FIG_NUM_EXTRACT)];
           if (numMatches.length === 0) {
             return <span key={i}>{raw}</span>;
           }
 
-          // Split the raw text around each figure number
           const fragments: React.ReactNode[] = [];
           let fi = 0;
           for (let ni = 0; ni < numMatches.length; ni++) {
             const nm = numMatches[ni];
             const nmStart = nm.index!;
-            // Text before this number (e.g. "FIGS. ", ", ", " and ")
             if (nmStart > fi) {
               fragments.push(
                 <span key={`${i}-t${ni}`} className="text-blue-600 font-medium">
@@ -139,7 +134,6 @@ function RichText({
             );
             fi = nmStart + nm[0].length;
           }
-          // Trailing text after last number
           if (fi < raw.length) {
             fragments.push(
               <span key={`${i}-te`} className="text-blue-600 font-medium">
@@ -181,11 +175,12 @@ function RichText({
 export function CenterPanel({
   patent,
   activeNumeral,
+  highlights,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
 }: CenterPanelProps) {
-  const richTextProps = {
+  const commonProps = {
     activeNumeral,
     onNumeralHover,
     onNumeralClick,
@@ -223,12 +218,16 @@ export function CenterPanel({
             Abstract
           </h2>
           <div className="text-sm leading-relaxed text-stone-700">
-            <RichText text={patent.abstract} {...richTextProps} />
+            <RichText
+              text={patent.abstract}
+              spans={highlights.abstract}
+              {...commonProps}
+            />
           </div>
         </section>
 
         {/* Description sections */}
-        {patent.description.map((section) => (
+        {patent.description.map((section, si) => (
           <section
             key={section.heading}
             id={`section-${section.heading.toLowerCase().replace(/\s+/g, "-")}`}
@@ -237,15 +236,19 @@ export function CenterPanel({
               {section.heading}
             </h2>
             <div className="space-y-3">
-              {section.paragraphs.map((para, i) => (
-                <div key={i} className="flex gap-2">
+              {section.paragraphs.map((para, pi) => (
+                <div key={pi} className="flex gap-2">
                   {para.number && (
                     <span className="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">
                       [{para.number}]
                     </span>
                   )}
                   <p className="text-sm leading-relaxed text-stone-700 flex-1">
-                    <RichText text={para.text} {...richTextProps} />
+                    <RichText
+                      text={para.text}
+                      spans={highlights.description[si]?.[pi] ?? []}
+                      {...commonProps}
+                    />
                   </p>
                 </div>
               ))}
@@ -259,7 +262,7 @@ export function CenterPanel({
             Claims
           </h2>
           <div className="space-y-4">
-            {patent.claims.map((claim) => (
+            {patent.claims.map((claim, ci) => (
               <div
                 key={claim.number}
                 id={`claim-${claim.number}`}
@@ -270,7 +273,11 @@ export function CenterPanel({
                     {claim.number}.
                   </span>
                   <p className="text-sm leading-relaxed text-stone-700">
-                    <RichText text={claim.text} {...richTextProps} />
+                    <RichText
+                      text={claim.text}
+                      spans={highlights.claims[ci] ?? []}
+                      {...commonProps}
+                    />
                   </p>
                 </div>
               </div>

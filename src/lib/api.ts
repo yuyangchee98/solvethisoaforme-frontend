@@ -263,6 +263,18 @@ export interface ReferenceNumeral {
   count: number;
 }
 
+export interface HighlightSpan {
+  start: number;
+  end: number;
+  numeral: string;
+}
+
+export interface ReferenceNumeralHighlights {
+  abstract: HighlightSpan[];
+  description: HighlightSpan[][][]; // [sectionIdx][paraIdx][spanIdx]
+  claims: HighlightSpan[][];        // [claimIdx][spanIdx]
+}
+
 export interface NumeralLocation {
   sheet: number;
   x: number;
@@ -289,13 +301,17 @@ export async function fetchFigureMap(
 
 export async function fetchReferenceNumerals(
   publicationNumber: string
-): Promise<ReferenceNumeral[]> {
+): Promise<{ numerals: ReferenceNumeral[]; highlights: ReferenceNumeralHighlights }> {
   const response = await fetch(
     `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/reference-numerals`
   );
 
-  if (!response.ok) return [];
+  if (!response.ok)
+    return { numerals: [], highlights: { abstract: [], description: [], claims: [] } };
 
   const data = await response.json();
-  return data.numerals ?? [];
+  return {
+    numerals: data.numerals ?? [],
+    highlights: data.highlights ?? { abstract: [], description: [], claims: [] },
+  };
 }
