@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Patent, PatentClaim } from "./types";
-import type { ReferenceNumeral } from "@/lib/api";
+import type { ReferenceNumeral, NumeralLocation } from "@/lib/api";
 
 interface RightSidebarProps {
   patent: Patent;
@@ -31,6 +31,7 @@ interface RightSidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   onScrollTo: (id: string) => void;
+  highlightedLocation: NumeralLocation | null;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -101,10 +102,12 @@ function FiguresTab({
   patent,
   selectedFigure,
   onSelectFigure,
+  highlightedLocation,
 }: {
   patent: Patent;
   selectedFigure: number | null;
   onSelectFigure: (i: number | null) => void;
+  highlightedLocation: NumeralLocation | null;
 }) {
   if (patent.figure_urls.length === 0) {
     return (
@@ -145,11 +148,28 @@ function FiguresTab({
       {/* Selected figure — sized to fit vertically */}
       {selectedFigure !== null ? (
         <div className="flex-1 min-h-0 flex items-center justify-center p-3">
-          <img
-            src={patent.figure_urls[selectedFigure]}
-            alt={`Figure ${selectedFigure}`}
-            className="max-w-full max-h-full object-contain rounded border border-stone-200 bg-white"
-          />
+          <div className="relative inline-block max-w-full max-h-full">
+            <img
+              src={patent.figure_urls[selectedFigure]}
+              alt={`Figure ${selectedFigure}`}
+              className="max-w-full max-h-full object-contain rounded border border-stone-200 bg-white block"
+            />
+            {highlightedLocation && highlightedLocation.sheet === selectedFigure && (() => {
+              // Pad the bbox so the tiny OCR text label is easy to spot
+              const pad = 0.015;
+              return (
+                <div
+                  className="absolute border-2 border-amber-500 bg-amber-400/20 rounded-sm animate-pulse pointer-events-none"
+                  style={{
+                    left: `${Math.max(0, highlightedLocation.x - pad) * 100}%`,
+                    top: `${Math.max(0, highlightedLocation.y - pad) * 100}%`,
+                    width: `${(highlightedLocation.w + pad * 2) * 100}%`,
+                    height: `${(highlightedLocation.h + pad * 2) * 100}%`,
+                  }}
+                />
+              );
+            })()}
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center">
@@ -431,9 +451,8 @@ export function RightSidebar({
   collapsed,
   onToggle,
   onScrollTo,
+  highlightedLocation,
 }: RightSidebarProps) {
-
-  // Removed: dynamic width expansion is gone — sidebar is always w-96
 
   if (collapsed) {
     return (
@@ -480,6 +499,7 @@ export function RightSidebar({
           patent={patent}
           selectedFigure={selectedFigure}
           onSelectFigure={onSelectFigure}
+          highlightedLocation={highlightedLocation}
         />
       </TabsContent>
       <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">

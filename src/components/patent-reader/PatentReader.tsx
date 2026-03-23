@@ -1,10 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Search, Loader2, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
 import { fetchPatent, fetchReferenceNumerals, fetchFigureMap } from "@/lib/api";
-import type { ReferenceNumeral } from "@/lib/api";
+import type { ReferenceNumeral, NumeralLocation } from "@/lib/api";
 import type { Patent } from "./types";
 
 const EXAMPLE_PATENTS = [
@@ -52,7 +52,10 @@ export function PatentReader() {
   const [patent, setPatent] = useState<Patent | null>(null);
   const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
   const [figureMap, setFigureMap] = useState<Record<string, number>>({});
+  const [numeralLocations, setNumeralLocations] = useState<Record<string, NumeralLocation[]>>({});
   const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
+  const [highlightedLocation, setHighlightedLocation] = useState<NumeralLocation | null>(null);
+  const numeralClickCount = useRef<Record<string, number>>({});
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,14 +70,18 @@ export function PatentReader() {
       setError(null);
       setReferenceNumerals([]);
       setFigureMap({});
+      setNumeralLocations({});
+      setHighlightedLocation(null);
+      numeralClickCount.current = {};
       try {
         const data = await fetchPatent(trimmed);
         setPatent(data);
         // Fire async enrichments (non-blocking)
         fetchReferenceNumerals(trimmed).then(setReferenceNumerals);
-        fetchFigureMap(trimmed).then((map) => {
-          console.log("[FigureMap] OCR result:", map);
-          setFigureMap(map);
+        fetchFigureMap(trimmed).then(({ figureMap: fm, numeralLocations: nl }) => {
+          console.log("[FigureMap] OCR result:", fm, "numerals:", Object.keys(nl).length);
+          setFigureMap(fm);
+          setNumeralLocations(nl);
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch patent");
@@ -92,13 +99,17 @@ export function PatentReader() {
     setError(null);
     setReferenceNumerals([]);
     setFigureMap({});
+    setNumeralLocations({});
+    setHighlightedLocation(null);
+    numeralClickCount.current = {};
     fetchPatent(number)
       .then((data) => {
         setPatent(data);
         fetchReferenceNumerals(number).then(setReferenceNumerals);
-        fetchFigureMap(number).then((map) => {
-          console.log("[FigureMap] OCR result:", map);
-          setFigureMap(map);
+        fetchFigureMap(number).then(({ figureMap: fm, numeralLocations: nl }) => {
+          console.log("[FigureMap] OCR result:", fm, "numerals:", Object.keys(nl).length);
+          setFigureMap(fm);
+          setNumeralLocations(nl);
         });
       })
       .catch((err) => {
@@ -109,11 +120,28 @@ export function PatentReader() {
   }, []);
 
   const handleNumeralClickFromSpec = useCallback((numeral: string | null) => {
-    setActiveNumeral(numeral);
-    if (numeral) {
+    if (!numeral) {
+      setActiveNumeral(null);
+      setHighlightedLocation(null);
+      return;
+    }
+
+    const locations = numeralLocations[numeral];
+    if (locations && locations.length > 0) {
+      // Cycle through occurrences on repeated clicks of the same numeral
+      const prev = numeralClickCount.current[numeral] ?? -1;
+      const next = numeral === activeNumeral ? prev + 1 : 0;
+      numeralClickCount.current[numeral] = next;
+      const loc = locations[next % locations.length];
+      setActiveNumeral(numeral);
+      setSidebarTab("figures");
+      setSelectedFigure(loc.sheet);
+      setHighlightedLocation(loc);
+    } else {
+      // No drawing location — fall back to details tab
+      setActiveNumeral(numeral);
+      setHighlightedLocation(null);
       setSidebarTab("details");
-      // Scroll the table row into view — use two rAFs to ensure React has rendered
-      // the tab switch before we query the DOM
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const row = document.querySelector(`[data-ref-row="${numeral}"]`);
@@ -121,7 +149,7 @@ export function PatentReader() {
         });
       });
     }
-  }, []);
+  }, [numeralLocations, activeNumeral]);
 
   const handleFigureClick = useCallback(
     (figNum: number) => {
@@ -253,12 +281,13 @@ export function PatentReader() {
           activeTab={sidebarTab}
           onTabChange={setSidebarTab}
           selectedFigure={selectedFigure}
-          onSelectFigure={setSelectedFigure}
+          onSelectFigure={(i) => { setSelectedFigure(i); setHighlightedLocation(null); }}
           onNumeralHover={setActiveNumeral}
           onNumeralClick={setActiveNumeral}
           collapsed={rightCollapsed}
           onToggle={() => setRightCollapsed((c) => !c)}
           onScrollTo={handleScrollTo}
+          highlightedLocation={highlightedLocation}
         />
       </div>
     </div>

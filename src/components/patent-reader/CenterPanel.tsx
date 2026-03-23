@@ -99,7 +99,7 @@ function RichText({
             onMouseLeave={() => onNumeralHover(null)}
             onClick={(e) => {
               e.stopPropagation();
-              onNumeralClick(isActive ? null : part.numeral);
+              onNumeralClick(part.numeral);
             }}
             className={cn(
               "font-mono text-[0.8em] cursor-pointer rounded px-0.5 transition-colors",

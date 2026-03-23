@@ -263,17 +263,28 @@ export interface ReferenceNumeral {
   count: number;
 }
 
+export interface NumeralLocation {
+  sheet: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export async function fetchFigureMap(
   publicationNumber: string
-): Promise<Record<string, number>> {
+): Promise<{ figureMap: Record<string, number>; numeralLocations: Record<string, NumeralLocation[]> }> {
   const response = await fetch(
     `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/figure-map`
   );
 
-  if (!response.ok) return {};
+  if (!response.ok) return { figureMap: {}, numeralLocations: {} };
 
   const data = await response.json();
-  return data.figure_map ?? {};
+  return {
+    figureMap: data.figure_map ?? {},
+    numeralLocations: data.numeral_locations ?? {},
+  };
 }
 
 export async function fetchReferenceNumerals(
