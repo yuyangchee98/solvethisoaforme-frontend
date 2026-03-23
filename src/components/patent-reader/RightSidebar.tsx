@@ -10,6 +10,7 @@ import {
   ChevronRight,
   ChevronDown,
   PanelRightClose,
+  ScanSearch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,11 @@ interface RightSidebarProps {
   onToggle: () => void;
   onScrollTo: (id: string) => void;
   highlightedLocation: NumeralLocation | null;
+  showAllBboxes: boolean;
+  onToggleBboxes: () => void;
+  numeralLocations: Record<string, NumeralLocation[]>;
+  numeralLabels: Record<string, string>;
+  onBboxClick: (numeral: string) => void;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -103,11 +109,21 @@ function FiguresTab({
   selectedFigure,
   onSelectFigure,
   highlightedLocation,
+  showAllBboxes,
+  onToggleBboxes,
+  numeralLocations,
+  numeralLabels,
+  onBboxClick,
 }: {
   patent: Patent;
   selectedFigure: number | null;
   onSelectFigure: (i: number | null) => void;
   highlightedLocation: NumeralLocation | null;
+  showAllBboxes: boolean;
+  onToggleBboxes: () => void;
+  numeralLocations: Record<string, NumeralLocation[]>;
+  numeralLabels: Record<string, string>;
+  onBboxClick: (numeral: string) => void;
 }) {
   if (patent.figure_urls.length === 0) {
     return (
@@ -147,28 +163,72 @@ function FiguresTab({
 
       {/* Selected figure — sized to fit vertically */}
       {selectedFigure !== null ? (
-        <div className="flex-1 min-h-0 flex items-center justify-center p-3">
-          <div className="relative inline-block max-w-full max-h-full">
-            <img
-              src={patent.figure_urls[selectedFigure]}
-              alt={`Figure ${selectedFigure}`}
-              className="max-w-full max-h-full object-contain rounded border border-stone-200 bg-white block"
-            />
-            {highlightedLocation && highlightedLocation.sheet === selectedFigure && (() => {
-              // Pad the bbox so the tiny OCR text label is easy to spot
-              const pad = 0.015;
-              return (
-                <div
-                  className="absolute border-2 border-amber-500 bg-amber-400/20 rounded-sm animate-pulse pointer-events-none"
-                  style={{
-                    left: `${Math.max(0, highlightedLocation.x - pad) * 100}%`,
-                    top: `${Math.max(0, highlightedLocation.y - pad) * 100}%`,
-                    width: `${(highlightedLocation.w + pad * 2) * 100}%`,
-                    height: `${(highlightedLocation.h + pad * 2) * 100}%`,
-                  }}
-                />
-              );
-            })()}
+        <div className="flex-1 min-h-0 flex flex-col">
+          {/* Bbox toggle */}
+          <div className="flex items-center justify-end px-3 pt-2">
+            <button
+              onClick={onToggleBboxes}
+              className={cn(
+                "flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors",
+                showAllBboxes
+                  ? "bg-amber-100 text-amber-700"
+                  : "text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+              )}
+              title="Show all detected reference numeral bounding boxes"
+            >
+              <ScanSearch className="size-3.5" />
+              Bounding boxes
+            </button>
+          </div>
+          <div className="flex-1 min-h-0 flex items-center justify-center px-3 pb-3">
+            <div className="relative inline-block max-w-full max-h-full">
+              <img
+                src={patent.figure_urls[selectedFigure]}
+                alt={`Figure ${selectedFigure}`}
+                className="max-w-full max-h-full object-contain rounded border border-stone-200 bg-white block"
+              />
+              {/* All bounding boxes overlay */}
+              {showAllBboxes && (() => {
+                const pad = 0.015;
+                const allOnSheet: { numeral: string; loc: NumeralLocation }[] = [];
+                for (const [numeral, locs] of Object.entries(numeralLocations)) {
+                  for (const loc of locs) {
+                    if (loc.sheet === selectedFigure) {
+                      allOnSheet.push({ numeral, loc });
+                    }
+                  }
+                }
+                return allOnSheet.map(({ numeral, loc }, i) => (
+                  <div
+                    key={`${numeral}-${i}`}
+                    className="absolute border border-amber-500/60 bg-amber-400/15 rounded-sm cursor-pointer hover:bg-amber-400/35 hover:border-amber-500 transition-colors"
+                    title={numeralLabels[numeral] ? `${numeral} — ${numeralLabels[numeral]}` : numeral}
+                    onClick={() => onBboxClick(numeral)}
+                    style={{
+                      left: `${Math.max(0, loc.x - pad) * 100}%`,
+                      top: `${Math.max(0, loc.y - pad) * 100}%`,
+                      width: `${(loc.w + pad * 2) * 100}%`,
+                      height: `${(loc.h + pad * 2) * 100}%`,
+                    }}
+                  />
+                ));
+              })()}
+              {/* Single highlighted location (from numeral click) */}
+              {highlightedLocation && highlightedLocation.sheet === selectedFigure && (() => {
+                const pad = 0.015;
+                return (
+                  <div
+                    className="absolute border-2 border-amber-500 bg-amber-400/20 rounded-sm animate-pulse pointer-events-none"
+                    style={{
+                      left: `${Math.max(0, highlightedLocation.x - pad) * 100}%`,
+                      top: `${Math.max(0, highlightedLocation.y - pad) * 100}%`,
+                      width: `${(highlightedLocation.w + pad * 2) * 100}%`,
+                      height: `${(highlightedLocation.h + pad * 2) * 100}%`,
+                    }}
+                  />
+                );
+              })()}
+            </div>
           </div>
         </div>
       ) : (
@@ -452,6 +512,11 @@ export function RightSidebar({
   onToggle,
   onScrollTo,
   highlightedLocation,
+  showAllBboxes,
+  onToggleBboxes,
+  numeralLocations,
+  numeralLabels,
+  onBboxClick,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -500,6 +565,11 @@ export function RightSidebar({
           selectedFigure={selectedFigure}
           onSelectFigure={onSelectFigure}
           highlightedLocation={highlightedLocation}
+          showAllBboxes={showAllBboxes}
+          onToggleBboxes={onToggleBboxes}
+          numeralLocations={numeralLocations}
+          numeralLabels={numeralLabels}
+          onBboxClick={onBboxClick}
         />
       </TabsContent>
       <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">

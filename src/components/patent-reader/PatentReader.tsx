@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { Search, Loader2, AlertCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CenterPanel } from "./CenterPanel";
@@ -55,46 +55,15 @@ export function PatentReader() {
   const [numeralLocations, setNumeralLocations] = useState<Record<string, NumeralLocation[]>>({});
   const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
   const [highlightedLocation, setHighlightedLocation] = useState<NumeralLocation | null>(null);
+  const [showAllBboxes, setShowAllBboxes] = useState(true);
   const numeralClickCount = useRef<Record<string, number>>({});
+  const searchIdRef = useRef(0);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = useCallback(
-    async (e?: React.FormEvent) => {
-      e?.preventDefault();
-      const trimmed = query.trim();
-      if (!trimmed) return;
-
-      setLoading(true);
-      setError(null);
-      setReferenceNumerals([]);
-      setFigureMap({});
-      setNumeralLocations({});
-      setHighlightedLocation(null);
-      numeralClickCount.current = {};
-      try {
-        const data = await fetchPatent(trimmed);
-        setPatent(data);
-        // Fire async enrichments (non-blocking)
-        fetchReferenceNumerals(trimmed).then(setReferenceNumerals);
-        fetchFigureMap(trimmed).then(({ figureMap: fm, numeralLocations: nl }) => {
-          console.log("[FigureMap] OCR result:", fm, "numerals:", Object.keys(nl).length);
-          setFigureMap(fm);
-          setNumeralLocations(nl);
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch patent");
-        setPatent(null);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [query]
-  );
-
-  const handleExampleClick = useCallback((number: string) => {
-    setQuery(number);
+  const loadPatent = useCallback(async (pubNumber: string) => {
+    const id = ++searchIdRef.current;
     setLoading(true);
     setError(null);
     setReferenceNumerals([]);
@@ -102,22 +71,42 @@ export function PatentReader() {
     setNumeralLocations({});
     setHighlightedLocation(null);
     numeralClickCount.current = {};
-    fetchPatent(number)
-      .then((data) => {
-        setPatent(data);
-        fetchReferenceNumerals(number).then(setReferenceNumerals);
-        fetchFigureMap(number).then(({ figureMap: fm, numeralLocations: nl }) => {
-          console.log("[FigureMap] OCR result:", fm, "numerals:", Object.keys(nl).length);
-          setFigureMap(fm);
-          setNumeralLocations(nl);
-        });
-      })
-      .catch((err) => {
-        setError(err instanceof Error ? err.message : "Failed to fetch patent");
-        setPatent(null);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const data = await fetchPatent(pubNumber);
+      if (id !== searchIdRef.current) return; // stale
+      setPatent(data);
+      // Fire async enrichments (non-blocking) with staleness guard
+      fetchReferenceNumerals(pubNumber).then((nums) => {
+        if (id === searchIdRef.current) setReferenceNumerals(nums);
+      });
+      fetchFigureMap(pubNumber).then(({ figureMap: fm, numeralLocations: nl }) => {
+        if (id !== searchIdRef.current) return; // stale
+        setFigureMap(fm);
+        setNumeralLocations(nl);
+      });
+    } catch (err) {
+      if (id !== searchIdRef.current) return; // stale
+      setError(err instanceof Error ? err.message : "Failed to fetch patent");
+      setPatent(null);
+    } finally {
+      if (id === searchIdRef.current) setLoading(false);
+    }
   }, []);
+
+  const handleSearch = useCallback(
+    (e?: React.FormEvent) => {
+      e?.preventDefault();
+      const trimmed = query.trim();
+      if (!trimmed) return;
+      loadPatent(trimmed);
+    },
+    [query, loadPatent]
+  );
+
+  const handleExampleClick = useCallback((number: string) => {
+    setQuery(number);
+    loadPatent(number);
+  }, [loadPatent]);
 
   const handleNumeralClickFromSpec = useCallback((numeral: string | null) => {
     if (!numeral) {
@@ -172,6 +161,14 @@ export function PatentReader() {
       .getElementById(id)
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
+
+  const numeralLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const ref of referenceNumerals) {
+      map[ref.numeral] = ref.label;
+    }
+    return map;
+  }, [referenceNumerals]);
 
   // Welcome screen when no patent is loaded
   if (!patent) {
@@ -288,6 +285,11 @@ export function PatentReader() {
           onToggle={() => setRightCollapsed((c) => !c)}
           onScrollTo={handleScrollTo}
           highlightedLocation={highlightedLocation}
+          showAllBboxes={showAllBboxes}
+          onToggleBboxes={() => setShowAllBboxes((v) => !v)}
+          numeralLocations={numeralLocations}
+          numeralLabels={numeralLabels}
+          onBboxClick={handleNumeralClickFromSpec}
         />
       </div>
     </div>
