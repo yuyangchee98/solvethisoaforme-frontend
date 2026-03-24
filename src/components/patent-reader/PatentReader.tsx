@@ -160,6 +160,24 @@ export function PatentReader() {
     [patent, figureMap]
   );
 
+  const handleBboxClick = useCallback(
+    (numeral: string) => {
+      const allSpans = document.querySelectorAll<HTMLElement>(
+        `[data-ref-num="${numeral}"]`
+      );
+      if (allSpans.length === 0) return;
+      const prev = numeralClickCount.current[numeral] ?? -1;
+      const next = numeral === activeNumeral ? prev + 1 : 0;
+      numeralClickCount.current[numeral] = next;
+      const target = allSpans[next % allSpans.length];
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("ring-2", "ring-amber-400");
+      setTimeout(() => target.classList.remove("ring-2", "ring-amber-400"), 1500);
+      setActiveNumeral(numeral);
+    },
+    [activeNumeral]
+  );
+
   const handleFigLabelClick = useCallback(
     (figNum: number) => {
       const figStr = String(figNum);
@@ -315,7 +333,7 @@ export function PatentReader() {
           onToggleBboxes={() => setShowAllBboxes((v) => !v)}
           numeralLocations={numeralLocations}
           numeralLabels={numeralLabels}
-          onBboxClick={handleNumeralClickFromSpec}
+          onBboxClick={handleBboxClick}
           onFigureClick={handleFigLabelClick}
         />
       </div>
