@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef, useMemo } from "react";
-import { Search, Loader2, AlertCircle, FileText } from "lucide-react";
+import { Search, Loader2, AlertCircle, FileText, PanelRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
+import { useIsMobile } from "@/lib/useIsMobile";
 import { fetchPatent, fetchReferenceNumerals, fetchFigureMap } from "@/lib/api";
 import type { ReferenceNumeral, ReferenceNumeralHighlights, NumeralLocation } from "@/lib/api";
 import type { Patent } from "./types";
@@ -46,6 +48,8 @@ function SearchForm({
 }
 
 export function PatentReader() {
+  const isMobile = useIsMobile();
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const [sidebarTab, setSidebarTab] = useState("figures");
   const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
@@ -221,7 +225,7 @@ export function PatentReader() {
           <div className="max-w-lg w-full space-y-6 -mt-16">
             {/* Heading */}
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-semibold text-stone-800">Patent Reader</h1>
+              <h1 className="text-xl md:text-2xl font-semibold text-stone-800">Patent Reader</h1>
               <p className="text-sm text-stone-500 leading-relaxed">
                 Look up any US patent or published application by its publication number.
                 The document will be parsed into a structured, readable format with
@@ -305,8 +309,8 @@ export function PatentReader() {
         />
       </div>
 
-      {/* Two-panel content */}
-      <div className="flex flex-1 min-h-0">
+      {/* Content area */}
+      <div className="flex flex-1 min-h-0 relative">
         <CenterPanel
           patent={patent}
           activeNumeral={activeNumeral}
@@ -315,27 +319,74 @@ export function PatentReader() {
           onNumeralClick={handleNumeralClickFromSpec}
           onFigureClick={handleFigureClick}
         />
-        <RightSidebar
-          patent={patent}
-          referenceNumerals={referenceNumerals}
-          activeNumeral={activeNumeral}
-          activeTab={sidebarTab}
-          onTabChange={setSidebarTab}
-          selectedFigure={selectedFigure}
-          onSelectFigure={(i) => { setSelectedFigure(i); setHighlightedLocation(null); }}
-          onNumeralHover={setActiveNumeral}
-          onNumeralClick={setActiveNumeral}
-          collapsed={rightCollapsed}
-          onToggle={() => setRightCollapsed((c) => !c)}
-          onScrollTo={handleScrollTo}
-          highlightedLocation={highlightedLocation}
-          showAllBboxes={showAllBboxes}
-          onToggleBboxes={() => setShowAllBboxes((v) => !v)}
-          numeralLocations={numeralLocations}
-          numeralLabels={numeralLabels}
-          onBboxClick={handleBboxClick}
-          onFigureClick={handleFigLabelClick}
-        />
+
+        {/* Desktop: inline sidebar */}
+        {!isMobile && (
+          <RightSidebar
+            patent={patent}
+            referenceNumerals={referenceNumerals}
+            activeNumeral={activeNumeral}
+            activeTab={sidebarTab}
+            onTabChange={setSidebarTab}
+            selectedFigure={selectedFigure}
+            onSelectFigure={(i) => { setSelectedFigure(i); setHighlightedLocation(null); }}
+            onNumeralHover={setActiveNumeral}
+            onNumeralClick={setActiveNumeral}
+            collapsed={rightCollapsed}
+            onToggle={() => setRightCollapsed((c) => !c)}
+            onScrollTo={handleScrollTo}
+            highlightedLocation={highlightedLocation}
+            showAllBboxes={showAllBboxes}
+            onToggleBboxes={() => setShowAllBboxes((v) => !v)}
+            numeralLocations={numeralLocations}
+            numeralLabels={numeralLabels}
+            onBboxClick={handleBboxClick}
+            onFigureClick={handleFigLabelClick}
+          />
+        )}
+
+        {/* Mobile: floating button + Sheet drawer */}
+        {isMobile && (
+          <>
+            <Button
+              size="icon"
+              variant="outline"
+              className="absolute bottom-4 right-4 z-10 size-11 rounded-full shadow-md bg-white border-stone-200"
+              onClick={() => setSheetOpen(true)}
+            >
+              <PanelRight className="size-5 text-stone-600" />
+            </Button>
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+              <SheetContent
+                side="right"
+                showCloseButton={false}
+                className="w-[85vw] max-w-md p-0 flex flex-col"
+              >
+                <RightSidebar
+                  patent={patent}
+                  referenceNumerals={referenceNumerals}
+                  activeNumeral={activeNumeral}
+                  activeTab={sidebarTab}
+                  onTabChange={setSidebarTab}
+                  selectedFigure={selectedFigure}
+                  onSelectFigure={(i) => { setSelectedFigure(i); setHighlightedLocation(null); }}
+                  onNumeralHover={setActiveNumeral}
+                  onNumeralClick={setActiveNumeral}
+                  collapsed={false}
+                  onToggle={() => setSheetOpen(false)}
+                  onScrollTo={(id) => { setSheetOpen(false); setTimeout(() => handleScrollTo(id), 300); }}
+                  highlightedLocation={highlightedLocation}
+                  showAllBboxes={showAllBboxes}
+                  onToggleBboxes={() => setShowAllBboxes((v) => !v)}
+                  numeralLocations={numeralLocations}
+                  numeralLabels={numeralLabels}
+                  onBboxClick={(numeral) => { setSheetOpen(false); setTimeout(() => handleBboxClick(numeral), 300); }}
+                  onFigureClick={handleFigLabelClick}
+                />
+              </SheetContent>
+            </Sheet>
+          </>
+        )}
       </div>
     </div>
   );

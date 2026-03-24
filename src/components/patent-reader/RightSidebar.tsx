@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import type { Patent, PatentClaim } from "./types";
 import type { ReferenceNumeral, NumeralLocation } from "@/lib/api";
 
@@ -201,35 +202,51 @@ function FiguresTab({
                     }
                   }
                 }
-                return allOnSheet.map(({ numeral, loc }, i) => {
-                  const isFigLabel = loc.type === "figure";
-                  return (
-                    <div
-                      key={`${numeral}-${i}`}
-                      className={cn(
-                        "absolute rounded-sm cursor-pointer transition-colors",
-                        isFigLabel
-                          ? "border border-sky-500/60 bg-sky-400/15 hover:bg-sky-400/35 hover:border-sky-500"
-                          : "border border-amber-500/60 bg-amber-400/15 hover:bg-amber-400/35 hover:border-amber-500"
-                      )}
-                      title={isFigLabel ? numeral : (numeralLabels[numeral] ? `${numeral} — ${numeralLabels[numeral]}` : numeral)}
-                      onClick={() => {
-                        if (isFigLabel) {
-                          const figNum = parseInt(numeral.replace(/^FIG\.\s*/, ""), 10);
-                          if (!isNaN(figNum)) onFigureClick(figNum);
-                        } else {
-                          onBboxClick(numeral);
-                        }
-                      }}
-                      style={{
-                        left: `${Math.max(0, loc.x - pad) * 100}%`,
-                        top: `${Math.max(0, loc.y - pad) * 100}%`,
-                        width: `${(loc.w + pad * 2) * 100}%`,
-                        height: `${(loc.h + pad * 2) * 100}%`,
-                      }}
-                    />
-                  );
-                });
+                return (
+                  <TooltipProvider>
+                    {allOnSheet.map(({ numeral, loc }, i) => {
+                      const isFigLabel = loc.type === "figure";
+                      const label = isFigLabel ? null : numeralLabels[numeral];
+                      return (
+                        <Tooltip key={`${numeral}-${i}`}>
+                          <TooltipTrigger asChild>
+                            <div
+                              className={cn(
+                                "absolute rounded-sm cursor-pointer transition-colors",
+                                isFigLabel
+                                  ? "border border-sky-500/60 bg-sky-400/15 hover:bg-sky-400/35 hover:border-sky-500"
+                                  : "border border-amber-500/60 bg-amber-400/15 hover:bg-amber-400/35 hover:border-amber-500"
+                              )}
+                              onClick={() => {
+                                if (isFigLabel) {
+                                  const figNum = parseInt(numeral.replace(/^FIG\.\s*/, ""), 10);
+                                  if (!isNaN(figNum)) onFigureClick(figNum);
+                                } else {
+                                  onBboxClick(numeral);
+                                }
+                              }}
+                              style={{
+                                left: `${Math.max(0, loc.x - pad) * 100}%`,
+                                top: `${Math.max(0, loc.y - pad) * 100}%`,
+                                width: `${(loc.w + pad * 2) * 100}%`,
+                                height: `${(loc.h + pad * 2) * 100}%`,
+                              }}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent side="top" sideOffset={4}>
+                            {isFigLabel ? (
+                              <span>FIG. {numeral.replace(/^FIG\.\s*/, "")}</span>
+                            ) : label ? (
+                              <span><span className="font-mono">{numeral}</span> — {label}</span>
+                            ) : (
+                              <span className="font-mono">{numeral}</span>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </TooltipProvider>
+                );
               })()}
               {/* Single highlighted location (from numeral click) */}
               {highlightedLocation && highlightedLocation.sheet === selectedFigure && (() => {

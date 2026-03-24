@@ -190,10 +190,10 @@ export function CenterPanel({
 
   return (
     <div className="flex-1 overflow-y-auto bg-stone-50">
-      <div className="max-w-3xl mx-auto py-8 px-6 space-y-8">
+      <div className="max-w-3xl mx-auto px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 space-y-8">
         {/* Title & metadata */}
         <header className="space-y-3">
-          <h1 className="text-xl font-semibold text-stone-900 leading-tight">
+          <h1 className="text-xl lg:text-2xl font-semibold text-stone-900 leading-tight">
             {patent.title}
           </h1>
           <div className="flex flex-wrap gap-2 text-xs text-stone-500">
@@ -218,7 +218,7 @@ export function CenterPanel({
           <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-400 mb-2">
             Abstract
           </h2>
-          <div className="text-sm leading-relaxed text-stone-700">
+          <div className="text-sm lg:text-base leading-relaxed text-stone-700">
             <RichText
               text={patent.abstract}
               spans={highlights.abstract}
@@ -240,11 +240,11 @@ export function CenterPanel({
               {section.paragraphs.map((para, pi) => (
                 <div key={pi} className="flex gap-2">
                   {para.number && (
-                    <span className="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">
+                    <span className="text-[10px] lg:text-[11px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">
                       [{para.number}]
                     </span>
                   )}
-                  <p className="text-sm leading-relaxed text-stone-700 flex-1">
+                  <p className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1">
                     <RichText
                       text={para.text}
                       spans={highlights.description[si]?.[pi] ?? []}
@@ -273,7 +273,7 @@ export function CenterPanel({
                   <span className="text-xs font-mono font-medium text-stone-400 pt-0.5 select-none shrink-0 w-5 text-right">
                     {claim.number}.
                   </span>
-                  <p className="text-sm leading-relaxed text-stone-700">
+                  <p className="text-sm lg:text-base leading-relaxed text-stone-700">
                     <RichText
                       text={claim.text}
                       spans={highlights.claims[ci] ?? []}
