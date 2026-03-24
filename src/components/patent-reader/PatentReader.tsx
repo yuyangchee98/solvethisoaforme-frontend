@@ -289,12 +289,15 @@ export function PatentReader() {
               <CenterPanel
                 patent={left.patent}
                 activeNumeral={left.activeNumeral}
+                activeElementGroup={left.activeElementGroup}
                 highlights={left.numeralHighlights}
                 claimElements={left.claimElements}
                 onNumeralHover={left.setActiveNumeral}
                 onNumeralClick={left.handleNumeralClickFromSpec}
                 onFigureClick={left.handleFigureClick}
                 onClaimClick={left.handleClaimClick}
+                onElementHover={left.setActiveElementGroup}
+                onElementClick={left.handleElementClick}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -330,12 +333,15 @@ export function PatentReader() {
               <CenterPanel
                 patent={right.patent}
                 activeNumeral={right.activeNumeral}
+                activeElementGroup={right.activeElementGroup}
                 highlights={right.numeralHighlights}
                 claimElements={right.claimElements}
                 onNumeralHover={right.setActiveNumeral}
                 onNumeralClick={right.handleNumeralClickFromSpec}
                 onFigureClick={right.handleFigureClick}
                 onClaimClick={right.handleClaimClick}
+                onElementHover={right.setActiveElementGroup}
+                onElementClick={right.handleElementClick}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -390,12 +396,15 @@ export function PatentReader() {
         <CenterPanel
           patent={left.patent!}
           activeNumeral={left.activeNumeral}
+          activeElementGroup={left.activeElementGroup}
           highlights={left.numeralHighlights}
           claimElements={left.claimElements}
           onNumeralHover={left.setActiveNumeral}
           onNumeralClick={left.handleNumeralClickFromSpec}
           onFigureClick={left.handleFigureClick}
           onClaimClick={left.handleClaimClick}
+          onElementHover={left.setActiveElementGroup}
+          onElementClick={left.handleElementClick}
         />
 
         {/* Desktop: inline sidebar */}

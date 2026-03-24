@@ -85,12 +85,15 @@ type RichPart =
 interface CenterPanelProps {
   patent: Patent;
   activeNumeral: string | null;
+  activeElementGroup: number | null;
   highlights: ReferenceNumeralHighlights;
   claimElements: ClaimElementsData;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
   onClaimClick: (claimNumber: number) => void;
+  onElementHover: (groupId: number | null) => void;
+  onElementClick: (groupId: number) => void;
 }
 
 /** Find the claim element span that covers a given character position. */
@@ -103,20 +106,26 @@ function RichText({
   activeNumeral,
   spans,
   elementSpans,
+  activeElementGroup,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
   onClaimClick,
+  onElementHover,
+  onElementClick,
   currentClaimNumber,
 }: {
   text: string;
   activeNumeral: string | null;
   spans: HighlightSpan[];
   elementSpans?: ClaimElementSpan[];
+  activeElementGroup?: number | null;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
   onClaimClick?: (claimNumber: number) => void;
+  onElementHover?: (groupId: number | null) => void;
+  onElementClick?: (groupId: number) => void;
   currentClaimNumber?: number;
 }) {
   // Pass 1: find all FIG enumerations
@@ -195,24 +204,34 @@ function RichText({
     return <>{text}</>;
   }
 
-  /** Wrap a rendered node in an element background span if applicable. */
-  const wrapElement = (node: React.ReactNode, charPos: number, key: string | number): React.ReactNode => {
-    if (elSpans.length === 0) return node;
-    const el = elementSpanAt(charPos, elSpans);
-    if (!el) return node;
+  /** Render a span with element background, hover, and click behavior. */
+  const renderElementSpan = (
+    content: React.ReactNode,
+    el: ClaimElementSpan,
+    key: string | number,
+  ): React.ReactNode => {
     const colorIdx = el.group_id % ELEMENT_COLORS.length;
     const isIntro = el.role === "introduction" || el.role === "bare";
+    const isActive = activeElementGroup === el.group_id;
     return (
       <span
         key={key}
+        data-element-group={el.group_id}
         title={el.np_text}
+        onMouseEnter={() => onElementHover?.(el.group_id)}
+        onMouseLeave={() => onElementHover?.(null)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onElementClick?.(el.group_id);
+        }}
         className={cn(
-          "rounded-sm px-0.5 -mx-0.5",
+          "rounded-sm px-0.5 -mx-0.5 cursor-pointer transition-colors",
           ELEMENT_COLORS[colorIdx],
           isIntro && ELEMENT_INTRO_BORDER[colorIdx],
+          isActive && "ring-1 ring-offset-1 ring-current",
         )}
       >
-        {node}
+        {content}
       </span>
     );
   };
@@ -237,21 +256,7 @@ function RichText({
             // No element boundaries inside — wrap whole fragment
             const el = elementSpanAt(charStart, elSpans);
             if (!el) return <span key={i}>{part}</span>;
-            const colorIdx = el.group_id % ELEMENT_COLORS.length;
-            const isIntro = el.role === "introduction" || el.role === "bare";
-            return (
-              <span
-                key={i}
-                title={el.np_text}
-                className={cn(
-                  "rounded-sm px-0.5 -mx-0.5",
-                  ELEMENT_COLORS[colorIdx],
-                  isIntro && ELEMENT_INTRO_BORDER[colorIdx],
-                )}
-              >
-                {part}
-              </span>
-            );
+            return renderElementSpan(part, el, i);
           }
           // Multiple segments — split at boundaries
           return (
@@ -262,21 +267,7 @@ function RichText({
                 const absPos = charStart + bStart;
                 const el = elementSpanAt(absPos, elSpans);
                 if (!el) return <span key={bi}>{segment}</span>;
-                const colorIdx = el.group_id % ELEMENT_COLORS.length;
-                const isIntro = el.role === "introduction" || el.role === "bare";
-                return (
-                  <span
-                    key={bi}
-                    title={el.np_text}
-                    className={cn(
-                      "rounded-sm px-0.5 -mx-0.5",
-                      ELEMENT_COLORS[colorIdx],
-                      isIntro && ELEMENT_INTRO_BORDER[colorIdx],
-                    )}
-                  >
-                    {segment}
-                  </span>
-                );
+                return renderElementSpan(segment, el, bi);
               })}
             </span>
           );
@@ -405,12 +396,15 @@ function ClaimRefLink({
 export function CenterPanel({
   patent,
   activeNumeral,
+  activeElementGroup,
   highlights,
   claimElements,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
   onClaimClick,
+  onElementHover,
+  onElementClick,
 }: CenterPanelProps) {
   // Build a lookup: claim_number -> spans
   const claimElementMap = new Map(
@@ -520,6 +514,9 @@ export function CenterPanel({
                       text={claim.text}
                       spans={highlights.claims[ci] ?? []}
                       elementSpans={claimElementMap.get(claim.number)}
+                      activeElementGroup={activeElementGroup}
+                      onElementHover={onElementHover}
+                      onElementClick={onElementClick}
                       {...commonProps}
                       onClaimClick={onClaimClick}
                       currentClaimNumber={claim.number}

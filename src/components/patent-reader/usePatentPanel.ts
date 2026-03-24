@@ -40,6 +40,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     claim_elements: [],
     groups: [],
   });
+  const [activeElementGroup, setActiveElementGroup] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,6 +76,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setActiveNumeral(null);
     setSelectedFigure(null);
     setClaimElements({ claim_elements: [], groups: [] });
+    setActiveElementGroup(null);
     numeralClickCount.current = {};
     try {
       const data = await fetchPatent(pubNumber);
@@ -202,6 +204,23 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     [qs]
   );
 
+  const handleElementClick = useCallback(
+    (groupId: number) => {
+      const allSpans = qsa<HTMLElement>(`[data-element-group="${groupId}"]`);
+      if (allSpans.length === 0) return;
+      const key = `elem-${groupId}`;
+      const prev = numeralClickCount.current[key] ?? -1;
+      const next = groupId === activeElementGroup ? prev + 1 : 0;
+      numeralClickCount.current[key] = next;
+      const target = allSpans[next % allSpans.length];
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("ring-2", "ring-offset-1");
+      setTimeout(() => target.classList.remove("ring-2", "ring-offset-1"), 1500);
+      setActiveElementGroup(groupId);
+    },
+    [activeElementGroup, qsa]
+  );
+
   const handleClaimClick = useCallback(
     (claimNumber: number) => {
       const el = qs<HTMLElement>(`#claim-${claimNumber}`);
@@ -254,6 +273,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     figureMap,
     numeralLocations,
     numeralLabels,
+    activeElementGroup,
     // Interaction state
     activeNumeral,
     highlightedLocation,
@@ -266,6 +286,8 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     // Actions
     loadPatent,
     setActiveNumeral,
+    setActiveElementGroup,
+    handleElementClick,
     handleNumeralClickFromSpec,
     handleFigureClick,
     handleBboxClick,
