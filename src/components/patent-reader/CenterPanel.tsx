@@ -123,6 +123,7 @@ function RichText({
             fragments.push(
               <span
                 key={`${i}-n${ni}`}
+                data-fig-ref={String(figIndex)}
                 onClick={(e) => {
                   e.stopPropagation();
                   onFigureClick(figIndex);

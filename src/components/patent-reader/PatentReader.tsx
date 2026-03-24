@@ -160,6 +160,26 @@ export function PatentReader() {
     [patent, figureMap]
   );
 
+  const handleFigLabelClick = useCallback(
+    (figNum: number) => {
+      const figStr = String(figNum);
+      const key = `FIG. ${figStr}`;
+      const allSpans = document.querySelectorAll<HTMLElement>(
+        `[data-fig-ref="${figStr}"]`
+      );
+      if (allSpans.length === 0) return;
+      const prev = numeralClickCount.current[key] ?? -1;
+      const next = key === activeNumeral ? prev + 1 : 0;
+      numeralClickCount.current[key] = next;
+      const target = allSpans[next % allSpans.length];
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("ring-2", "ring-sky-400");
+      setTimeout(() => target.classList.remove("ring-2", "ring-sky-400"), 1500);
+      setActiveNumeral(key);
+    },
+    [activeNumeral]
+  );
+
   const handleScrollTo = useCallback((id: string) => {
     document
       .getElementById(id)
@@ -296,7 +316,7 @@ export function PatentReader() {
           numeralLocations={numeralLocations}
           numeralLabels={numeralLabels}
           onBboxClick={handleNumeralClickFromSpec}
-          onFigureClick={handleFigureClick}
+          onFigureClick={handleFigLabelClick}
         />
       </div>
     </div>
