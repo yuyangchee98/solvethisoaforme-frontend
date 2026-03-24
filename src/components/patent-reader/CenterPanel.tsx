@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Patent } from "./types";
+import type { Patent, ClaimLimitation } from "./types";
 import type { ReferenceNumeralHighlights, HighlightSpan, ClaimElementSpan, ClaimElementsData } from "@/lib/api";
 
 // Color palette for claim element groups (12 visually distinct pastels)
@@ -393,6 +393,111 @@ function ClaimRefLink({
   );
 }
 
+/** Slice spans that fall within a text range, adjusting offsets to be relative. */
+function sliceSpans<T extends { start: number; end: number }>(
+  spans: T[],
+  rangeStart: number,
+  rangeEnd: number,
+): T[] {
+  return spans
+    .filter((s) => s.start < rangeEnd && s.end > rangeStart)
+    .map((s) => ({
+      ...s,
+      start: Math.max(0, s.start - rangeStart),
+      end: Math.min(rangeEnd - rangeStart, s.end - rangeStart),
+    }));
+}
+
+/** Find where a limitation's text starts in the flat claim text. */
+function findLimitationOffset(claimText: string, limText: string, searchFrom: number): number {
+  if (!limText) return -1;
+  // Match first 40 chars to handle minor whitespace differences
+  const needle = limText.slice(0, 40).replace(/\s+/g, " ");
+  const haystack = claimText.slice(searchFrom).replace(/\s+/g, " ");
+  const idx = haystack.indexOf(needle);
+  if (idx === -1) return -1;
+  // Map back to original string position — approximate but close enough
+  // since we're just replacing multi-space with single-space
+  return searchFrom + idx;
+}
+
+/** Render a claim limitation tree with indentation, using RichText for each node. */
+function ClaimLimitationsRenderer({
+  limitations,
+  claimText,
+  spans,
+  elementSpans,
+  activeElementGroup,
+  onElementHover,
+  onElementClick,
+  ...richTextProps
+}: {
+  limitations: ClaimLimitation[];
+  claimText: string;
+  spans: HighlightSpan[];
+  elementSpans?: ClaimElementSpan[];
+  activeElementGroup?: number | null;
+  onElementHover?: (groupId: number | null) => void;
+  onElementClick?: (groupId: number) => void;
+  activeNumeral: string | null;
+  onNumeralHover: (numeral: string | null) => void;
+  onNumeralClick: (numeral: string | null) => void;
+  onFigureClick: (figIndex: number) => void;
+  onClaimClick?: (claimNumber: number) => void;
+  currentClaimNumber?: number;
+}) {
+  // Build a flat list of (limitation, depth) with offsets into claimText
+  const flatLims: { lim: ClaimLimitation; offset: number }[] = [];
+  let searchPos = 0;
+
+  const flatten = (lims: ClaimLimitation[]) => {
+    for (const lim of lims) {
+      if (lim.text) {
+        const offset = findLimitationOffset(claimText, lim.text, searchPos);
+        flatLims.push({ lim, offset });
+        if (offset >= 0) {
+          searchPos = offset + lim.text.length;
+        }
+      }
+      if (lim.children.length > 0) {
+        flatten(lim.children);
+      }
+    }
+  };
+  flatten(limitations);
+
+  return (
+    <div className="space-y-1">
+      {flatLims.map(({ lim, offset }, i) => {
+        const indent = lim.depth;
+        const limSpans = offset >= 0
+          ? sliceSpans(spans, offset, offset + lim.text.length)
+          : [];
+        const limElementSpans = offset >= 0 && elementSpans
+          ? sliceSpans(elementSpans, offset, offset + lim.text.length)
+          : undefined;
+
+        return (
+          <div
+            key={i}
+            style={{ paddingLeft: `${indent * 1.5}rem` }}
+          >
+            <RichText
+              text={lim.text}
+              spans={limSpans}
+              elementSpans={limElementSpans}
+              activeElementGroup={activeElementGroup}
+              onElementHover={onElementHover}
+              onElementClick={onElementClick}
+              {...richTextProps}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function CenterPanel({
   patent,
   activeNumeral,
@@ -499,32 +604,52 @@ export function CenterPanel({
             Claims
           </h2>
           <div className="space-y-4">
-            {patent.claims.map((claim, ci) => (
-              <div
-                key={claim.number}
-                id={`claim-${claim.number}`}
-                className="group"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="text-xs font-mono font-medium text-stone-400 pt-0.5 select-none shrink-0 w-5 text-right">
-                    {claim.number}.
-                  </span>
-                  <p className="text-sm lg:text-base leading-relaxed text-stone-700">
-                    <RichText
-                      text={claim.text}
-                      spans={highlights.claims[ci] ?? []}
-                      elementSpans={claimElementMap.get(claim.number)}
-                      activeElementGroup={activeElementGroup}
-                      onElementHover={onElementHover}
-                      onElementClick={onElementClick}
-                      {...commonProps}
-                      onClaimClick={onClaimClick}
-                      currentClaimNumber={claim.number}
-                    />
-                  </p>
+            {patent.claims.map((claim, ci) => {
+              const hasLimitations = claim.limitations && claim.limitations.length > 0;
+              return (
+                <div
+                  key={claim.number}
+                  id={`claim-${claim.number}`}
+                  className="group"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-xs font-mono font-medium text-stone-400 pt-0.5 select-none shrink-0 w-5 text-right">
+                      {claim.number}.
+                    </span>
+                    {hasLimitations ? (
+                      <div className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1">
+                        <ClaimLimitationsRenderer
+                          limitations={claim.limitations}
+                          claimText={claim.text}
+                          spans={highlights.claims[ci] ?? []}
+                          elementSpans={claimElementMap.get(claim.number)}
+                          activeElementGroup={activeElementGroup}
+                          onElementHover={onElementHover}
+                          onElementClick={onElementClick}
+                          {...commonProps}
+                          onClaimClick={onClaimClick}
+                          currentClaimNumber={claim.number}
+                        />
+                      </div>
+                    ) : (
+                      <p className="text-sm lg:text-base leading-relaxed text-stone-700">
+                        <RichText
+                          text={claim.text}
+                          spans={highlights.claims[ci] ?? []}
+                          elementSpans={claimElementMap.get(claim.number)}
+                          activeElementGroup={activeElementGroup}
+                          onElementHover={onElementHover}
+                          onElementClick={onElementClick}
+                          {...commonProps}
+                          onClaimClick={onClaimClick}
+                          currentClaimNumber={claim.number}
+                        />
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>

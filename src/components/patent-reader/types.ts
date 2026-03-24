@@ -1,8 +1,15 @@
+export interface ClaimLimitation {
+  text: string;
+  depth: number;
+  children: ClaimLimitation[];
+}
+
 export interface PatentClaim {
   number: number;
   text: string;
   depends_on: number | null;
   type: "independent" | "dependent";
+  limitations: ClaimLimitation[];
 }
 
 export interface PatentParagraph {
