@@ -40,6 +40,8 @@ interface RightSidebarProps {
   numeralLabels: Record<string, string>;
   onBboxClick: (numeral: string) => void;
   onFigureClick: (figNum: number) => void;
+  /** Scoped scroll-to-occurrence for comparison mode isolation */
+  onScrollToNumeralOccurrence?: (numeral: string, occurrenceIndex: number) => void;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -314,12 +316,14 @@ function DetailsTab({
   activeNumeral,
   onNumeralHover,
   onNumeralClick,
+  onScrollToNumeralOccurrence,
 }: {
   patent: Patent;
   referenceNumerals: ReferenceNumeral[];
   activeNumeral: string | null;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
+  onScrollToNumeralOccurrence?: (numeral: string, occurrenceIndex: number) => void;
 }) {
   const [expandedNumeral, setExpandedNumeral] = useState<string | null>(null);
 
@@ -330,16 +334,19 @@ function DetailsTab({
   };
 
   const handleSnippetClick = (occurrenceIndex: number, numeral: string) => {
-    onNumeralClick(numeral);
-    const allSpans = document.querySelectorAll<HTMLElement>(
-      `[data-ref-num="${numeral}"]`
-    );
-    const target = allSpans[occurrenceIndex];
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Brief pulse to show which occurrence was jumped to
-      target.classList.add("ring-2", "ring-amber-400");
-      setTimeout(() => target.classList.remove("ring-2", "ring-amber-400"), 1500);
+    if (onScrollToNumeralOccurrence) {
+      onScrollToNumeralOccurrence(numeral, occurrenceIndex);
+    } else {
+      onNumeralClick(numeral);
+      const allSpans = document.querySelectorAll<HTMLElement>(
+        `[data-ref-num="${numeral}"]`
+      );
+      const target = allSpans[occurrenceIndex];
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.add("ring-2", "ring-amber-400");
+        setTimeout(() => target.classList.remove("ring-2", "ring-amber-400"), 1500);
+      }
     }
   };
 
@@ -553,6 +560,7 @@ export function RightSidebar({
   numeralLabels,
   onBboxClick,
   onFigureClick,
+  onScrollToNumeralOccurrence,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -616,6 +624,7 @@ export function RightSidebar({
           activeNumeral={activeNumeral}
           onNumeralHover={onNumeralHover}
           onNumeralClick={onNumeralClick}
+          onScrollToNumeralOccurrence={onScrollToNumeralOccurrence}
         />
       </TabsContent>
       <TabsContent value="outline" className="mt-0 flex-1 overflow-y-auto">

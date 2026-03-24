@@ -1,13 +1,15 @@
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Search, Loader2, AlertCircle, FileText, PanelRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
+import { CompareButton } from "./CompareButton";
+import { ComparisonToolbar } from "./ComparisonToolbar";
 import { useIsMobile } from "@/lib/useIsMobile";
-import { fetchPatent, fetchReferenceNumerals, fetchFigureMap } from "@/lib/api";
-import type { ReferenceNumeral, ReferenceNumeralHighlights, NumeralLocation } from "@/lib/api";
-import type { Patent } from "./types";
+import { usePatentPanel } from "./usePatentPanel";
+import { usePatentRegistry } from "./usePatentRegistry";
+import type { PatentPanel } from "./usePatentPanel";
 
 const EXAMPLE_PATENTS = [
   { number: "US11423567B2", title: "Head location/orientation detection method" },
@@ -29,7 +31,7 @@ function SearchForm({
   large?: boolean;
 }) {
   return (
-    <form onSubmit={onSubmit} className={`flex items-center gap-2 ${large ? "max-w-lg w-full" : "max-w-xl mx-auto"}`}>
+    <form onSubmit={onSubmit} className={`flex items-center gap-2 ${large ? "max-w-lg w-full" : "flex-1 max-w-xl"}`}>
       <div className="relative flex-1">
         <Search className={`absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 ${large ? "size-5" : "size-4"}`} />
         <input
@@ -47,178 +49,143 @@ function SearchForm({
   );
 }
 
+/** Renders a RightSidebar wired to a panel's state. */
+function PanelSidebar({
+  panel,
+  collapsed,
+  onToggle,
+  onScrollTo,
+  containerRef,
+}: {
+  panel: PatentPanel;
+  collapsed: boolean;
+  onToggle: () => void;
+  onScrollTo: (id: string) => void;
+  containerRef?: React.RefObject<HTMLElement | null>;
+}) {
+  if (!panel.patent) return null;
+  return (
+    <RightSidebar
+      patent={panel.patent}
+      referenceNumerals={panel.referenceNumerals}
+      activeNumeral={panel.activeNumeral}
+      activeTab={panel.sidebarTab}
+      onTabChange={panel.setSidebarTab}
+      selectedFigure={panel.selectedFigure}
+      onSelectFigure={(i) => {
+        panel.setSelectedFigure(i);
+        panel.setHighlightedLocation(null);
+      }}
+      onNumeralHover={panel.setActiveNumeral}
+      onNumeralClick={panel.setActiveNumeral}
+      collapsed={collapsed}
+      onToggle={onToggle}
+      onScrollTo={onScrollTo}
+      highlightedLocation={panel.highlightedLocation}
+      showAllBboxes={panel.showAllBboxes}
+      onToggleBboxes={panel.toggleBboxes}
+      numeralLocations={panel.numeralLocations}
+      numeralLabels={panel.numeralLabels}
+      onBboxClick={panel.handleBboxClick}
+      onFigureClick={panel.handleFigLabelClick}
+      onScrollToNumeralOccurrence={panel.scrollToNumeralOccurrence}
+    />
+  );
+}
+
 export function PatentReader() {
   const isMobile = useIsMobile();
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [rightCollapsed, setRightCollapsed] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState("figures");
-  const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
-  const [patent, setPatent] = useState<Patent | null>(null);
-  const [referenceNumerals, setReferenceNumerals] = useState<ReferenceNumeral[]>([]);
-  const [numeralHighlights, setNumeralHighlights] = useState<ReferenceNumeralHighlights>({ abstract: [], description: [], claims: [] });
-  const [figureMap, setFigureMap] = useState<Record<string, number>>({});
-  const [numeralLocations, setNumeralLocations] = useState<Record<string, NumeralLocation[]>>({});
-  const [activeNumeral, setActiveNumeral] = useState<string | null>(null);
-  const [highlightedLocation, setHighlightedLocation] = useState<NumeralLocation | null>(null);
-  const [showAllBboxes, setShowAllBboxes] = useState(true);
-  const numeralClickCount = useRef<Record<string, number>>({});
-  const searchIdRef = useRef(0);
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const loadPatent = useCallback(async (pubNumber: string) => {
-    const id = ++searchIdRef.current;
-    setLoading(true);
-    setError(null);
-    setReferenceNumerals([]);
-    setFigureMap({});
-    setNumeralLocations({});
-    setHighlightedLocation(null);
-    numeralClickCount.current = {};
-    try {
-      const data = await fetchPatent(pubNumber);
-      if (id !== searchIdRef.current) return; // stale
-      setPatent(data);
-      // Fire async enrichments (non-blocking) with staleness guard
-      fetchReferenceNumerals(pubNumber).then(({ numerals, highlights }) => {
-        if (id === searchIdRef.current) {
-          setReferenceNumerals(numerals);
-          setNumeralHighlights(highlights);
-        }
+  // UI state (declared before hooks so callbacks can reference them)
+  const [query, setQuery] = useState("");
+  const [compareMode, setCompareMode] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true);
+  const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
+
+  // Auto-expand sidebar when interaction targets it (comparison mode).
+  // In normal mode these set state that isn't read, so it's a harmless no-op.
+  const openLeftSidebar = useCallback(() => setLeftSidebarCollapsed(false), []);
+  const openRightSidebar = useCallback(() => setRightSidebarCollapsed(false), []);
+
+  // Panel hooks (both always instantiated per React rules of hooks)
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const left = usePatentPanel({ containerRef: leftPanelRef, onRequestSidebarOpen: openLeftSidebar });
+  const right = usePatentPanel({ containerRef: rightPanelRef, onRequestSidebarOpen: openRightSidebar });
+
+  // Cross-window registry
+  const registry = usePatentRegistry();
+  useEffect(() => {
+    if (left.patent) {
+      registry.announce({
+        patentNumber: left.patent.patent_number,
+        title: left.patent.title,
       });
-      fetchFigureMap(pubNumber).then(({ figureMap: fm, numeralLocations: nl }) => {
-        if (id !== searchIdRef.current) return; // stale
-        setFigureMap(fm);
-        setNumeralLocations(nl);
-      });
-    } catch (err) {
-      if (id !== searchIdRef.current) return; // stale
-      setError(err instanceof Error ? err.message : "Failed to fetch patent");
-      setPatent(null);
-    } finally {
-      if (id === searchIdRef.current) setLoading(false);
+    } else {
+      registry.announce(null);
     }
-  }, []);
+  }, [left.patent, registry.announce]);
 
   const handleSearch = useCallback(
     (e?: React.FormEvent) => {
       e?.preventDefault();
       const trimmed = query.trim();
       if (!trimmed) return;
-      loadPatent(trimmed);
+      left.loadPatent(trimmed);
     },
-    [query, loadPatent]
+    [query, left.loadPatent]
   );
 
-  const handleExampleClick = useCallback((number: string) => {
-    setQuery(number);
-    loadPatent(number);
-  }, [loadPatent]);
-
-  const handleNumeralClickFromSpec = useCallback((numeral: string | null) => {
-    if (!numeral) {
-      setActiveNumeral(null);
-      setHighlightedLocation(null);
-      return;
-    }
-
-    const locations = numeralLocations[numeral];
-    if (locations && locations.length > 0) {
-      // Cycle through occurrences on repeated clicks of the same numeral
-      const prev = numeralClickCount.current[numeral] ?? -1;
-      const next = numeral === activeNumeral ? prev + 1 : 0;
-      numeralClickCount.current[numeral] = next;
-      const loc = locations[next % locations.length];
-      setActiveNumeral(numeral);
-      setSidebarTab("figures");
-      setSelectedFigure(loc.sheet);
-      setHighlightedLocation(loc);
-    } else {
-      // No drawing location — fall back to details tab
-      setActiveNumeral(numeral);
-      setHighlightedLocation(null);
-      setSidebarTab("details");
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const row = document.querySelector(`[data-ref-row="${numeral}"]`);
-          row?.scrollIntoView({ behavior: "smooth", block: "center" });
-        });
-      });
-    }
-  }, [numeralLocations, activeNumeral]);
-
-  const handleFigureClick = useCallback(
-    (figNum: number) => {
-      if (!patent) return;
-      const figStr = String(figNum);
-      // Use OCR-derived figure map if available, otherwise fall back to index
-      const mapped = figureMap[figStr];
-      const sheetIndex = mapped ?? figNum;
-      console.log(`[FigureClick] FIG. ${figStr} → sheet ${sheetIndex}${mapped != null ? " (from OCR)" : " (fallback)"}`);
-      if (sheetIndex >= 0 && sheetIndex < patent.figure_urls.length) {
-        setSidebarTab("figures");
-        setSelectedFigure(sheetIndex);
-      }
+  const handleExampleClick = useCallback(
+    (number: string) => {
+      setQuery(number);
+      left.loadPatent(number);
     },
-    [patent, figureMap]
+    [left.loadPatent]
   );
 
-  const handleBboxClick = useCallback(
-    (numeral: string) => {
-      const allSpans = document.querySelectorAll<HTMLElement>(
-        `[data-ref-num="${numeral}"]`
-      );
-      if (allSpans.length === 0) return;
-      const prev = numeralClickCount.current[numeral] ?? -1;
-      const next = numeral === activeNumeral ? prev + 1 : 0;
-      numeralClickCount.current[numeral] = next;
-      const target = allSpans[next % allSpans.length];
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      target.classList.add("ring-2", "ring-amber-400");
-      setTimeout(() => target.classList.remove("ring-2", "ring-amber-400"), 1500);
-      setActiveNumeral(numeral);
+  // Comparison actions
+  const handleCompare = useCallback(
+    (patentNumber: string) => {
+      setCompareMode(true);
+      setLeftSidebarCollapsed(true);
+      setRightSidebarCollapsed(true);
+      right.loadPatent(patentNumber);
     },
-    [activeNumeral]
+    [right.loadPatent]
   );
 
-  const handleFigLabelClick = useCallback(
-    (figNum: number) => {
-      const figStr = String(figNum);
-      const key = `FIG. ${figStr}`;
-      const allSpans = document.querySelectorAll<HTMLElement>(
-        `[data-fig-ref="${figStr}"]`
-      );
-      if (allSpans.length === 0) return;
-      const prev = numeralClickCount.current[key] ?? -1;
-      const next = key === activeNumeral ? prev + 1 : 0;
-      numeralClickCount.current[key] = next;
-      const target = allSpans[next % allSpans.length];
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      target.classList.add("ring-2", "ring-sky-400");
-      setTimeout(() => target.classList.remove("ring-2", "ring-sky-400"), 1500);
-      setActiveNumeral(key);
-    },
-    [activeNumeral]
-  );
-
-  const handleScrollTo = useCallback((id: string) => {
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleExitCompare = useCallback(() => {
+    setCompareMode(false);
   }, []);
 
-  const numeralLabels = useMemo(() => {
-    const map: Record<string, string> = {};
-    for (const ref of referenceNumerals) {
-      map[ref.numeral] = ref.label;
+  const handleSwap = useCallback(() => {
+    const leftNum = left.patent?.patent_number;
+    const rightNum = right.patent?.patent_number;
+    if (leftNum && rightNum) {
+      left.loadPatent(rightNum);
+      right.loadPatent(leftNum);
     }
-    return map;
-  }, [referenceNumerals]);
+  }, [left.patent, right.patent, left.loadPatent, right.loadPatent]);
 
+  const handleChangeLeft = useCallback(
+    (patentNumber: string) => {
+      left.loadPatent(patentNumber);
+    },
+    [left.loadPatent]
+  );
+
+  const handleChangeRight = useCallback(
+    (patentNumber: string) => {
+      right.loadPatent(patentNumber);
+    },
+    [right.loadPatent]
+  );
 
   // Welcome screen when no patent is loaded
-  if (!patent) {
+  if (!left.patent && !compareMode) {
     return (
       <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center px-4">
@@ -238,15 +205,15 @@ export function PatentReader() {
               query={query}
               onQueryChange={setQuery}
               onSubmit={handleSearch}
-              loading={loading}
+              loading={left.loading}
               large
             />
 
             {/* Error */}
-            {error && (
+            {left.error && (
               <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
                 <AlertCircle className="size-4 shrink-0" />
-                {error}
+                {left.error}
               </div>
             )}
 
@@ -276,7 +243,7 @@ export function PatentReader() {
                   <button
                     key={ex.number}
                     onClick={() => handleExampleClick(ex.number)}
-                    disabled={loading}
+                    disabled={left.loading}
                     className="flex items-start gap-2.5 w-full text-left px-3 py-2 rounded-lg hover:bg-stone-100 transition-colors group disabled:opacity-50"
                   >
                     <FileText className="size-4 text-stone-400 group-hover:text-amber-600 mt-0.5 shrink-0 transition-colors" />
@@ -296,52 +263,141 @@ export function PatentReader() {
     );
   }
 
-  // Patent loaded — three-panel layout
+  // ── Comparison mode ──────────────────────────────────────────────────
+  if (compareMode) {
+    return (
+      <div className="flex flex-col h-full">
+        <ComparisonToolbar
+          leftPatent={left.patent}
+          rightPatent={right.patent}
+          onSwap={handleSwap}
+          onChangeLeft={handleChangeLeft}
+          onChangeRight={handleChangeRight}
+          onExit={handleExitCompare}
+          leftLoading={left.loading}
+          rightLoading={right.loading}
+        />
+
+        <div className="flex flex-1 min-h-0">
+          {/* Left panel */}
+          <div
+            ref={leftPanelRef}
+            className="flex flex-1 min-w-0 border-r border-stone-200"
+          >
+            {left.patent ? (
+              <CenterPanel
+                patent={left.patent}
+                activeNumeral={left.activeNumeral}
+                highlights={left.numeralHighlights}
+                onNumeralHover={left.setActiveNumeral}
+                onNumeralClick={left.handleNumeralClickFromSpec}
+                onFigureClick={left.handleFigureClick}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                {left.loading ? (
+                  <Loader2 className="size-6 animate-spin text-stone-400" />
+                ) : left.error ? (
+                  <div className="flex items-center gap-2 text-sm text-red-600 px-4">
+                    <AlertCircle className="size-4 shrink-0" />
+                    {left.error}
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* Inline collapsible sidebar */}
+            {left.patent && (
+              <PanelSidebar
+                panel={left}
+                collapsed={leftSidebarCollapsed}
+                onToggle={() => setLeftSidebarCollapsed((c) => !c)}
+                onScrollTo={left.handleScrollTo}
+                containerRef={leftPanelRef}
+              />
+            )}
+          </div>
+
+          {/* Right panel */}
+          <div
+            ref={rightPanelRef}
+            className="flex flex-1 min-w-0"
+          >
+            {right.patent ? (
+              <CenterPanel
+                patent={right.patent}
+                activeNumeral={right.activeNumeral}
+                highlights={right.numeralHighlights}
+                onNumeralHover={right.setActiveNumeral}
+                onNumeralClick={right.handleNumeralClickFromSpec}
+                onFigureClick={right.handleFigureClick}
+              />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                {right.loading ? (
+                  <Loader2 className="size-6 animate-spin text-stone-400" />
+                ) : right.error ? (
+                  <div className="flex items-center gap-2 text-sm text-red-600 px-4">
+                    <AlertCircle className="size-4 shrink-0" />
+                    {right.error}
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* Inline collapsible sidebar */}
+            {right.patent && (
+              <PanelSidebar
+                panel={right}
+                collapsed={rightSidebarCollapsed}
+                onToggle={() => setRightSidebarCollapsed((c) => !c)}
+                onScrollTo={right.handleScrollTo}
+                containerRef={rightPanelRef}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Normal mode (single patent loaded) ───────────────────────────────
   return (
     <div className="flex flex-col h-full">
-      {/* Compact search bar */}
-      <div className="border-b border-stone-200 bg-white px-4 py-2">
+      {/* Compact search bar + compare button */}
+      <div className="border-b border-stone-200 bg-white px-4 py-2 flex items-center gap-2">
         <SearchForm
           query={query}
           onQueryChange={setQuery}
           onSubmit={handleSearch}
-          loading={loading}
+          loading={left.loading}
+        />
+        <CompareButton
+          currentPatent={left.patent}
+          otherTabs={registry.others}
+          isMobile={isMobile}
+          onCompare={handleCompare}
         />
       </div>
 
       {/* Content area */}
-      <div className="flex flex-1 min-h-0 relative">
+      <div className="flex flex-1 min-h-0 relative" ref={leftPanelRef}>
         <CenterPanel
-          patent={patent}
-          activeNumeral={activeNumeral}
-          highlights={numeralHighlights}
-          onNumeralHover={setActiveNumeral}
-          onNumeralClick={handleNumeralClickFromSpec}
-          onFigureClick={handleFigureClick}
+          patent={left.patent!}
+          activeNumeral={left.activeNumeral}
+          highlights={left.numeralHighlights}
+          onNumeralHover={left.setActiveNumeral}
+          onNumeralClick={left.handleNumeralClickFromSpec}
+          onFigureClick={left.handleFigureClick}
         />
 
         {/* Desktop: inline sidebar */}
         {!isMobile && (
-          <RightSidebar
-            patent={patent}
-            referenceNumerals={referenceNumerals}
-            activeNumeral={activeNumeral}
-            activeTab={sidebarTab}
-            onTabChange={setSidebarTab}
-            selectedFigure={selectedFigure}
-            onSelectFigure={(i) => { setSelectedFigure(i); setHighlightedLocation(null); }}
-            onNumeralHover={setActiveNumeral}
-            onNumeralClick={setActiveNumeral}
+          <PanelSidebar
+            panel={left}
             collapsed={rightCollapsed}
             onToggle={() => setRightCollapsed((c) => !c)}
-            onScrollTo={handleScrollTo}
-            highlightedLocation={highlightedLocation}
-            showAllBboxes={showAllBboxes}
-            onToggleBboxes={() => setShowAllBboxes((v) => !v)}
-            numeralLocations={numeralLocations}
-            numeralLabels={numeralLabels}
-            onBboxClick={handleBboxClick}
-            onFigureClick={handleFigLabelClick}
+            onScrollTo={left.handleScrollTo}
           />
         )}
 
@@ -362,26 +418,14 @@ export function PatentReader() {
                 showCloseButton={false}
                 className="w-[85vw] max-w-md p-0 flex flex-col"
               >
-                <RightSidebar
-                  patent={patent}
-                  referenceNumerals={referenceNumerals}
-                  activeNumeral={activeNumeral}
-                  activeTab={sidebarTab}
-                  onTabChange={setSidebarTab}
-                  selectedFigure={selectedFigure}
-                  onSelectFigure={(i) => { setSelectedFigure(i); setHighlightedLocation(null); }}
-                  onNumeralHover={setActiveNumeral}
-                  onNumeralClick={setActiveNumeral}
+                <PanelSidebar
+                  panel={left}
                   collapsed={false}
                   onToggle={() => setSheetOpen(false)}
-                  onScrollTo={(id) => { setSheetOpen(false); setTimeout(() => handleScrollTo(id), 300); }}
-                  highlightedLocation={highlightedLocation}
-                  showAllBboxes={showAllBboxes}
-                  onToggleBboxes={() => setShowAllBboxes((v) => !v)}
-                  numeralLocations={numeralLocations}
-                  numeralLabels={numeralLabels}
-                  onBboxClick={(numeral) => { setSheetOpen(false); setTimeout(() => handleBboxClick(numeral), 300); }}
-                  onFigureClick={handleFigLabelClick}
+                  onScrollTo={(id) => {
+                    setSheetOpen(false);
+                    setTimeout(() => left.handleScrollTo(id), 300);
+                  }}
                 />
               </SheetContent>
             </Sheet>
