@@ -78,6 +78,7 @@ function PanelSidebar({
       }}
       onNumeralHover={panel.setActiveNumeral}
       onNumeralClick={panel.setActiveNumeral}
+      onLoadPatent={panel.loadPatent}
       collapsed={collapsed}
       onToggle={onToggle}
       onScrollTo={onScrollTo}
@@ -292,6 +293,7 @@ export function PatentReader() {
                 onNumeralHover={left.setActiveNumeral}
                 onNumeralClick={left.handleNumeralClickFromSpec}
                 onFigureClick={left.handleFigureClick}
+                onClaimClick={left.handleClaimClick}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -331,6 +333,7 @@ export function PatentReader() {
                 onNumeralHover={right.setActiveNumeral}
                 onNumeralClick={right.handleNumeralClickFromSpec}
                 onFigureClick={right.handleFigureClick}
+                onClaimClick={right.handleClaimClick}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -389,6 +392,7 @@ export function PatentReader() {
           onNumeralHover={left.setActiveNumeral}
           onNumeralClick={left.handleNumeralClickFromSpec}
           onFigureClick={left.handleFigureClick}
+          onClaimClick={left.handleClaimClick}
         />
 
         {/* Desktop: inline sidebar */}

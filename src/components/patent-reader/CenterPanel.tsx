@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent } from "./types";
@@ -11,10 +12,44 @@ const FIG_ENUM_REGEX =
 // Extract individual figure numbers from a FIG enumeration match
 const FIG_NUM_EXTRACT = /\d+[a-zA-Z]?/g;
 
+// Claim dependency references: "claim 1", "claims 1, 3, and 5", "claims 1 to 5",
+// "any one of claims 1-5", "any preceding claim(s)"
+const CLAIM_REF_REGEX =
+  /(?:any\s+(?:one\s+)?of\s+)?(?:claims?\s+\d+(?:\s*(?:[-–]|to|through)\s*\d+|\s*(?:,\s*\d+)*(?:\s*,?\s*(?:and|or)\s+\d+)?)?|any\s+(?:one\s+of\s+the\s+)?preceding\s+claims?)/gi;
+
+/** Extract claim numbers from a claim reference match, given the current claim number for "preceding". */
+function extractClaimNums(raw: string, currentClaimNumber: number): number[] {
+  const lower = raw.toLowerCase();
+
+  // "any preceding claim(s)" → all claims before this one
+  if (/preceding\s+claims?/.test(lower)) {
+    const nums: number[] = [];
+    for (let i = 1; i < currentClaimNumber; i++) nums.push(i);
+    return nums;
+  }
+
+  // Extract all numbers from the match
+  const allNums = [...raw.matchAll(/\d+/g)].map((m) => parseInt(m[0], 10));
+  if (allNums.length === 0) return [];
+
+  // Range: "claims 1 to 5", "claims 1-5", "claims 1 through 5"
+  if (/(?:[-–]|to|through)/.test(raw) && allNums.length >= 2) {
+    const start = allNums[0];
+    const end = allNums[allNums.length - 1];
+    const nums: number[] = [];
+    for (let i = start; i <= end; i++) nums.push(i);
+    return nums;
+  }
+
+  // Enumeration: "claims 1, 3, and 5" or "claim 1 or 2"
+  return allNums;
+}
+
 type RichPart =
   | string
   | { type: "numeral"; numeral: string; raw: string }
-  | { type: "figure"; figNums: string[]; raw: string };
+  | { type: "figure"; figNums: string[]; raw: string }
+  | { type: "claim-ref"; claimNums: number[]; raw: string };
 
 interface CenterPanelProps {
   patent: Patent;
@@ -23,6 +58,7 @@ interface CenterPanelProps {
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
+  onClaimClick: (claimNumber: number) => void;
 }
 
 function RichText({
@@ -32,6 +68,8 @@ function RichText({
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
+  onClaimClick,
+  currentClaimNumber,
 }: {
   text: string;
   activeNumeral: string | null;
@@ -39,6 +77,8 @@ function RichText({
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
+  onClaimClick?: (claimNumber: number) => void;
+  currentClaimNumber?: number;
 }) {
   // Pass 1: find all FIG enumerations
   const figSpans: { start: number; end: number; figNums: string[]; raw: string }[] = [];
@@ -52,10 +92,27 @@ function RichText({
     });
   }
 
-  // Pass 2: use backend highlight spans, skipping any inside a FIG span
+  // Pass 1b: find all claim references
+  const claimRefSpans: { start: number; end: number; claimNums: number[]; raw: string }[] = [];
+  if (onClaimClick && currentClaimNumber) {
+    for (const match of text.matchAll(CLAIM_REF_REGEX)) {
+      const nums = extractClaimNums(match[0], currentClaimNumber);
+      if (nums.length > 0) {
+        claimRefSpans.push({
+          start: match.index!,
+          end: match.index! + match[0].length,
+          claimNums: nums,
+          raw: match[0],
+        });
+      }
+    }
+  }
+
+  // Pass 2: use backend highlight spans, skipping any inside a FIG or claim-ref span
+  const coveredSpans = [...figSpans, ...claimRefSpans];
   const refSpans: { start: number; end: number; numeral: string; raw: string }[] = [];
   for (const span of spans) {
-    if (figSpans.some((f) => span.start < f.end && span.end > f.start)) continue;
+    if (coveredSpans.some((f) => span.start < f.end && span.end > f.start)) continue;
     refSpans.push({
       start: span.start,
       end: span.end,
@@ -65,8 +122,10 @@ function RichText({
   }
 
   // Merge and sort all spans by position
-  const allSpans: (typeof figSpans[number] | typeof refSpans[number])[] = [
+  type AnySpan = typeof figSpans[number] | typeof refSpans[number] | typeof claimRefSpans[number];
+  const allSpans: AnySpan[] = [
     ...figSpans,
+    ...claimRefSpans,
     ...refSpans,
   ].sort((a, b) => a.start - b.start);
 
@@ -80,6 +139,8 @@ function RichText({
     }
     if ("figNums" in span) {
       parts.push({ type: "figure", figNums: span.figNums, raw: span.raw });
+    } else if ("claimNums" in span) {
+      parts.push({ type: "claim-ref", claimNums: span.claimNums, raw: span.raw });
     } else {
       parts.push({ type: "numeral", numeral: span.numeral, raw: span.raw });
     }
@@ -146,6 +207,17 @@ function RichText({
           return <span key={i}>{fragments}</span>;
         }
 
+        if (part.type === "claim-ref") {
+          return (
+            <ClaimRefLink
+              key={i}
+              raw={part.raw}
+              claimNums={part.claimNums}
+              onClaimClick={onClaimClick!}
+            />
+          );
+        }
+
         // Reference numeral
         const isActive = activeNumeral === part.numeral;
         return (
@@ -173,6 +245,42 @@ function RichText({
   );
 }
 
+/** Clickable claim reference that cycles through multiple targets. */
+function ClaimRefLink({
+  raw,
+  claimNums,
+  onClaimClick,
+}: {
+  raw: string;
+  claimNums: number[];
+  onClaimClick: (claimNumber: number) => void;
+}) {
+  const cycleIdx = useRef(0);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (claimNums.length === 0) return;
+    const idx = cycleIdx.current % claimNums.length;
+    onClaimClick(claimNums[idx]);
+    cycleIdx.current = idx + 1;
+  };
+
+  const title =
+    claimNums.length === 1
+      ? `Go to claim ${claimNums[0]}`
+      : `Cycle through claims ${claimNums.join(", ")} (click repeatedly)`;
+
+  return (
+    <span
+      onClick={handleClick}
+      title={title}
+      className="text-violet-600 hover:text-violet-800 hover:bg-violet-50 cursor-pointer rounded px-0.5 transition-colors font-medium"
+    >
+      {raw}
+    </span>
+  );
+}
+
 export function CenterPanel({
   patent,
   activeNumeral,
@@ -180,6 +288,7 @@ export function CenterPanel({
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
+  onClaimClick,
 }: CenterPanelProps) {
   const commonProps = {
     activeNumeral,
@@ -200,6 +309,12 @@ export function CenterPanel({
             <Badge variant="outline" className="font-mono">
               {patent.patent_number}
             </Badge>
+            {patent.priority_date && patent.priority_date !== patent.filing_date && (
+              <>
+                <span>Priority: {patent.priority_date}</span>
+                <span className="text-stone-300">|</span>
+              </>
+            )}
             <span>Filed: {patent.filing_date}</span>
             <span className="text-stone-300">|</span>
             <span>Published: {patent.publication_date}</span>
@@ -278,6 +393,8 @@ export function CenterPanel({
                       text={claim.text}
                       spans={highlights.claims[ci] ?? []}
                       {...commonProps}
+                      onClaimClick={onClaimClick}
+                      currentClaimNumber={claim.number}
                     />
                   </p>
                 </div>

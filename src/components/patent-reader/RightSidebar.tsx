@@ -11,6 +11,13 @@ import {
   ChevronDown,
   PanelRightClose,
   ScanSearch,
+  BookOpen,
+  ArrowUpRight,
+  GraduationCap,
+  GitBranch,
+  ScrollText,
+  FileStack,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +49,8 @@ interface RightSidebarProps {
   onFigureClick: (figNum: number) => void;
   /** Scoped scroll-to-occurrence for comparison mode isolation */
   onScrollToNumeralOccurrence?: (numeral: string, occurrenceIndex: number) => void;
+  /** Navigate to a different patent (e.g. clicked citation) */
+  onLoadPatent?: (pubNumber: string) => void;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -310,6 +319,70 @@ function getOccurrences(patent: Patent, numeral: string) {
   return results;
 }
 
+function CollapsibleSection({
+  icon,
+  label,
+  children,
+  defaultOpen = true,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="space-y-1.5">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600 transition-colors"
+      >
+        <ChevronRight
+          className={cn("size-3 transition-transform", open && "rotate-90")}
+        />
+        {icon}
+        {label}
+      </button>
+      {open && children}
+    </div>
+  );
+}
+
+function CitationList({
+  citations,
+  onLoadPatent,
+}: {
+  citations: { publication_number: string; title: string; examiner_cited: boolean }[];
+  onLoadPatent?: (pubNumber: string) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      {citations.map((cite, i) => (
+        <div
+          key={`${cite.publication_number}-${i}`}
+          className="flex items-start gap-2 text-xs"
+        >
+          <button
+            onClick={() => onLoadPatent?.(cite.publication_number)}
+            className="font-mono text-amber-700 hover:text-amber-900 underline underline-offset-2 shrink-0"
+          >
+            {cite.publication_number}
+          </button>
+          <span className="text-stone-500 truncate">{cite.title}</span>
+          {cite.examiner_cited && (
+            <span
+              className="text-[10px] text-stone-400 shrink-0"
+              title="Cited by examiner"
+            >
+              *
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function DetailsTab({
   patent,
   referenceNumerals,
@@ -317,6 +390,7 @@ function DetailsTab({
   onNumeralHover,
   onNumeralClick,
   onScrollToNumeralOccurrence,
+  onLoadPatent,
 }: {
   patent: Patent;
   referenceNumerals: ReferenceNumeral[];
@@ -324,6 +398,7 @@ function DetailsTab({
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onScrollToNumeralOccurrence?: (numeral: string, occurrenceIndex: number) => void;
+  onLoadPatent?: (pubNumber: string) => void;
 }) {
   const [expandedNumeral, setExpandedNumeral] = useState<string | null>(null);
 
@@ -477,6 +552,169 @@ function DetailsTab({
           </a>
         </div>
       )}
+
+      {/* ── Patent Citations ── */}
+      {(patent.patent_citations?.length ?? 0) > 0 && (
+        <CollapsibleSection
+          icon={<BookOpen className="size-3" />}
+          label={`Patent Citations (${patent.patent_citations!.length})`}
+        >
+          <CitationList
+            citations={patent.patent_citations!}
+            onLoadPatent={onLoadPatent}
+          />
+        </CollapsibleSection>
+      )}
+
+      {/* ── Cited By ── */}
+      {(patent.cited_by?.length ?? 0) > 0 && (
+        <CollapsibleSection
+          icon={<ArrowUpRight className="size-3" />}
+          label={`Cited By (${patent.cited_by!.length})`}
+        >
+          <CitationList
+            citations={patent.cited_by!}
+            onLoadPatent={onLoadPatent}
+          />
+        </CollapsibleSection>
+      )}
+
+      {/* ── Non-Patent Citations ── */}
+      {(patent.non_patent_citations?.length ?? 0) > 0 && (
+        <CollapsibleSection
+          icon={<GraduationCap className="size-3" />}
+          label={`Non-Patent Citations (${patent.non_patent_citations!.length})`}
+          defaultOpen={false}
+        >
+          <div className="space-y-2">
+            {patent.non_patent_citations!.map((cite, i) => (
+              <p
+                key={i}
+                className="text-xs text-stone-600 leading-relaxed"
+              >
+                {cite.title}
+              </p>
+            ))}
+          </div>
+        </CollapsibleSection>
+      )}
+
+      {/* ── Patent Family ── */}
+      {((patent.family_applications?.length ?? 0) > 0 ||
+        (patent.country_status?.length ?? 0) > 0) && (
+        <CollapsibleSection
+          icon={<GitBranch className="size-3" />}
+          label="Patent Family"
+        >
+          <div className="space-y-3">
+            {(patent.family_applications?.length ?? 0) > 0 && (
+              <div className="space-y-1">
+                {patent.family_applications!.map((app) => (
+                  <div key={app.application_number} className="text-xs space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      {app.representative_publication ? (
+                        <button
+                          onClick={() =>
+                            onLoadPatent?.(app.representative_publication)
+                          }
+                          className="font-mono text-amber-700 hover:text-amber-900 underline underline-offset-2 shrink-0"
+                        >
+                          {app.representative_publication}
+                        </button>
+                      ) : (
+                        <span className="font-mono text-stone-500 shrink-0">
+                          {app.application_number}
+                        </span>
+                      )}
+                      {app.status && (
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            "text-[10px] px-1.5 py-0",
+                            app.status === "Active" && "border-green-300 text-green-700",
+                            app.status === "Ceased" && "border-red-300 text-red-700",
+                            app.status === "Pending" && "border-amber-300 text-amber-700"
+                          )}
+                        >
+                          {app.status}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-stone-500 truncate">{app.title}</p>
+                    {app.expiration && (
+                      <p className="text-stone-400 text-[10px]">
+                        Expires: {app.expiration}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {(patent.country_status?.length ?? 0) > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {patent.country_status!.map((cs) => (
+                  <Badge
+                    key={cs.country_code}
+                    variant="secondary"
+                    className={cn(
+                      "font-mono text-xs",
+                      cs.publication_number ? "cursor-pointer" : "cursor-default"
+                    )}
+                    onClick={() =>
+                      cs.publication_number &&
+                      onLoadPatent?.(cs.publication_number)
+                    }
+                  >
+                    <Globe className="size-3 mr-1" />
+                    {cs.country_code}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        </CollapsibleSection>
+      )}
+
+      {/* ── Legal Events ── */}
+      {(patent.legal_events?.length ?? 0) > 0 && (
+        <CollapsibleSection
+          icon={<ScrollText className="size-3" />}
+          label={`Legal Events (${patent.legal_events!.length})`}
+          defaultOpen={false}
+        >
+          <div className="space-y-2">
+            {patent.legal_events!.map((evt, i) => (
+              <div key={i} className="border-l-2 border-stone-200 pl-2">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-mono text-stone-500">{evt.date}</span>
+                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                    {evt.code}
+                  </Badge>
+                </div>
+                <p className="text-xs text-stone-600">{evt.title}</p>
+              </div>
+            ))}
+          </div>
+        </CollapsibleSection>
+      )}
+
+      {/* ── Similar Documents ── */}
+      {(patent.similar_documents?.length ?? 0) > 0 && (
+        <CollapsibleSection
+          icon={<FileStack className="size-3" />}
+          label={`Similar Documents (${patent.similar_documents!.length})`}
+          defaultOpen={false}
+        >
+          <CitationList
+            citations={patent.similar_documents!.map((d) => ({
+              publication_number: d.publication_number,
+              title: d.title,
+              examiner_cited: false,
+            }))}
+            onLoadPatent={onLoadPatent}
+          />
+        </CollapsibleSection>
+      )}
     </div>
   );
 }
@@ -561,6 +799,7 @@ export function RightSidebar({
   onBboxClick,
   onFigureClick,
   onScrollToNumeralOccurrence,
+  onLoadPatent,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -625,6 +864,7 @@ export function RightSidebar({
           onNumeralHover={onNumeralHover}
           onNumeralClick={onNumeralClick}
           onScrollToNumeralOccurrence={onScrollToNumeralOccurrence}
+          onLoadPatent={onLoadPatent}
         />
       </TabsContent>
       <TabsContent value="outline" className="mt-0 flex-1 overflow-y-auto">

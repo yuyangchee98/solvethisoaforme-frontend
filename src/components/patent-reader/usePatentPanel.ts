@@ -191,6 +191,20 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     [qs]
   );
 
+  const handleClaimClick = useCallback(
+    (claimNumber: number) => {
+      const el = qs<HTMLElement>(`#claim-${claimNumber}`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-violet-400", "ring-offset-2", "rounded-md");
+      setTimeout(
+        () => el.classList.remove("ring-2", "ring-violet-400", "ring-offset-2", "rounded-md"),
+        1500
+      );
+    },
+    [qs]
+  );
+
   const scrollToNumeralOccurrence = useCallback(
     (numeral: string, occurrenceIndex: number) => {
       setActiveNumeral(numeral);
@@ -245,6 +259,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     handleBboxClick,
     handleFigLabelClick,
     handleScrollTo,
+    handleClaimClick,
     scrollToNumeralOccurrence,
     setSelectedFigure,
     setHighlightedLocation,
