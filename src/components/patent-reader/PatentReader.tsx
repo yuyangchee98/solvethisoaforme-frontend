@@ -296,6 +296,7 @@ export function PatentReader() {
           numeralLocations={numeralLocations}
           numeralLabels={numeralLabels}
           onBboxClick={handleNumeralClickFromSpec}
+          onFigureClick={handleFigureClick}
         />
       </div>
     </div>

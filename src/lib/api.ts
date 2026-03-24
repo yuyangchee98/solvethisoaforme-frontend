@@ -281,6 +281,7 @@ export interface NumeralLocation {
   y: number;
   w: number;
   h: number;
+  type?: "figure";
 }
 
 export async function fetchFigureMap(

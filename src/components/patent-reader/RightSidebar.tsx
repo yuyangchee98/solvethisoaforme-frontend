@@ -38,6 +38,7 @@ interface RightSidebarProps {
   numeralLocations: Record<string, NumeralLocation[]>;
   numeralLabels: Record<string, string>;
   onBboxClick: (numeral: string) => void;
+  onFigureClick: (figNum: number) => void;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -114,6 +115,7 @@ function FiguresTab({
   numeralLocations,
   numeralLabels,
   onBboxClick,
+  onFigureClick,
 }: {
   patent: Patent;
   selectedFigure: number | null;
@@ -124,6 +126,7 @@ function FiguresTab({
   numeralLocations: Record<string, NumeralLocation[]>;
   numeralLabels: Record<string, string>;
   onBboxClick: (numeral: string) => void;
+  onFigureClick: (figNum: number) => void;
 }) {
   if (patent.figure_urls.length === 0) {
     return (
@@ -198,20 +201,35 @@ function FiguresTab({
                     }
                   }
                 }
-                return allOnSheet.map(({ numeral, loc }, i) => (
-                  <div
-                    key={`${numeral}-${i}`}
-                    className="absolute border border-amber-500/60 bg-amber-400/15 rounded-sm cursor-pointer hover:bg-amber-400/35 hover:border-amber-500 transition-colors"
-                    title={numeralLabels[numeral] ? `${numeral} — ${numeralLabels[numeral]}` : numeral}
-                    onClick={() => onBboxClick(numeral)}
-                    style={{
-                      left: `${Math.max(0, loc.x - pad) * 100}%`,
-                      top: `${Math.max(0, loc.y - pad) * 100}%`,
-                      width: `${(loc.w + pad * 2) * 100}%`,
-                      height: `${(loc.h + pad * 2) * 100}%`,
-                    }}
-                  />
-                ));
+                return allOnSheet.map(({ numeral, loc }, i) => {
+                  const isFigLabel = loc.type === "figure";
+                  return (
+                    <div
+                      key={`${numeral}-${i}`}
+                      className={cn(
+                        "absolute rounded-sm cursor-pointer transition-colors",
+                        isFigLabel
+                          ? "border border-sky-500/60 bg-sky-400/15 hover:bg-sky-400/35 hover:border-sky-500"
+                          : "border border-amber-500/60 bg-amber-400/15 hover:bg-amber-400/35 hover:border-amber-500"
+                      )}
+                      title={isFigLabel ? numeral : (numeralLabels[numeral] ? `${numeral} — ${numeralLabels[numeral]}` : numeral)}
+                      onClick={() => {
+                        if (isFigLabel) {
+                          const figNum = parseInt(numeral.replace(/^FIG\.\s*/, ""), 10);
+                          if (!isNaN(figNum)) onFigureClick(figNum);
+                        } else {
+                          onBboxClick(numeral);
+                        }
+                      }}
+                      style={{
+                        left: `${Math.max(0, loc.x - pad) * 100}%`,
+                        top: `${Math.max(0, loc.y - pad) * 100}%`,
+                        width: `${(loc.w + pad * 2) * 100}%`,
+                        height: `${(loc.h + pad * 2) * 100}%`,
+                      }}
+                    />
+                  );
+                });
               })()}
               {/* Single highlighted location (from numeral click) */}
               {highlightedLocation && highlightedLocation.sheet === selectedFigure && (() => {
@@ -517,6 +535,7 @@ export function RightSidebar({
   numeralLocations,
   numeralLabels,
   onBboxClick,
+  onFigureClick,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -570,6 +589,7 @@ export function RightSidebar({
           numeralLocations={numeralLocations}
           numeralLabels={numeralLabels}
           onBboxClick={onBboxClick}
+          onFigureClick={onFigureClick}
         />
       </TabsContent>
       <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">
