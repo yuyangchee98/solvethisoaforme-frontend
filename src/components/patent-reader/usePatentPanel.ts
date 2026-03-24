@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useMemo } from "react";
-import { fetchPatent, fetchReferenceNumerals, fetchFigureMap } from "@/lib/api";
+import { fetchPatent, fetchReferenceNumerals, fetchFigureMap, fetchClaimElements } from "@/lib/api";
 import type {
   ReferenceNumeral,
   ReferenceNumeralHighlights,
   NumeralLocation,
+  ClaimElementsData,
 } from "@/lib/api";
 import type { Patent } from "./types";
 
@@ -35,6 +36,10 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
   const [showAllBboxes, setShowAllBboxes] = useState(true);
   const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
   const [sidebarTab, setSidebarTab] = useState("figures");
+  const [claimElements, setClaimElements] = useState<ClaimElementsData>({
+    claim_elements: [],
+    groups: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,6 +74,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setHighlightedLocation(null);
     setActiveNumeral(null);
     setSelectedFigure(null);
+    setClaimElements({ claim_elements: [], groups: [] });
     numeralClickCount.current = {};
     try {
       const data = await fetchPatent(pubNumber);
@@ -84,6 +90,11 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
         if (id !== searchIdRef.current) return;
         setFigureMap(fm);
         setNumeralLocations(nl);
+      });
+      fetchClaimElements(pubNumber).then((data) => {
+        if (id === searchIdRef.current) {
+          setClaimElements(data);
+        }
       });
     } catch (err) {
       if (id !== searchIdRef.current) return;
@@ -239,6 +250,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     patent,
     referenceNumerals,
     numeralHighlights,
+    claimElements,
     figureMap,
     numeralLocations,
     numeralLabels,

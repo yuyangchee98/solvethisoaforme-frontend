@@ -2,7 +2,38 @@ import { useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent } from "./types";
-import type { ReferenceNumeralHighlights, HighlightSpan } from "@/lib/api";
+import type { ReferenceNumeralHighlights, HighlightSpan, ClaimElementSpan, ClaimElementsData } from "@/lib/api";
+
+// Color palette for claim element groups (12 visually distinct pastels)
+const ELEMENT_COLORS = [
+  "bg-rose-100/60",
+  "bg-sky-100/60",
+  "bg-emerald-100/60",
+  "bg-violet-100/60",
+  "bg-amber-100/70",
+  "bg-cyan-100/60",
+  "bg-pink-100/60",
+  "bg-lime-100/60",
+  "bg-indigo-100/60",
+  "bg-orange-100/60",
+  "bg-teal-100/60",
+  "bg-fuchsia-100/60",
+];
+
+const ELEMENT_INTRO_BORDER = [
+  "border-b border-rose-400/60",
+  "border-b border-sky-400/60",
+  "border-b border-emerald-400/60",
+  "border-b border-violet-400/60",
+  "border-b border-amber-400/60",
+  "border-b border-cyan-400/60",
+  "border-b border-pink-400/60",
+  "border-b border-lime-400/60",
+  "border-b border-indigo-400/60",
+  "border-b border-orange-400/60",
+  "border-b border-teal-400/60",
+  "border-b border-fuchsia-400/60",
+];
 
 // Figure enumerations: "FIG. 1", "FIGS. 2 and 3", "FIGS. 2, 3 and 8", "FIGS. 2-5"
 // Matches the entire enumeration as one unit so continuation numbers aren't misidentified.
@@ -55,16 +86,23 @@ interface CenterPanelProps {
   patent: Patent;
   activeNumeral: string | null;
   highlights: ReferenceNumeralHighlights;
+  claimElements: ClaimElementsData;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
   onClaimClick: (claimNumber: number) => void;
 }
 
+/** Find the claim element span that covers a given character position. */
+function elementSpanAt(pos: number, elementSpans: ClaimElementSpan[]): ClaimElementSpan | undefined {
+  return elementSpans.find((s) => pos >= s.start && pos < s.end);
+}
+
 function RichText({
   text,
   activeNumeral,
   spans,
+  elementSpans,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
@@ -74,6 +112,7 @@ function RichText({
   text: string;
   activeNumeral: string | null;
   spans: HighlightSpan[];
+  elementSpans?: ClaimElementSpan[];
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
@@ -129,36 +168,118 @@ function RichText({
     ...refSpans,
   ].sort((a, b) => a.start - b.start);
 
-  // Build parts array
-  const parts: RichPart[] = [];
+  // Build parts array with character position tracking
+  const parts: { part: RichPart; charStart: number }[] = [];
   let lastIndex = 0;
   for (const span of allSpans) {
     if (span.start < lastIndex) continue; // overlapping span, skip
     if (span.start > lastIndex) {
-      parts.push(text.slice(lastIndex, span.start));
+      parts.push({ part: text.slice(lastIndex, span.start), charStart: lastIndex });
     }
     if ("figNums" in span) {
-      parts.push({ type: "figure", figNums: span.figNums, raw: span.raw });
+      parts.push({ part: { type: "figure", figNums: span.figNums, raw: span.raw }, charStart: span.start });
     } else if ("claimNums" in span) {
-      parts.push({ type: "claim-ref", claimNums: span.claimNums, raw: span.raw });
+      parts.push({ part: { type: "claim-ref", claimNums: span.claimNums, raw: span.raw }, charStart: span.start });
     } else {
-      parts.push({ type: "numeral", numeral: span.numeral, raw: span.raw });
+      parts.push({ part: { type: "numeral", numeral: span.numeral, raw: span.raw }, charStart: span.start });
     }
     lastIndex = span.end;
   }
   if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
+    parts.push({ part: text.slice(lastIndex), charStart: lastIndex });
   }
 
-  if (parts.length === 1 && typeof parts[0] === "string") {
+  const elSpans = elementSpans ?? [];
+
+  if (parts.length === 1 && typeof parts[0].part === "string" && elSpans.length === 0) {
     return <>{text}</>;
   }
 
+  /** Wrap a rendered node in an element background span if applicable. */
+  const wrapElement = (node: React.ReactNode, charPos: number, key: string | number): React.ReactNode => {
+    if (elSpans.length === 0) return node;
+    const el = elementSpanAt(charPos, elSpans);
+    if (!el) return node;
+    const colorIdx = el.group_id % ELEMENT_COLORS.length;
+    const isIntro = el.role === "introduction" || el.role === "bare";
+    return (
+      <span
+        key={key}
+        title={el.np_text}
+        className={cn(
+          "rounded-sm px-0.5 -mx-0.5",
+          ELEMENT_COLORS[colorIdx],
+          isIntro && ELEMENT_INTRO_BORDER[colorIdx],
+        )}
+      >
+        {node}
+      </span>
+    );
+  };
+
   return (
     <>
-      {parts.map((part, i) => {
+      {parts.map(({ part, charStart }, i) => {
         if (typeof part === "string") {
-          return <span key={i}>{part}</span>;
+          // Split plain text at element span boundaries for accurate background coloring
+          if (elSpans.length === 0) {
+            return <span key={i}>{part}</span>;
+          }
+          // Find all element boundaries within this text range
+          const end = charStart + part.length;
+          const boundaries = new Set<number>([0, part.length]);
+          for (const el of elSpans) {
+            if (el.start > charStart && el.start < end) boundaries.add(el.start - charStart);
+            if (el.end > charStart && el.end < end) boundaries.add(el.end - charStart);
+          }
+          const sorted = [...boundaries].sort((a, b) => a - b);
+          if (sorted.length <= 2) {
+            // No element boundaries inside — wrap whole fragment
+            const el = elementSpanAt(charStart, elSpans);
+            if (!el) return <span key={i}>{part}</span>;
+            const colorIdx = el.group_id % ELEMENT_COLORS.length;
+            const isIntro = el.role === "introduction" || el.role === "bare";
+            return (
+              <span
+                key={i}
+                title={el.np_text}
+                className={cn(
+                  "rounded-sm px-0.5 -mx-0.5",
+                  ELEMENT_COLORS[colorIdx],
+                  isIntro && ELEMENT_INTRO_BORDER[colorIdx],
+                )}
+              >
+                {part}
+              </span>
+            );
+          }
+          // Multiple segments — split at boundaries
+          return (
+            <span key={i}>
+              {sorted.slice(0, -1).map((bStart, bi) => {
+                const bEnd = sorted[bi + 1];
+                const segment = part.slice(bStart, bEnd);
+                const absPos = charStart + bStart;
+                const el = elementSpanAt(absPos, elSpans);
+                if (!el) return <span key={bi}>{segment}</span>;
+                const colorIdx = el.group_id % ELEMENT_COLORS.length;
+                const isIntro = el.role === "introduction" || el.role === "bare";
+                return (
+                  <span
+                    key={bi}
+                    title={el.np_text}
+                    className={cn(
+                      "rounded-sm px-0.5 -mx-0.5",
+                      ELEMENT_COLORS[colorIdx],
+                      isIntro && ELEMENT_INTRO_BORDER[colorIdx],
+                    )}
+                  >
+                    {segment}
+                  </span>
+                );
+              })}
+            </span>
+          );
         }
 
         if (part.type === "figure") {
@@ -285,11 +406,17 @@ export function CenterPanel({
   patent,
   activeNumeral,
   highlights,
+  claimElements,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
   onClaimClick,
 }: CenterPanelProps) {
+  // Build a lookup: claim_number -> spans
+  const claimElementMap = new Map(
+    claimElements.claim_elements.map((ce) => [ce.claim_number, ce.spans])
+  );
+
   const commonProps = {
     activeNumeral,
     onNumeralHover,
@@ -392,6 +519,7 @@ export function CenterPanel({
                     <RichText
                       text={claim.text}
                       spans={highlights.claims[ci] ?? []}
+                      elementSpans={claimElementMap.get(claim.number)}
                       {...commonProps}
                       onClaimClick={onClaimClick}
                       currentClaimNumber={claim.number}

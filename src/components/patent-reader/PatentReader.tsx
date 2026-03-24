@@ -290,6 +290,7 @@ export function PatentReader() {
                 patent={left.patent}
                 activeNumeral={left.activeNumeral}
                 highlights={left.numeralHighlights}
+                claimElements={left.claimElements}
                 onNumeralHover={left.setActiveNumeral}
                 onNumeralClick={left.handleNumeralClickFromSpec}
                 onFigureClick={left.handleFigureClick}
@@ -330,6 +331,7 @@ export function PatentReader() {
                 patent={right.patent}
                 activeNumeral={right.activeNumeral}
                 highlights={right.numeralHighlights}
+                claimElements={right.claimElements}
                 onNumeralHover={right.setActiveNumeral}
                 onNumeralClick={right.handleNumeralClickFromSpec}
                 onFigureClick={right.handleFigureClick}
@@ -389,6 +391,7 @@ export function PatentReader() {
           patent={left.patent!}
           activeNumeral={left.activeNumeral}
           highlights={left.numeralHighlights}
+          claimElements={left.claimElements}
           onNumeralHover={left.setActiveNumeral}
           onNumeralClick={left.handleNumeralClickFromSpec}
           onFigureClick={left.handleFigureClick}

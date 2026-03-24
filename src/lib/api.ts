@@ -316,3 +316,37 @@ export async function fetchReferenceNumerals(
     highlights: data.highlights ?? { abstract: [], description: [], claims: [] },
   };
 }
+
+// Claim element highlighting
+
+export interface ClaimElementSpan {
+  start: number;
+  end: number;
+  group_id: number;
+  np_text: string;
+  role: "introduction" | "reference" | "bare";
+}
+
+export interface ClaimElementGroup {
+  group_id: number;
+  np_text: string;
+  introduced_in: number;
+}
+
+export interface ClaimElementsData {
+  claim_elements: { claim_number: number; spans: ClaimElementSpan[] }[];
+  groups: ClaimElementGroup[];
+}
+
+const EMPTY_CLAIM_ELEMENTS: ClaimElementsData = { claim_elements: [], groups: [] };
+
+export async function fetchClaimElements(
+  publicationNumber: string
+): Promise<ClaimElementsData> {
+  const response = await fetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/claim-elements`
+  );
+
+  if (!response.ok) return EMPTY_CLAIM_ELEMENTS;
+  return response.json();
+}
