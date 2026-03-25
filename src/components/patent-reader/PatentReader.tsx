@@ -31,6 +31,7 @@ const EXAMPLE_PATENTS = [
   { number: "US11423567B2", title: "Head location/orientation detection method" },
   { number: "US20220075747A1", title: "Multiple hot pluggable device support via emulated switch" },
   { number: "US10956685B2", title: "Sequence-to-sequence prediction using a neural network model" },
+  { number: "EP3081497B1", title: "Packaging machine and method for producing packages from a packaging material" },
 ];
 
 function SearchForm({
@@ -93,7 +94,7 @@ function PatentSearchDialog({
         <DialogHeader>
           <DialogTitle>Load patent</DialogTitle>
           <DialogDescription>
-            Enter a US patent or published application number.
+            Enter a publication number &mdash; US, EP, WO, CN, JP, KR, and 100+ other jurisdictions.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
@@ -390,9 +391,8 @@ export function PatentReader() {
 
             {/* Format hints */}
             <div className="text-center">
-              <p className="text-xs text-stone-400 mb-1">Accepted formats</p>
               <div className="flex flex-wrap justify-center gap-2">
-                {["US11423567B2", "US 2022/0075747 A1", "US 11,423,567 B2"].map((fmt) => (
+                {["US11423567B2", "EP3081497B1", "WO2016116889A1", "CN110546615B"].map((fmt) => (
                   <code
                     key={fmt}
                     className="text-xs font-mono bg-stone-100 text-stone-500 px-2 py-0.5 rounded"
@@ -401,9 +401,108 @@ export function PatentReader() {
                   </code>
                 ))}
               </div>
-              <p className="text-xs text-stone-400 mt-2">
-                Application serial numbers (e.g. 16/904,029) are not supported.
-              </p>
+              <details className="mt-3 text-left max-w-md mx-auto">
+                <summary className="text-xs text-stone-400 cursor-pointer hover:text-stone-600 text-center select-none">
+                  Supported formats &amp; jurisdictions
+                </summary>
+                <div className="mt-2 text-xs text-stone-500 space-y-3 bg-stone-50 border border-stone-200 rounded-lg p-4">
+                  {/* Input format */}
+                  <div>
+                    <p className="font-medium text-stone-600 mb-1">How to enter a patent number</p>
+                    <p className="leading-relaxed">
+                      Enter the <span className="font-medium">publication number</span> (not the
+                      application serial number). You can type it with or without spaces, commas,
+                      slashes, or kind codes &mdash; we normalize it automatically.
+                    </p>
+                    <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-[11px]">
+                      <span className="text-stone-400">US granted:</span>
+                      <span>US 11,423,567 B2 <span className="text-stone-400">or</span> US11423567B2</span>
+                      <span className="text-stone-400">US application:</span>
+                      <span>US 2022/0075747 A1 <span className="text-stone-400">or</span> US20220075747A1</span>
+                      <span className="text-stone-400">US design:</span>
+                      <span>USD1234567S</span>
+                      <span className="text-stone-400">US reissue:</span>
+                      <span>USRE49000E</span>
+                      <span className="text-stone-400">US plant:</span>
+                      <span>USPP12345P3</span>
+                      <span className="text-stone-400">EP:</span>
+                      <span>EP 3 081 497 B1 <span className="text-stone-400">or</span> EP3081497B1</span>
+                      <span className="text-stone-400">WO/PCT:</span>
+                      <span>WO 2016/116889 A1 <span className="text-stone-400">or</span> WO2016116889A1</span>
+                      <span className="text-stone-400">CN:</span>
+                      <span>CN110546615B</span>
+                      <span className="text-stone-400">JP:</span>
+                      <span>JP6876012B2</span>
+                      <span className="text-stone-400">KR:</span>
+                      <span>KR102345678B1</span>
+                    </div>
+                  </div>
+
+                  {/* Kind codes */}
+                  <div>
+                    <p className="font-medium text-stone-600 mb-1">Kind codes</p>
+                    <p className="leading-relaxed">
+                      If you omit the kind code (the letter suffix like B2 or A1), we
+                      automatically try common variants. Including it is recommended for
+                      faster, more precise lookups.
+                    </p>
+                  </div>
+
+                  {/* Jurisdictions */}
+                  <div>
+                    <p className="font-medium text-stone-600 mb-1">Supported jurisdictions</p>
+                    <p className="leading-relaxed mb-1.5">
+                      Data comes from Google Patents, which indexes 100+ patent offices.
+                      Verified jurisdictions:
+                    </p>
+                    <div className="space-y-1.5">
+                      <div>
+                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">Americas</p>
+                        <p className="text-[11px] leading-relaxed">
+                          US (United States), CA (Canada), MX (Mexico), BR (Brazil),
+                          AR (Argentina), CL (Chile), CO (Colombia), UY (Uruguay)
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">Europe</p>
+                        <p className="text-[11px] leading-relaxed">
+                          EP (European Patent Office), DE (Germany), GB (United Kingdom),
+                          FR (France), NL (Netherlands), BE (Belgium), AT (Austria),
+                          CH (Switzerland), SE (Sweden), NO (Norway), DK (Denmark),
+                          FI (Finland), IE (Ireland), ES (Spain), IT (Italy), PL (Poland),
+                          CZ (Czech Republic), RO (Romania), GR (Greece), HU (Hungary)
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">Asia-Pacific</p>
+                        <p className="text-[11px] leading-relaxed">
+                          CN (China), JP (Japan), KR (South Korea), TW (Taiwan),
+                          IN (India), AU (Australia), NZ (New Zealand), SG (Singapore),
+                          PH (Philippines), MY (Malaysia), TH (Thailand), HK (Hong Kong)
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">International &amp; Other</p>
+                        <p className="text-[11px] leading-relaxed">
+                          WO (WIPO/PCT), EA (Eurasian Patent Org), RU (Russia),
+                          UA (Ukraine), MD (Moldova), IL (Israel), SA (Saudi Arabia),
+                          TR (Turkey), EG (Egypt), ZA (South Africa), AP (ARIPO)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Not supported */}
+                  <div>
+                    <p className="font-medium text-stone-600 mb-1">Not supported</p>
+                    <ul className="list-disc list-inside text-[11px] leading-relaxed space-y-0.5">
+                      <li>Application serial numbers (e.g. 16/904,029)</li>
+                      <li>Provisional application numbers</li>
+                      <li>Patents not indexed by Google Patents</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
             </div>
 
             {/* Example patents */}
