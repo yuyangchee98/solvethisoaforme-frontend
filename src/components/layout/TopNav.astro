@@ -1,16 +1,18 @@
 ---
 import { UserMenu } from '../auth/UserMenu';
-import { MobileMenuButton } from './MobileMenuButton';
+import { MobileNavDropdown } from './MobileNavDropdown';
 const currentPath = Astro.url.pathname;
 ---
 
 <nav class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-black/5 z-50">
   <div class="container mx-auto px-4 md:px-8 h-full flex items-center justify-between">
     <div class="flex items-center gap-4 md:gap-12">
-      <MobileMenuButton client:only="react" />
-      <a href="/oa-response" class="text-lg font-semibold text-stone-900">
-        Solve This OA For Me
+      <a href="/oa-response" class="flex items-center gap-2 whitespace-nowrap">
+        <img src="/icon.svg" alt="Solve This OA For Me" class="h-9 w-9" />
+        <span class="hidden md:inline text-lg font-semibold text-stone-900">Solve This OA For Me</span>
       </a>
+
+      <MobileNavDropdown currentPath={currentPath} client:only="react" />
 
       <div class="hidden md:flex items-center gap-8">
         <a
