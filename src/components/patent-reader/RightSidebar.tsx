@@ -1027,26 +1027,26 @@ export function RightSidebar({
       )}
     >
       {/* Tab bar + collapse */}
-      <div className="flex items-center justify-between px-2 py-2 border-b border-stone-100">
-        <TabsList className="h-9">
-          <TabsTrigger value="figures" className="text-sm px-3 py-1.5 gap-1.5">
-            <Image className="size-4" />
-            Figures
-          </TabsTrigger>
-          <TabsTrigger value="details" className="text-sm px-3 py-1.5 gap-1.5">
-            <Info className="size-4" />
-            Details
-          </TabsTrigger>
-          <TabsTrigger value="outline" className="text-sm px-3 py-1.5 gap-1.5">
-            <List className="size-4" />
-            Outline
-          </TabsTrigger>
-          <TabsTrigger value="search" className="text-sm px-3 py-1.5 gap-1.5">
-            <Search className="size-4" />
-            Search
-          </TabsTrigger>
+      <div className="flex items-center border-b border-stone-200">
+        <TabsList className="flex flex-1 h-auto bg-transparent p-0 rounded-none -mb-px">
+          {(["figures", "details", "outline", "search"] as const).map((tab) => (
+            <TabsTrigger
+              key={tab}
+              value={tab}
+              className={cn(
+                "flex-1 rounded-none py-3 text-[13px] font-medium",
+                "border-b-2 border-transparent bg-transparent shadow-none",
+                "text-stone-400 hover:text-stone-500",
+                "data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+                "data-[state=active]:border-amber-500 data-[state=active]:text-stone-800",
+                "transition-colors duration-150"
+              )}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </TabsTrigger>
+          ))}
         </TabsList>
-        <Button variant="ghost" size="icon-sm" onClick={onToggle} title="Collapse sidebar">
+        <Button variant="ghost" size="icon-sm" onClick={onToggle} title="Collapse sidebar" className="shrink-0 mr-1.5">
           <PanelRightClose className="size-4 text-stone-400" />
         </Button>
       </div>
