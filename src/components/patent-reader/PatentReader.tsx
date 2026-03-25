@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Search, Loader2, AlertCircle, FileText, PanelRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
@@ -60,6 +62,81 @@ function SearchForm({
         {loading ? <Loader2 className="size-4 animate-spin" /> : "Fetch"}
       </Button>
     </form>
+  );
+}
+
+function PatentSearchDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  loading,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (patentNumber: string) => void;
+  loading: boolean;
+}) {
+  const [input, setInput] = useState("");
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    onSubmit(trimmed);
+    onOpenChange(false);
+    setInput("");
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle>Load patent</DialogTitle>
+          <DialogDescription>
+            Enter a US patent or published application number.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-stone-400" />
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="e.g. US11423567B2"
+              className="w-full rounded-lg border border-stone-200 bg-white text-sm py-2.5 pl-10 pr-4 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
+              autoFocus
+            />
+          </div>
+          <Button type="submit" disabled={loading || !input.trim()}>
+            {loading ? <Loader2 className="size-4 animate-spin" /> : "Fetch"}
+          </Button>
+        </form>
+
+        {/* Example patents */}
+        <div className="space-y-1 pt-2 border-t border-stone-100">
+          <p className="text-xs text-stone-400">Examples</p>
+          {EXAMPLE_PATENTS.map((ex) => (
+            <button
+              key={ex.number}
+              onClick={() => {
+                onSubmit(ex.number);
+                onOpenChange(false);
+                setInput("");
+              }}
+              disabled={loading}
+              className="flex items-start gap-2 w-full text-left px-2 py-1.5 rounded-md hover:bg-stone-100 transition-colors group disabled:opacity-50"
+            >
+              <FileText className="size-3.5 text-stone-400 group-hover:text-amber-600 mt-0.5 shrink-0 transition-colors" />
+              <div className="min-w-0">
+                <p className="text-xs font-mono text-stone-600">{ex.number}</p>
+                <p className="text-[11px] text-stone-400 truncate">{ex.title}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -128,6 +205,7 @@ export function PatentReader() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
+  const [searchDialogOpen, setSearchDialogOpen] = useState(false);
 
   // Auto-expand sidebar when interaction targets it (comparison mode).
   // In normal mode these set state that isn't read, so it's a harmless no-op.
@@ -208,6 +286,18 @@ export function PatentReader() {
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
   }, [left.patent, compareMode, isMobile]);
+
+  // Intercept Cmd/Ctrl+K → open patent search dialog
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchDialogOpen(true);
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
 
   const handleSearch = useCallback(
     (e?: React.FormEvent) => {
@@ -340,6 +430,16 @@ export function PatentReader() {
             </div>
           </div>
         </div>
+
+        <PatentSearchDialog
+          open={searchDialogOpen}
+          onOpenChange={setSearchDialogOpen}
+          onSubmit={(num) => {
+            setQuery(num);
+            left.loadPatent(num);
+          }}
+          loading={left.loading}
+        />
       </div>
     );
   }
@@ -457,14 +557,26 @@ export function PatentReader() {
   // ── Normal mode (single patent loaded) ───────────────────────────────
   return (
     <div className="flex flex-col h-full">
-      {/* Compact search bar + compare button */}
-      <div className="border-b border-stone-200 bg-white px-4 py-2 flex items-center gap-2">
-        <SearchForm
-          query={query}
-          onQueryChange={setQuery}
-          onSubmit={handleSearch}
-          loading={left.loading}
-        />
+      {/* Patent info bar */}
+      <div className="border-b border-stone-200 bg-white px-4 py-2 flex items-center gap-3 min-w-0">
+        <Badge variant="outline" className="font-mono shrink-0 text-xs">
+          {left.patent!.patent_number}
+        </Badge>
+        <span className="text-sm text-stone-600 truncate min-w-0 flex-1">
+          {left.patent!.title}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSearchDialogOpen(true)}
+          className="shrink-0 text-stone-500 gap-1.5"
+          title="Load a different patent"
+        >
+          <Search className="size-3.5" />
+          <kbd className="hidden sm:inline text-[10px] font-mono bg-stone-100 text-stone-400 px-1 py-0.5 rounded border border-stone-200">
+            {navigator.platform?.includes("Mac") ? "\u2318" : "Ctrl+"}K
+          </kbd>
+        </Button>
         <CompareButton
           currentPatent={left.patent}
           otherTabs={registry.others}
@@ -531,6 +643,16 @@ export function PatentReader() {
           </>
         )}
       </div>
+
+      <PatentSearchDialog
+        open={searchDialogOpen}
+        onOpenChange={setSearchDialogOpen}
+        onSubmit={(num) => {
+          setQuery(num);
+          left.loadPatent(num);
+        }}
+        loading={left.loading}
+      />
     </div>
   );
 }
