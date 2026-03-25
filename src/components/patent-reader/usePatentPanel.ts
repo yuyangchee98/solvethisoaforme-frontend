@@ -7,6 +7,8 @@ import type {
   ClaimElementsData,
 } from "@/lib/api";
 import type { Patent } from "./types";
+import type { SearchTerm, SearchHighlights, SearchOccurrence } from "./search-utils";
+import { computeSearchHighlights, computeSearchOccurrences } from "./search-utils";
 
 interface UsePatentPanelOptions {
   /** Scope DOM queries to this container (for comparison mode isolation). */
@@ -41,6 +43,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     groups: [],
   });
   const [activeElementGroup, setActiveElementGroup] = useState<number | null>(null);
+  const [searchTerms, setSearchTerms] = useState<SearchTerm[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +80,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setSelectedFigure(null);
     setClaimElements({ claim_elements: [], groups: [] });
     setActiveElementGroup(null);
+    setSearchTerms([]);
     numeralClickCount.current = {};
     try {
       const data = await fetchPatent(pubNumber);
@@ -264,6 +268,62 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     return map;
   }, [referenceNumerals]);
 
+  // ── Search ────────────────────────────────────────────────────────────
+
+  const searchHighlights = useMemo<SearchHighlights>(() => {
+    if (!patent || searchTerms.length === 0) {
+      return { abstract: [], description: [], claims: [] };
+    }
+    return computeSearchHighlights(patent, searchTerms);
+  }, [patent, searchTerms]);
+
+  const searchOccurrences = useMemo<SearchOccurrence[]>(() => {
+    if (!patent || searchTerms.length === 0) return [];
+    return computeSearchOccurrences(patent, searchTerms);
+  }, [patent, searchTerms]);
+
+  const nextTermId = useRef(0);
+
+  const addSearchTerm = useCallback((term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    setSearchTerms((prev) => {
+      // Don't add duplicates
+      if (prev.some((t) => t.term.toLowerCase() === trimmed.toLowerCase())) return prev;
+      const id = String(++nextTermId.current);
+      const termIndex = prev.length;
+      return [...prev, { id, term: trimmed, termIndex }];
+    });
+  }, []);
+
+  const removeSearchTerm = useCallback((id: string) => {
+    setSearchTerms((prev) => {
+      const filtered = prev.filter((t) => t.id !== id);
+      // Re-index so colors stay contiguous
+      return filtered.map((t, i) => ({ ...t, termIndex: i }));
+    });
+  }, []);
+
+  const clearSearchTerms = useCallback(() => {
+    setSearchTerms([]);
+  }, []);
+
+  const scrollToSearchOccurrence = useCallback(
+    (termIndex: number, globalOccurrenceIndex: number) => {
+      const allSpans = qsa<HTMLElement>(`[data-search-term="${termIndex}"]`);
+      const target = allSpans[globalOccurrenceIndex];
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.add("ring-2", "ring-stone-400");
+        setTimeout(
+          () => target.classList.remove("ring-2", "ring-stone-400"),
+          1500
+        );
+      }
+    },
+    [qsa]
+  );
+
   return {
     // Data
     patent,
@@ -283,8 +343,16 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     // Loading
     loading,
     error,
+    // Search
+    searchTerms,
+    searchHighlights,
+    searchOccurrences,
     // Actions
     loadPatent,
+    addSearchTerm,
+    removeSearchTerm,
+    clearSearchTerms,
+    scrollToSearchOccurrence,
     setActiveNumeral,
     setActiveElementGroup,
     handleElementClick,

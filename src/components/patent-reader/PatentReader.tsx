@@ -104,6 +104,12 @@ function PanelSidebar({
       onBboxClick={panel.handleBboxClick}
       onFigureClick={panel.handleFigLabelClick}
       onScrollToNumeralOccurrence={panel.scrollToNumeralOccurrence}
+      searchTerms={panel.searchTerms}
+      searchOccurrences={panel.searchOccurrences}
+      onAddSearchTerm={panel.addSearchTerm}
+      onRemoveSearchTerm={panel.removeSearchTerm}
+      onClearSearchTerms={panel.clearSearchTerms}
+      onScrollToSearchOccurrence={panel.scrollToSearchOccurrence}
     />
   );
 }
@@ -331,6 +337,7 @@ export function PatentReader() {
                 activeElementGroup={left.activeElementGroup}
                 highlights={left.numeralHighlights}
                 claimElements={left.claimElements}
+                searchHighlights={left.searchHighlights}
                 onNumeralHover={left.setActiveNumeral}
                 onNumeralClick={left.handleNumeralClickFromSpec}
                 onFigureClick={left.handleFigureClick}
@@ -375,6 +382,7 @@ export function PatentReader() {
                 activeElementGroup={right.activeElementGroup}
                 highlights={right.numeralHighlights}
                 claimElements={right.claimElements}
+                searchHighlights={right.searchHighlights}
                 onNumeralHover={right.setActiveNumeral}
                 onNumeralClick={right.handleNumeralClickFromSpec}
                 onFigureClick={right.handleFigureClick}
@@ -438,6 +446,7 @@ export function PatentReader() {
           activeElementGroup={left.activeElementGroup}
           highlights={left.numeralHighlights}
           claimElements={left.claimElements}
+          searchHighlights={left.searchHighlights}
           onNumeralHover={left.setActiveNumeral}
           onNumeralClick={left.handleNumeralClickFromSpec}
           onFigureClick={left.handleFigureClick}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Image,
   Info,
@@ -18,6 +18,9 @@ import {
   ScrollText,
   FileStack,
   Globe,
+  Search,
+  Plus,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +29,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import type { Patent, PatentClaim } from "./types";
 import type { ReferenceNumeral, NumeralLocation } from "@/lib/api";
+import type { SearchTerm, SearchOccurrence } from "./search-utils";
+import { SEARCH_COLORS } from "./search-utils";
 
 interface RightSidebarProps {
   patent: Patent;
@@ -51,6 +56,13 @@ interface RightSidebarProps {
   onScrollToNumeralOccurrence?: (numeral: string, occurrenceIndex: number) => void;
   /** Navigate to a different patent (e.g. clicked citation) */
   onLoadPatent?: (pubNumber: string) => void;
+  // Search
+  searchTerms?: SearchTerm[];
+  searchOccurrences?: SearchOccurrence[];
+  onAddSearchTerm?: (term: string) => void;
+  onRemoveSearchTerm?: (id: string) => void;
+  onClearSearchTerms?: () => void;
+  onScrollToSearchOccurrence?: (termIndex: number, globalOccurrenceIndex: number) => void;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -776,6 +788,147 @@ function OutlineTab({
   );
 }
 
+// ── Search tab ────────────────────────────────────────────────────────────
+
+function SearchTab({
+  searchTerms,
+  searchOccurrences,
+  onAddSearchTerm,
+  onRemoveSearchTerm,
+  onClearSearchTerms,
+  onScrollToSearchOccurrence,
+}: {
+  searchTerms: SearchTerm[];
+  searchOccurrences: SearchOccurrence[];
+  onAddSearchTerm: (term: string) => void;
+  onRemoveSearchTerm: (id: string) => void;
+  onClearSearchTerms: () => void;
+  onScrollToSearchOccurrence: (termIndex: number, globalOccurrenceIndex: number) => void;
+}) {
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputValue.trim()) {
+      onAddSearchTerm(inputValue.trim());
+      setInputValue("");
+      inputRef.current?.focus();
+    }
+  };
+
+  // Count occurrences per term
+  const termCounts: Record<number, number> = {};
+  for (const occ of searchOccurrences) {
+    termCounts[occ.termIndex] = (termCounts[occ.termIndex] ?? 0) + 1;
+  }
+
+  return (
+    <div className="p-3 space-y-3 overflow-y-auto">
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="flex gap-1.5">
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Search term..."
+          className="flex-1 text-sm rounded-md border border-stone-200 bg-white px-2.5 py-1.5 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
+        />
+        <Button
+          type="submit"
+          size="sm"
+          variant="outline"
+          disabled={!inputValue.trim()}
+          className="px-2"
+        >
+          <Plus className="size-4" />
+        </Button>
+      </form>
+
+      {/* Active term chips */}
+      {searchTerms.length > 0 && (
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap gap-1.5">
+            {searchTerms.map((t) => (
+              <span
+                key={t.id}
+                className="inline-flex items-center gap-1.5 text-xs rounded-md border border-stone-200 bg-white px-2 py-1"
+              >
+                <span
+                  className={cn("size-2.5 rounded-full shrink-0", SEARCH_COLORS[t.termIndex % SEARCH_COLORS.length])}
+                />
+                <span className="text-stone-700 max-w-[120px] truncate">{t.term}</span>
+                <span className="text-stone-400 text-[10px]">
+                  {termCounts[t.termIndex] ?? 0}
+                </span>
+                <button
+                  onClick={() => onRemoveSearchTerm(t.id)}
+                  className="text-stone-400 hover:text-stone-600 transition-colors"
+                >
+                  <X className="size-3" />
+                </button>
+              </span>
+            ))}
+          </div>
+          {searchTerms.length > 1 && (
+            <button
+              onClick={onClearSearchTerms}
+              className="text-[11px] text-stone-400 hover:text-stone-600 transition-colors"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Hit list */}
+      {searchTerms.length > 0 && searchOccurrences.length > 0 && (
+        <div className="space-y-3">
+          {searchTerms.map((t) => {
+            const termOccs = searchOccurrences.filter((o) => o.termIndex === t.termIndex);
+            if (termOccs.length === 0) return null;
+            return (
+              <div key={t.id} className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
+                  <span
+                    className={cn("size-2.5 rounded-full shrink-0", SEARCH_COLORS[t.termIndex % SEARCH_COLORS.length])}
+                  />
+                  {t.term}
+                  <span className="text-[10px] font-normal">({termOccs.length})</span>
+                </div>
+                <div className="border border-stone-200 rounded-md overflow-hidden">
+                  {termOccs.map((occ, i) => (
+                    <button
+                      key={i}
+                      onClick={() => onScrollToSearchOccurrence(occ.termIndex, occ.globalOccurrenceIndex)}
+                      className="w-full text-left px-3 py-1.5 hover:bg-stone-50 transition-colors flex gap-2 items-start border-b border-stone-100 last:border-b-0"
+                    >
+                      <span className="text-[10px] text-amber-600 font-medium shrink-0 mt-0.5 w-24 truncate">
+                        {occ.section}
+                      </span>
+                      <span className="text-[11px] text-stone-500 leading-snug line-clamp-2">
+                        {occ.snippet}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {searchTerms.length === 0 && (
+        <p className="text-xs text-stone-400 italic">
+          Enter a term above to search within the patent text.
+        </p>
+      )}
+    </div>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────
 
 export function RightSidebar({
@@ -800,6 +953,12 @@ export function RightSidebar({
   onFigureClick,
   onScrollToNumeralOccurrence,
   onLoadPatent,
+  searchTerms,
+  searchOccurrences,
+  onAddSearchTerm,
+  onRemoveSearchTerm,
+  onClearSearchTerms,
+  onScrollToSearchOccurrence,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -835,6 +994,10 @@ export function RightSidebar({
             <List className="size-4" />
             Outline
           </TabsTrigger>
+          <TabsTrigger value="search" className="text-sm px-3 py-1.5 gap-1.5">
+            <Search className="size-4" />
+            Search
+          </TabsTrigger>
         </TabsList>
         <Button variant="ghost" size="icon-sm" onClick={onToggle} title="Collapse sidebar">
           <PanelRightClose className="size-4 text-stone-400" />
@@ -869,6 +1032,16 @@ export function RightSidebar({
       </TabsContent>
       <TabsContent value="outline" className="mt-0 flex-1 overflow-y-auto">
         <OutlineTab patent={patent} onScrollTo={onScrollTo} />
+      </TabsContent>
+      <TabsContent value="search" className="mt-0 flex-1 overflow-y-auto">
+        <SearchTab
+          searchTerms={searchTerms ?? []}
+          searchOccurrences={searchOccurrences ?? []}
+          onAddSearchTerm={onAddSearchTerm ?? (() => {})}
+          onRemoveSearchTerm={onRemoveSearchTerm ?? (() => {})}
+          onClearSearchTerms={onClearSearchTerms ?? (() => {})}
+          onScrollToSearchOccurrence={onScrollToSearchOccurrence ?? (() => {})}
+        />
       </TabsContent>
     </Tabs>
   );

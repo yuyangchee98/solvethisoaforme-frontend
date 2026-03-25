@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent, ClaimLimitation } from "./types";
 import type { ReferenceNumeralHighlights, HighlightSpan, ClaimElementSpan, ClaimElementsData } from "@/lib/api";
+import type { SearchHighlightSpan, SearchHighlights } from "./search-utils";
+import { SEARCH_COLORS } from "./search-utils";
 
 // Color palette for claim element groups (12 visually distinct pastels)
 const ELEMENT_COLORS = [
@@ -88,6 +90,7 @@ interface CenterPanelProps {
   activeElementGroup: number | null;
   highlights: ReferenceNumeralHighlights;
   claimElements: ClaimElementsData;
+  searchHighlights?: SearchHighlights;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
@@ -107,6 +110,7 @@ function RichText({
   spans,
   elementSpans,
   activeElementGroup,
+  searchSpans,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
@@ -120,6 +124,7 @@ function RichText({
   spans: HighlightSpan[];
   elementSpans?: ClaimElementSpan[];
   activeElementGroup?: number | null;
+  searchSpans?: SearchHighlightSpan[];
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
@@ -199,8 +204,49 @@ function RichText({
   }
 
   const elSpans = elementSpans ?? [];
+  const sSpans = searchSpans ?? [];
 
-  if (parts.length === 1 && typeof parts[0].part === "string" && elSpans.length === 0) {
+  /** Wrap a text fragment in <mark> tags where search spans overlap [absStart, absEnd). */
+  const applySearchMarks = (
+    content: string,
+    absStart: number,
+    keyPrefix: string | number,
+  ): React.ReactNode => {
+    if (sSpans.length === 0) return content;
+    // Find overlapping search spans
+    const absEnd = absStart + content.length;
+    const overlapping = sSpans.filter((s) => s.start < absEnd && s.end > absStart);
+    if (overlapping.length === 0) return content;
+
+    const fragments: React.ReactNode[] = [];
+    let pos = 0;
+    for (const span of overlapping) {
+      const relStart = Math.max(0, span.start - absStart);
+      const relEnd = Math.min(content.length, span.end - absStart);
+      if (relStart > pos) {
+        fragments.push(content.slice(pos, relStart));
+      }
+      fragments.push(
+        <mark
+          key={`${keyPrefix}-s${relStart}`}
+          data-search-term={span.termIndex}
+          className={cn(
+            "rounded-sm px-0",
+            SEARCH_COLORS[span.termIndex % SEARCH_COLORS.length],
+          )}
+        >
+          {content.slice(relStart, relEnd)}
+        </mark>
+      );
+      pos = relEnd;
+    }
+    if (pos < content.length) {
+      fragments.push(content.slice(pos));
+    }
+    return <>{fragments}</>;
+  };
+
+  if (parts.length === 1 && typeof parts[0].part === "string" && elSpans.length === 0 && sSpans.length === 0) {
     return <>{text}</>;
   }
 
@@ -242,7 +288,7 @@ function RichText({
         if (typeof part === "string") {
           // Split plain text at element span boundaries for accurate background coloring
           if (elSpans.length === 0) {
-            return <span key={i}>{part}</span>;
+            return <span key={i}>{applySearchMarks(part, charStart, i)}</span>;
           }
           // Find all element boundaries within this text range
           const end = charStart + part.length;
@@ -255,8 +301,8 @@ function RichText({
           if (sorted.length <= 2) {
             // No element boundaries inside — wrap whole fragment
             const el = elementSpanAt(charStart, elSpans);
-            if (!el) return <span key={i}>{part}</span>;
-            return renderElementSpan(part, el, i);
+            if (!el) return <span key={i}>{applySearchMarks(part, charStart, i)}</span>;
+            return renderElementSpan(applySearchMarks(part, charStart, i), el, i);
           }
           // Multiple segments — split at boundaries
           return (
@@ -266,8 +312,8 @@ function RichText({
                 const segment = part.slice(bStart, bEnd);
                 const absPos = charStart + bStart;
                 const el = elementSpanAt(absPos, elSpans);
-                if (!el) return <span key={bi}>{segment}</span>;
-                return renderElementSpan(segment, el, bi);
+                if (!el) return <span key={bi}>{applySearchMarks(segment, absPos, `${i}-${bi}`)}</span>;
+                return renderElementSpan(applySearchMarks(segment, absPos, `${i}-${bi}`), el, bi);
               })}
             </span>
           );
@@ -430,6 +476,7 @@ function ClaimLimitationsRenderer({
   activeElementGroup,
   onElementHover,
   onElementClick,
+  searchSpans,
   ...richTextProps
 }: {
   limitations: ClaimLimitation[];
@@ -439,6 +486,7 @@ function ClaimLimitationsRenderer({
   activeElementGroup?: number | null;
   onElementHover?: (groupId: number | null) => void;
   onElementClick?: (groupId: number) => void;
+  searchSpans?: SearchHighlightSpan[];
   activeNumeral: string | null;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
@@ -476,6 +524,9 @@ function ClaimLimitationsRenderer({
         const limElementSpans = offset >= 0 && elementSpans
           ? sliceSpans(elementSpans, offset, offset + lim.text.length)
           : undefined;
+        const limSearchSpans = offset >= 0 && searchSpans
+          ? sliceSpans(searchSpans, offset, offset + lim.text.length)
+          : undefined;
 
         return (
           <div
@@ -489,6 +540,7 @@ function ClaimLimitationsRenderer({
               activeElementGroup={activeElementGroup}
               onElementHover={onElementHover}
               onElementClick={onElementClick}
+              searchSpans={limSearchSpans}
               {...richTextProps}
             />
           </div>
@@ -504,6 +556,7 @@ export function CenterPanel({
   activeElementGroup,
   highlights,
   claimElements,
+  searchHighlights,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
@@ -563,6 +616,7 @@ export function CenterPanel({
             <RichText
               text={patent.abstract}
               spans={highlights.abstract}
+              searchSpans={searchHighlights?.abstract}
               {...commonProps}
             />
           </div>
@@ -589,6 +643,7 @@ export function CenterPanel({
                     <RichText
                       text={para.text}
                       spans={highlights.description[si]?.[pi] ?? []}
+                      searchSpans={searchHighlights?.description[si]?.[pi]}
                       {...commonProps}
                     />
                   </p>
@@ -626,6 +681,7 @@ export function CenterPanel({
                           activeElementGroup={activeElementGroup}
                           onElementHover={onElementHover}
                           onElementClick={onElementClick}
+                          searchSpans={searchHighlights?.claims[ci]}
                           {...commonProps}
                           onClaimClick={onClaimClick}
                           currentClaimNumber={claim.number}
@@ -640,6 +696,7 @@ export function CenterPanel({
                           activeElementGroup={activeElementGroup}
                           onElementHover={onElementHover}
                           onElementClick={onElementClick}
+                          searchSpans={searchHighlights?.claims[ci]}
                           {...commonProps}
                           onClaimClick={onClaimClick}
                           currentClaimNumber={claim.number}
