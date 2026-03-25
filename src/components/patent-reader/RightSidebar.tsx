@@ -104,12 +104,12 @@ function ClaimNode({
             <ChevronRight className="size-3.5 shrink-0 text-stone-400" />
           ))}
         {!hasChildren && <span className="w-3.5 shrink-0" />}
-        <span className="truncate">
-          Claim {claim.number}
-          {claim.type === "independent" && (
-            <span className="text-xs text-stone-400 ml-1">(ind.)</span>
-          )}
-        </span>
+        <span className="truncate">Claim {claim.number}</span>
+        {claim.type === "independent" && hasChildren && (
+          <span className="text-[10px] text-stone-400 ml-auto shrink-0">
+            +{children.length}
+          </span>
+        )}
       </button>
       {expanded && hasChildren && (
         <div className="ml-2 border-l border-stone-200">
@@ -167,7 +167,7 @@ function FiguresTab({
   return (
     <div className="flex flex-col h-full">
       {/* Thumbnail strip — skip index 0 (cover sheet) */}
-      <div className="flex gap-1.5 p-2 overflow-x-auto border-b border-stone-100 shrink-0">
+      <div className="flex gap-1.5 p-2 overflow-x-auto border-b border-stone-100 shrink-0 items-end">
         {patent.figure_urls.map((url, i) => {
           if (i === 0) return null; // skip cover sheet
           return (
@@ -175,7 +175,7 @@ function FiguresTab({
               key={url}
               onClick={() => onSelectFigure(selectedFigure === i ? null : i)}
               className={cn(
-                "rounded border overflow-hidden bg-white shrink-0 transition-all hover:border-amber-400",
+                "rounded border overflow-hidden bg-white shrink-0 transition-all hover:border-amber-400 flex flex-col items-center",
                 selectedFigure === i
                   ? "border-amber-500 ring-1 ring-amber-500/30"
                   : "border-stone-200"
@@ -184,9 +184,15 @@ function FiguresTab({
               <img
                 src={url}
                 alt={`Figure ${i}`}
-                className="h-14 w-auto"
+                className="h-16 w-auto"
                 loading="lazy"
               />
+              <span className={cn(
+                "text-[9px] pb-0.5 transition-colors",
+                selectedFigure === i ? "text-amber-600 font-medium" : "text-stone-400"
+              )}>
+                {i}
+              </span>
             </button>
           );
         })}
@@ -465,7 +471,7 @@ function DetailsTab({
                   onMouseLeave={() => onNumeralHover(null)}
                   onClick={() => handleRowClick(ref.numeral)}
                   className={cn(
-                    "flex items-center cursor-pointer transition-colors px-2 py-1 text-xs",
+                    "flex items-center cursor-pointer transition-colors px-2.5 py-1.5 text-xs",
                     activeNumeral === ref.numeral
                       ? "bg-amber-100/70"
                       : "hover:bg-stone-50"
@@ -481,7 +487,7 @@ function DetailsTab({
                     {ref.numeral}
                   </span>
                   <span className="text-stone-700 truncate">{ref.label}</span>
-                  <span className="ml-auto text-stone-400 text-[10px] pl-2">
+                  <span className="ml-auto text-[10px] text-stone-500 bg-stone-100 rounded-full px-1.5 py-0.5 shrink-0 font-medium">
                     {ref.count}
                   </span>
                 </div>
@@ -531,25 +537,15 @@ function DetailsTab({
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400">
           <Scale className="size-3" />
-          Claim Summary
+          Claims
         </div>
-        <div className="text-sm text-stone-600 space-y-1">
-          <p>
-            <span className="font-medium">{patent.claims.length}</span> total claims
-          </p>
-          <p>
-            <span className="font-medium">
-              {patent.claims.filter((c) => c.type === "independent").length}
-            </span>{" "}
-            independent
-          </p>
-          <p>
-            <span className="font-medium">
-              {patent.claims.filter((c) => c.type === "dependent").length}
-            </span>{" "}
-            dependent
-          </p>
-        </div>
+        <p className="text-sm text-stone-600">
+          <span className="font-medium">{patent.claims.length}</span> claims
+          <span className="mx-1.5 text-stone-300">·</span>
+          <span className="font-medium">{patent.claims.filter((c) => c.type === "independent").length}</span> ind.
+          <span className="mx-1.5 text-stone-300">·</span>
+          <span className="font-medium">{patent.claims.filter((c) => c.type === "dependent").length}</span> dep.
+        </p>
       </div>
 
       {patent.pdf_url && (
@@ -568,6 +564,11 @@ function DetailsTab({
           </a>
         </div>
       )}
+
+      {/* ── Related documents divider ── */}
+      <div className="border-t border-stone-200 pt-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-300 mb-3">Related</p>
+      </div>
 
       {/* ── Patent Citations ── */}
       {(patent.patent_citations?.length ?? 0) > 0 && (
@@ -754,9 +755,8 @@ function OutlineTab({
         </p>
         <button
           onClick={() => onScrollTo("abstract")}
-          className="flex items-center gap-1.5 w-full text-left px-2 py-1 rounded-md text-sm text-stone-600 hover:bg-stone-100 transition-colors"
+          className="w-full text-left px-2 py-1.5 rounded-md text-sm text-stone-600 hover:bg-stone-100 hover:text-stone-800 transition-colors"
         >
-          <FileText className="size-3.5 shrink-0 text-stone-400" />
           Abstract
         </button>
         {patent.description.map((section) => (
@@ -767,10 +767,9 @@ function OutlineTab({
                 `section-${section.heading.toLowerCase().replace(/\s+/g, "-")}`
               )
             }
-            className="flex items-center gap-1.5 w-full text-left px-2 py-1 rounded-md text-sm text-stone-600 hover:bg-stone-100 transition-colors"
+            className="w-full text-left px-2 py-1.5 rounded-md text-sm text-stone-600 hover:bg-stone-100 hover:text-stone-800 transition-colors truncate"
           >
-            <FileText className="size-3.5 shrink-0 text-stone-400" />
-            <span className="truncate">{titleCase(section.heading)}</span>
+            {titleCase(section.heading)}
           </button>
         ))}
       </div>
@@ -1010,10 +1009,35 @@ export function RightSidebar({
 
   if (collapsed) {
     return (
-      <div className="flex flex-col items-center py-3 gap-2 border-l border-stone-200 bg-white w-10">
-        <Button variant="ghost" size="icon-xs" onClick={onToggle} title="Expand sidebar">
-          <List className="size-4 text-stone-500" />
-        </Button>
+      <div className="flex flex-col items-center pt-2 pb-2 gap-0.5 border-l border-stone-200 bg-white w-12">
+        {[
+          { value: "figures", icon: Image, label: "Figures" },
+          { value: "details", icon: Info, label: "Details" },
+          { value: "outline", icon: List, label: "Outline" },
+          { value: "search", icon: Search, label: "Search" },
+        ].map(({ value, icon: Icon, label }) => (
+          <button
+            key={value}
+            onClick={() => { onTabChange(value); onToggle(); }}
+            title={label}
+            className={cn(
+              "flex items-center justify-center w-9 h-9 rounded-lg transition-colors",
+              activeTab === value
+                ? "text-amber-600 bg-amber-50/80"
+                : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+            )}
+          >
+            <Icon className="size-[18px]" />
+          </button>
+        ))}
+        <div className="flex-1" />
+        <button
+          onClick={onToggle}
+          title="Expand sidebar"
+          className="flex items-center justify-center w-9 h-9 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+        >
+          <PanelRightClose className="size-[18px] rotate-180" />
+        </button>
       </div>
     );
   }
