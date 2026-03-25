@@ -110,6 +110,10 @@ function PanelSidebar({
       onRemoveSearchTerm={panel.removeSearchTerm}
       onClearSearchTerms={panel.clearSearchTerms}
       onScrollToSearchOccurrence={panel.scrollToSearchOccurrence}
+      searchWholeWord={panel.searchWholeWord}
+      searchCaseSensitive={panel.searchCaseSensitive}
+      onToggleSearchWholeWord={panel.toggleSearchWholeWord}
+      onToggleSearchCaseSensitive={panel.toggleSearchCaseSensitive}
     />
   );
 }
@@ -173,6 +177,37 @@ export function PatentReader() {
       compareMode && right.patent ? right.patent.patent_number : null,
     );
   }, [left.patent, right.patent, compareMode]);
+
+  // Intercept Cmd/Ctrl+F → open search tab & focus input
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "f") {
+        // Only intercept when a patent is loaded
+        if (!left.patent) return;
+        e.preventDefault();
+        if (compareMode) {
+          setLeftSidebarCollapsed(false);
+          left.setSidebarTab("search");
+        } else if (isMobile) {
+          setSheetOpen(true);
+          left.setSidebarTab("search");
+        } else {
+          setRightCollapsed(false);
+          left.setSidebarTab("search");
+        }
+        // Focus the search input after tab switch renders
+        requestAnimationFrame(() => {
+          // Use document — on mobile the Sheet is a portal outside the panel ref
+          const input = document.querySelector<HTMLInputElement>(
+            '[data-search-input]'
+          );
+          input?.focus();
+        });
+      }
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [left.patent, compareMode, isMobile]);
 
   const handleSearch = useCallback(
     (e?: React.FormEvent) => {

@@ -63,6 +63,10 @@ interface RightSidebarProps {
   onRemoveSearchTerm?: (id: string) => void;
   onClearSearchTerms?: () => void;
   onScrollToSearchOccurrence?: (termIndex: number, globalOccurrenceIndex: number) => void;
+  searchWholeWord?: boolean;
+  searchCaseSensitive?: boolean;
+  onToggleSearchWholeWord?: () => void;
+  onToggleSearchCaseSensitive?: () => void;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -797,6 +801,10 @@ function SearchTab({
   onRemoveSearchTerm,
   onClearSearchTerms,
   onScrollToSearchOccurrence,
+  wholeWord,
+  caseSensitive,
+  onToggleWholeWord,
+  onToggleCaseSensitive,
 }: {
   searchTerms: SearchTerm[];
   searchOccurrences: SearchOccurrence[];
@@ -804,6 +812,10 @@ function SearchTab({
   onRemoveSearchTerm: (id: string) => void;
   onClearSearchTerms: () => void;
   onScrollToSearchOccurrence: (termIndex: number, globalOccurrenceIndex: number) => void;
+  wholeWord: boolean;
+  caseSensitive: boolean;
+  onToggleWholeWord: () => void;
+  onToggleCaseSensitive: () => void;
 }) {
   const [inputValue, setInputValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -825,16 +837,47 @@ function SearchTab({
 
   return (
     <div className="p-3 space-y-3 overflow-y-auto">
-      {/* Input */}
+      {/* Input with inline toggles */}
       <form onSubmit={handleSubmit} className="flex gap-1.5">
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Search term..."
-          className="flex-1 text-sm rounded-md border border-stone-200 bg-white px-2.5 py-1.5 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
-        />
+        <div className="flex-1 flex items-center rounded-md border border-stone-200 bg-white focus-within:ring-2 focus-within:ring-amber-500/30 focus-within:border-amber-500">
+          <input
+            ref={inputRef}
+            data-search-input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Search term..."
+            className="flex-1 text-sm px-2.5 py-1.5 bg-transparent placeholder:text-stone-400 focus:outline-none min-w-0"
+          />
+          <div className="flex items-center gap-0.5 pr-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={onToggleCaseSensitive}
+              title="Match case"
+              className={cn(
+                "text-[11px] font-semibold rounded px-1 py-0.5 transition-colors",
+                caseSensitive
+                  ? "bg-amber-100 text-amber-700"
+                  : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+              )}
+            >
+              Aa
+            </button>
+            <button
+              type="button"
+              onClick={onToggleWholeWord}
+              title="Match whole word"
+              className={cn(
+                "text-[11px] font-semibold rounded px-1 py-0.5 transition-colors font-mono",
+                wholeWord
+                  ? "bg-amber-100 text-amber-700"
+                  : "text-stone-400 hover:text-stone-600 hover:bg-stone-100"
+              )}
+            >
+              W
+            </button>
+          </div>
+        </div>
         <Button
           type="submit"
           size="sm"
@@ -959,6 +1002,10 @@ export function RightSidebar({
   onRemoveSearchTerm,
   onClearSearchTerms,
   onScrollToSearchOccurrence,
+  searchWholeWord,
+  searchCaseSensitive,
+  onToggleSearchWholeWord,
+  onToggleSearchCaseSensitive,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -1041,6 +1088,10 @@ export function RightSidebar({
           onRemoveSearchTerm={onRemoveSearchTerm ?? (() => {})}
           onClearSearchTerms={onClearSearchTerms ?? (() => {})}
           onScrollToSearchOccurrence={onScrollToSearchOccurrence ?? (() => {})}
+          wholeWord={searchWholeWord ?? false}
+          caseSensitive={searchCaseSensitive ?? false}
+          onToggleWholeWord={onToggleSearchWholeWord ?? (() => {})}
+          onToggleCaseSensitive={onToggleSearchCaseSensitive ?? (() => {})}
         />
       </TabsContent>
     </Tabs>

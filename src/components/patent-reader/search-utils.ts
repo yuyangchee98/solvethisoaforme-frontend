@@ -30,6 +30,11 @@ export interface SearchOccurrence {
   globalOccurrenceIndex: number;
 }
 
+export interface SearchOptions {
+  wholeWord: boolean;
+  caseSensitive: boolean;
+}
+
 // ── Colors ────────────────────────────────────────────────────────────
 // Distinct from ELEMENT_COLORS (*-100/60) and amber numerals
 export const SEARCH_COLORS = [
@@ -54,11 +59,15 @@ function titleCase(s: string): string {
 function findAllMatches(
   text: string,
   terms: SearchTerm[],
+  options?: SearchOptions,
 ): SearchHighlightSpan[] {
   const spans: SearchHighlightSpan[] = [];
   for (const { term, termIndex } of terms) {
     if (!term) continue;
-    const regex = new RegExp(escapeRegex(term), "gi");
+    let pattern = escapeRegex(term);
+    if (options?.wholeWord) pattern = `\\b${pattern}\\b`;
+    const flags = options?.caseSensitive ? "g" : "gi";
+    const regex = new RegExp(pattern, flags);
     for (const match of text.matchAll(regex)) {
       spans.push({
         start: match.index!,
@@ -86,18 +95,19 @@ function findAllMatches(
 export function computeSearchHighlights(
   patent: Patent,
   searchTerms: SearchTerm[],
+  options?: SearchOptions,
 ): SearchHighlights {
   if (searchTerms.length === 0) {
     return { abstract: [], description: [], claims: [] };
   }
 
   return {
-    abstract: findAllMatches(patent.abstract, searchTerms),
+    abstract: findAllMatches(patent.abstract, searchTerms, options),
     description: patent.description.map((section) =>
-      section.paragraphs.map((para) => findAllMatches(para.text, searchTerms)),
+      section.paragraphs.map((para) => findAllMatches(para.text, searchTerms, options)),
     ),
     claims: patent.claims.map((claim) =>
-      findAllMatches(claim.text, searchTerms),
+      findAllMatches(claim.text, searchTerms, options),
     ),
   };
 }
@@ -105,6 +115,7 @@ export function computeSearchHighlights(
 export function computeSearchOccurrences(
   patent: Patent,
   searchTerms: SearchTerm[],
+  options?: SearchOptions,
 ): SearchOccurrence[] {
   if (searchTerms.length === 0) return [];
 
@@ -115,7 +126,7 @@ export function computeSearchOccurrences(
 
   // Use findAllMatches (same dedup as highlights) to stay consistent with rendered marks
   const addFromText = (text: string, section: string) => {
-    const spans = findAllMatches(text, searchTerms);
+    const spans = findAllMatches(text, searchTerms, options);
     for (const span of spans) {
       const start = Math.max(0, span.start - 40);
       const end = Math.min(text.length, span.end + 40);

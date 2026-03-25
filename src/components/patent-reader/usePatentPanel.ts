@@ -7,7 +7,7 @@ import type {
   ClaimElementsData,
 } from "@/lib/api";
 import type { Patent } from "./types";
-import type { SearchTerm, SearchHighlights, SearchOccurrence } from "./search-utils";
+import type { SearchTerm, SearchHighlights, SearchOccurrence, SearchOptions } from "./search-utils";
 import { computeSearchHighlights, computeSearchOccurrences } from "./search-utils";
 
 interface UsePatentPanelOptions {
@@ -44,6 +44,8 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
   });
   const [activeElementGroup, setActiveElementGroup] = useState<number | null>(null);
   const [searchTerms, setSearchTerms] = useState<SearchTerm[]>([]);
+  const [searchWholeWord, setSearchWholeWord] = useState(false);
+  const [searchCaseSensitive, setSearchCaseSensitive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -270,17 +272,22 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
 
   // ── Search ────────────────────────────────────────────────────────────
 
+  const searchOptions = useMemo<SearchOptions>(
+    () => ({ wholeWord: searchWholeWord, caseSensitive: searchCaseSensitive }),
+    [searchWholeWord, searchCaseSensitive],
+  );
+
   const searchHighlights = useMemo<SearchHighlights>(() => {
     if (!patent || searchTerms.length === 0) {
       return { abstract: [], description: [], claims: [] };
     }
-    return computeSearchHighlights(patent, searchTerms);
-  }, [patent, searchTerms]);
+    return computeSearchHighlights(patent, searchTerms, searchOptions);
+  }, [patent, searchTerms, searchOptions]);
 
   const searchOccurrences = useMemo<SearchOccurrence[]>(() => {
     if (!patent || searchTerms.length === 0) return [];
-    return computeSearchOccurrences(patent, searchTerms);
-  }, [patent, searchTerms]);
+    return computeSearchOccurrences(patent, searchTerms, searchOptions);
+  }, [patent, searchTerms, searchOptions]);
 
   const nextTermId = useRef(0);
 
@@ -306,6 +313,14 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
 
   const clearSearchTerms = useCallback(() => {
     setSearchTerms([]);
+  }, []);
+
+  const toggleSearchWholeWord = useCallback(() => {
+    setSearchWholeWord((v) => !v);
+  }, []);
+
+  const toggleSearchCaseSensitive = useCallback(() => {
+    setSearchCaseSensitive((v) => !v);
   }, []);
 
   const scrollToSearchOccurrence = useCallback(
@@ -347,11 +362,15 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     searchTerms,
     searchHighlights,
     searchOccurrences,
+    searchWholeWord,
+    searchCaseSensitive,
     // Actions
     loadPatent,
     addSearchTerm,
     removeSearchTerm,
     clearSearchTerms,
+    toggleSearchWholeWord,
+    toggleSearchCaseSensitive,
     scrollToSearchOccurrence,
     setActiveNumeral,
     setActiveElementGroup,
