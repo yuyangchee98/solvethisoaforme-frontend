@@ -1,0 +1,40 @@
+---
+const steps = [
+  {
+    title: "Enter a patent number",
+    description: "Paste any US, EP, or other patent or publication number. The reader fetches all structured data from Google Patents.",
+  },
+  {
+    title: "Explore the patent",
+    description: "Read claims with dependency trees, browse figures with reference numeral bounding boxes, navigate citations, and search across the full text.",
+  },
+  {
+    title: "Compare patents",
+    description: "Load a second patent side by side. Compare claims, check cited references, and spot differences between two patents at a glance.",
+  },
+];
+---
+
+<section class="py-20 md:py-28 bg-stone-50/70">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="max-w-2xl mx-auto text-center mb-14">
+      <p class="text-sm font-medium text-emerald-600 tracking-wide uppercase mb-3">How It Works</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+        Three steps to read any patent
+      </h2>
+      <p class="text-lg text-stone-500 leading-relaxed">
+        No signup, no setup. Just enter a patent number and start reading.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      {steps.map((step, i) => (
+        <div class="relative p-6 rounded-xl border border-stone-200 bg-white">
+          <span class="text-3xl font-bold text-emerald-200 mb-3 block">{String(i + 1).padStart(2, '0')}</span>
+          <h3 class="text-base font-semibold text-stone-900 mb-2">{step.title}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

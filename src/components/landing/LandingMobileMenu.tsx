@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 
 const links = [
-  { href: '#features', label: 'Features' },
-  { href: '#how-it-works', label: 'How It Works' },
+  { href: '/patent-reader', label: 'Patent Reader' },
+  { href: '#product-toggle', label: 'OA Agent' },
   { href: '#pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
 ];

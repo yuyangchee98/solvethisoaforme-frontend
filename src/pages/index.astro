@@ -2,6 +2,9 @@
 import LandingLayout from '../layouts/LandingLayout.astro';
 import LandingNav from '../components/landing/LandingNav.astro';
 import Hero from '../components/landing/Hero.astro';
+import ProductToggle from '../components/landing/ProductToggle.astro';
+import PatentReaderFeatures from '../components/landing/PatentReaderFeatures.astro';
+import PatentReaderHowItWorks from '../components/landing/PatentReaderHowItWorks.astro';
 import Stats from '../components/landing/Stats.astro';
 import Features from '../components/landing/Features.astro';
 import Jurisdictions from '../components/landing/Jurisdictions.astro';
@@ -17,13 +20,29 @@ const organizationSchema = {
   name: "Solve This OA For Me",
   url: "https://solvethisoaforme.chyuang.com",
   logo: "https://solvethisoaforme.chyuang.com/favicon.ico",
-  description: "AI-powered patent prosecution assistant. Respond to Office Actions in minutes, not days.",
+  description: "Patent tools for prosecution professionals. Free structured patent viewer with claim trees and reference mapping. AI-powered Office Action analysis with argue/amend recommendations.",
 };
 
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: [
+    {
+      "@type": "Question",
+      name: "Is Patent Reader really free?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. There are no usage limits or hidden paywalls.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Where does Patent Reader get its data?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Patent data is fetched from Google Patents. This includes the full specification, claims, figures, citations, legal events, and family information. The reader structures this data into a more usable format with claim trees, reference numeral extraction, and figure mapping.",
+      },
+    },
     {
       "@type": "Question",
       name: "Does the AI hallucinate? How can I trust the analysis?",
@@ -68,34 +87,71 @@ const faqSchema = {
 };
 ---
 
-<LandingLayout title="Solve This OA For Me - AI-Powered Patent Prosecution">
+<LandingLayout title="Solve This OA For Me - Patent Tools for Prosecution">
   <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <LandingNav />
   <main>
     <Hero />
 
-    <!-- Product intro video -->
-    <section class="py-16 md:py-20 bg-stone-50/50">
-      <div class="max-w-4xl mx-auto px-6">
-        <div class="relative rounded-2xl overflow-hidden shadow-xl border border-stone-200/60 bg-black">
-          <video
-            controls
-            preload="metadata"
-            poster=""
-            class="w-full aspect-video"
-          >
-            <source src="/intro-video.mp4" type="video/mp4" />
-          </video>
-        </div>
-        <p class="text-center text-sm text-stone-400 mt-4">See how it works in 40 seconds</p>
-      </div>
-    </section>
+    <div id="product-toggle">
+      <ProductToggle />
+    </div>
 
-    <Stats />
-    <Features />
-    <Jurisdictions />
-    <BeforeAfter />
+    <!-- Toggle script — inline so it runs immediately, no bundling -->
+    <script is:inline>
+      function switchProduct(product) {
+        var el = document.getElementById('product-sections');
+        if (!el) return;
+        el.className = 'show-' + product;
+        document.querySelectorAll('[data-product-toggle]').forEach(function(btn) {
+          var isActive = btn.dataset.productToggle === product;
+          btn.classList.toggle('border-amber-500', isActive && product === 'oa-agent');
+          btn.classList.toggle('bg-amber-50/50', isActive && product === 'oa-agent');
+          btn.classList.toggle('border-emerald-500', isActive && product === 'patent-reader');
+          btn.classList.toggle('bg-emerald-50/50', isActive && product === 'patent-reader');
+          btn.classList.toggle('border-stone-200', !isActive);
+          btn.classList.toggle('bg-white', !isActive);
+        });
+        history.replaceState(null, '', '#' + product);
+      }
+      document.addEventListener('DOMContentLoaded', function() {
+        var hash = location.hash.replace('#', '');
+        if (hash === 'patent-reader') switchProduct('patent-reader');
+      });
+    </script>
+
+    <!-- Both sections rendered in HTML for SEO; CSS toggles visibility -->
+    <div id="product-sections" class="show-oa-agent">
+      <div id="product-patent-reader">
+        <PatentReaderFeatures />
+        <PatentReaderHowItWorks />
+      </div>
+      <div id="product-oa-agent">
+        <!-- Product intro video -->
+        <section class="py-16 md:py-20 bg-stone-50/50">
+          <div class="max-w-4xl mx-auto px-6">
+            <div class="relative rounded-2xl overflow-hidden shadow-xl border border-stone-200/60 bg-black">
+              <video
+                controls
+                preload="metadata"
+                poster=""
+                class="w-full aspect-video"
+              >
+                <source src="/intro-video.mp4" type="video/mp4" />
+              </video>
+            </div>
+            <p class="text-center text-sm text-stone-400 mt-4">See how it works in 40 seconds</p>
+          </div>
+        </section>
+
+        <Stats />
+        <Features />
+        <Jurisdictions />
+        <BeforeAfter />
+      </div>
+    </div>
+
     <Testimonials />
     <Pricing />
     <FAQ />
@@ -104,23 +160,36 @@ const faqSchema = {
     <section class="py-20 md:py-28 bg-white">
       <div class="max-w-2xl mx-auto px-6 text-center">
         <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-          Your next Office Action doesn't have to take all day
+          Patent prosecution, less painful
         </h2>
-        <p class="text-lg text-stone-500 leading-relaxed mb-4">
-          Upload it, get a complete analysis with argue/amend recommendations, and start drafting your response from a position of strength.
+        <p class="text-lg text-stone-500 leading-relaxed mb-8">
+          Read patents with structure. Respond to Office Actions with confidence.
         </p>
-        <p class="text-sm text-stone-400 mb-8">
-          The AI does the reading and mapping. You make the prosecution decisions.
-        </p>
-        <a
-          href="/login?plan=individual"
-          class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
-        >
-          Analyze Your First OA
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </a>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="/patent-reader"
+            class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
+          >
+            Try Patent Reader
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a
+            href="/login?plan=individual"
+            class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+          >
+            Analyze Your First OA
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+        </div>
       </div>
     </section>
   </main>
   <Footer />
 </LandingLayout>
+
+<style>
+  #product-sections.show-oa-agent #product-patent-reader { display: none; }
+  #product-sections.show-oa-agent #product-oa-agent { display: block; }
+  #product-sections.show-patent-reader #product-oa-agent { display: none; }
+  #product-sections.show-patent-reader #product-patent-reader { display: block; }
+</style>

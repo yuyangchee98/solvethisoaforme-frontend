@@ -54,6 +54,21 @@ const teamFeatures = [
       )}
     </div>
 
+    {variant === 'landing' && (
+      <div class="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200 max-w-5xl mx-auto mb-8">
+        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-emerald-600"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-stone-800">Patent Reader is free. No account required.</p>
+          <p class="text-xs text-stone-500">The pricing below applies to the OA Response Agent.</p>
+        </div>
+        <a href="/patent-reader" class="ml-auto shrink-0 text-sm font-medium text-emerald-700 hover:text-emerald-800 transition-colors">
+          Try it now &rarr;
+        </a>
+      </div>
+    )}
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
       <!-- Day Pass -->
       <div class="flex flex-col rounded-xl p-6 bg-white border border-stone-200">
