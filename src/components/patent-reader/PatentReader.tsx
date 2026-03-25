@@ -11,6 +11,20 @@ import { usePatentPanel } from "./usePatentPanel";
 import { usePatentRegistry } from "./usePatentRegistry";
 import type { PatentPanel } from "./usePatentPanel";
 
+// ── URL state helpers ────────────────────────────────────────────────
+function getUrlParam(name: string): string | null {
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+function updateUrl(patent: string | null, compare: string | null) {
+  const url = new URL(window.location.href);
+  if (patent) url.searchParams.set('patent', patent);
+  else url.searchParams.delete('patent');
+  if (compare) url.searchParams.set('compare', compare);
+  else url.searchParams.delete('compare');
+  window.history.replaceState({}, '', url.toString());
+}
+
 const EXAMPLE_PATENTS = [
   { number: "US11423567B2", title: "Head location/orientation detection method" },
   { number: "US20220075747A1", title: "Multiple hot pluggable device support via emulated switch" },
@@ -128,6 +142,31 @@ export function PatentReader() {
       registry.announce(null);
     }
   }, [left.patent, registry.announce]);
+
+  // Restore state from URL on mount
+  useEffect(() => {
+    const patentParam = getUrlParam('patent');
+    const compareParam = getUrlParam('compare');
+    if (patentParam) {
+      setQuery(patentParam);
+      left.loadPatent(patentParam);
+    }
+    if (compareParam) {
+      setCompareMode(true);
+      setLeftSidebarCollapsed(true);
+      setRightSidebarCollapsed(true);
+      right.loadPatent(compareParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync URL when state changes
+  useEffect(() => {
+    updateUrl(
+      left.patent?.patent_number ?? null,
+      compareMode && right.patent ? right.patent.patent_number : null,
+    );
+  }, [left.patent, right.patent, compareMode]);
 
   const handleSearch = useCallback(
     (e?: React.FormEvent) => {
