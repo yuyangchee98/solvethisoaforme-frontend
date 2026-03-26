@@ -25,7 +25,7 @@ import { useMobileSidebar } from '@/lib/mobileSidebarStore';
 import { useIsMobile } from '@/lib/useIsMobile';
 import { getOAResponseMessagesEndpoint, getFileUrl, type OAResponseMessage } from '@/lib/api';
 import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
-import { MessageSquarePlus, Loader2 } from 'lucide-react';
+import { MessageSquarePlus, Loader2, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -284,28 +284,7 @@ function CompactionStreamingCleanup({
   return null;
 }
 
-export function OAResponseChat() {
-  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'no-subscription'>('loading');
-
-  useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      window.location.href = '/login';
-      return;
-    }
-    getMe()
-      .then((user) => {
-        if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
-          setAuthState('authenticated');
-        } else {
-          setAuthState('no-subscription');
-        }
-      })
-      .catch(() => {
-        window.location.href = '/login';
-      });
-  }, []);
-
+function AuthenticatedChat() {
   const {
     sessions,
     currentSession,
@@ -335,19 +314,6 @@ export function OAResponseChat() {
     selectSession(sessionId);
     closeSidebar();
   };
-
-  if (authState === 'loading') {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
-      </div>
-    );
-  }
-
-  if (authState === 'no-subscription') {
-    window.location.href = '/subscribe';
-    return null;
-  }
 
   return (
     <div className="flex h-full">
@@ -427,4 +393,69 @@ export function OAResponseChat() {
       <PreviewPanel sessionId={currentSession?.id} />
     </div>
   );
+}
+
+export function OAResponseChat() {
+  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'no-subscription' | 'not-logged-in'>('loading');
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token) {
+      setAuthState('not-logged-in');
+      return;
+    }
+    getMe()
+      .then((user) => {
+        if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
+          setAuthState('authenticated');
+        } else {
+          setAuthState('no-subscription');
+        }
+      })
+      .catch(() => {
+        setAuthState('not-logged-in');
+      });
+  }, []);
+
+  if (authState === 'loading') {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
+      </div>
+    );
+  }
+
+  if (authState === 'not-logged-in') {
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="max-w-md text-center">
+          <Bot className="h-14 w-14 mx-auto text-amber-500 mb-5" />
+          <h2 className="text-2xl font-bold text-stone-900 mb-3">
+            OA Response AI Agent
+          </h2>
+          <p className="text-stone-600 mb-6">
+            Upload your office action and let AI help you draft responses — analyze rejections, research prior art, and build arguments.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button asChild>
+              <a href="/login">Log in to get started</a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="/login?tab=register">Sign up</a>
+            </Button>
+            <Button variant="ghost" asChild>
+              <a href="/oa-response/about">Learn more</a>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (authState === 'no-subscription') {
+    window.location.href = '/subscribe';
+    return null;
+  }
+
+  return <AuthenticatedChat />;
 }

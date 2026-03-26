@@ -14,19 +14,6 @@ const features = [
     icon: "layout",
   },
   {
-    label: "Claim trees",
-    title: "See the full claim structure at a glance",
-    description:
-      "Claims are parsed into a dependency tree — independent claims at the top, dependents nested underneath. You can see which claims ultimately depend on which independent claim, collapse branches you're not interested in, and click any node to jump to the full claim text. When you're reviewing a rejection that targets claim 7 depending from claim 1, the tree makes it obvious what limitations are actually in play.",
-    details: [
-      "Independent claims shown as root nodes, dependents nested below",
-      "Collapse and expand branches to focus on specific claim chains",
-      "Click any claim node to jump to the full text",
-      "Instantly see which limitations a dependent claim inherits",
-    ],
-    icon: "git-branch",
-  },
-  {
     label: "Reference numerals",
     title: "Every reference numeral, extracted and indexed",
     description:
@@ -95,10 +82,11 @@ const features = [
     </div>
 
     <!-- Feature sections -->
-    <div class="space-y-24 md:space-y-32">
+    <div class="space-y-28 md:space-y-36">
+
       {features.map((feature, i) => (
         <div class:list={[
-          "flex flex-col md:flex-row items-start gap-10 md:gap-16",
+          "flex flex-col md:flex-row items-center gap-10 md:gap-16",
           i % 2 === 1 && "md:flex-row-reverse",
         ]}>
           {/* Text content */}
@@ -107,9 +95,6 @@ const features = [
               <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
                 {feature.icon === "layout" && (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-                )}
-                {feature.icon === "git-branch" && (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
                 )}
                 {feature.icon === "tag" && (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -144,36 +129,276 @@ const features = [
             </ul>
           </div>
 
-          {/* Visual placeholder */}
+          {/* Animated mock */}
           <div class="flex-1 w-full">
-            <div class="aspect-[4/3] rounded-xl border border-stone-200/80 bg-stone-50 flex items-center justify-center">
-              <div class="text-center px-6">
-                <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mx-auto mb-3">
-                  {feature.icon === "layout" && (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-                  )}
-                  {feature.icon === "git-branch" && (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-                  )}
-                  {feature.icon === "tag" && (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                  )}
-                  {feature.icon === "scan" && (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
-                  {feature.icon === "columns" && (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
-                  )}
-                  {feature.icon === "search" && (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                  )}
+
+            {/* ── Mock 1: Structured Viewing ── */}
+            {feature.icon === "layout" && (
+              <div class="mock-frame">
+                <div class="mock-chrome">
+                  <div class="mock-dots"><div/><div/><div/></div>
+                  <span class="mock-label">Patent Reader</span>
                 </div>
-                <p class="text-sm text-stone-400">Screenshot placeholder</p>
+                <div class="p-4 space-y-3">
+                  <p class="mock-section-label">Abstract</p>
+                  <p class="mock-text">
+                    A method for detecting head location and orientation using a sensor array
+                    <span class="sv-num">102</span> and processing unit <span class="sv-num">104</span>.
+                    The system generates a depth map and applies machine learning models.
+                  </p>
+
+                  <p class="mock-section-label mt-1">Description</p>
+                  <div class="flex gap-2">
+                    <span class="mock-para-num">[0003]</span>
+                    <p class="mock-text">
+                      <span class="sv-fig">FIG. 1</span> illustrates an exemplary system
+                      <span class="sv-num">100</span> for head tracking. The system
+                      <span class="sv-num">100</span> includes a sensor array
+                      <span class="sv-num">102</span> and a processing unit
+                      <span class="sv-num">104</span> connected via a data bus
+                      <span class="sv-num">106</span>.
+                    </p>
+                  </div>
+
+                  <p class="mock-section-label mt-1">Claims</p>
+                  <div class="flex gap-2">
+                    <span class="mock-claim-num">1.</span>
+                    <p class="mock-text">A method for detecting head location, the method comprising: receiving, by a processor, image data from a sensor array <span class="sv-num">102</span>; generating a depth map…</p>
+                  </div>
+                  <div class="flex gap-2">
+                    <span class="mock-claim-num">2.</span>
+                    <p class="mock-text">The method of <span class="sv-claim">claim 1</span>, wherein the sensor comprises a depth camera configured to capture infrared structured light patterns.</p>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* ── Mock 2: Reference Numerals ── */}
+            {feature.icon === "tag" && (
+              <div class="mock-frame">
+                <div class="mock-chrome">
+                  <div class="mock-dots"><div/><div/><div/></div>
+                  <span class="mock-label">Reference Numerals</span>
+                </div>
+                <div class="flex">
+                  {/* Text panel */}
+                  <div class="flex-1 p-4 border-r border-stone-100">
+                    <p class="mock-section-label mb-2">Description</p>
+                    <div class="space-y-2">
+                      <div class="flex gap-2">
+                        <span class="mock-para-num">[0003]</span>
+                        <p class="mock-text">The system <span class="rn-num rn-100">100</span> includes a sensor array <span class="rn-num rn-102">102</span> and a processing unit <span class="rn-num rn-104">104</span>.</p>
+                      </div>
+                      <div class="flex gap-2">
+                        <span class="mock-para-num">[0004]</span>
+                        <p class="mock-text">The sensor array <span class="rn-num rn-102">102</span> captures depth data. The processing unit <span class="rn-num rn-104">104</span> receives data via bus <span class="rn-num rn-106">106</span>.</p>
+                      </div>
+                      <div class="flex gap-2">
+                        <span class="mock-para-num">[0005]</span>
+                        <p class="mock-text">A memory module <span class="rn-num rn-108">108</span> stores the depth map generated by the sensor <span class="rn-num rn-102">102</span>.</p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Sidebar */}
+                  <div class="w-36 p-3 space-y-1">
+                    <p class="text-[9px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Numerals</p>
+                    <div class="rn-row rn-row-100 flex items-center gap-2 px-2 py-1.5 rounded-md">
+                      <span class="rn-badge">100</span>
+                      <span class="text-[10px] text-stone-500 flex-1 truncate">system</span>
+                      <span class="text-[9px] text-stone-300">×8</span>
+                    </div>
+                    <div class="rn-row rn-row-102 flex items-center gap-2 px-2 py-1.5 rounded-md">
+                      <span class="rn-badge">102</span>
+                      <span class="text-[10px] text-stone-500 flex-1 truncate">sensor</span>
+                      <span class="text-[9px] text-stone-300">×6</span>
+                    </div>
+                    <div class="rn-row rn-row-104 flex items-center gap-2 px-2 py-1.5 rounded-md">
+                      <span class="rn-badge">104</span>
+                      <span class="text-[10px] text-stone-500 flex-1 truncate">processor</span>
+                      <span class="text-[9px] text-stone-300">×4</span>
+                    </div>
+                    <div class="rn-row flex items-center gap-2 px-2 py-1.5 rounded-md">
+                      <span class="rn-badge">106</span>
+                      <span class="text-[10px] text-stone-500 flex-1 truncate">data bus</span>
+                      <span class="text-[9px] text-stone-300">×3</span>
+                    </div>
+                    <div class="rn-row flex items-center gap-2 px-2 py-1.5 rounded-md">
+                      <span class="rn-badge">108</span>
+                      <span class="text-[10px] text-stone-500 flex-1 truncate">memory</span>
+                      <span class="text-[9px] text-stone-300">×2</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Mock 4: Figure Bounding Boxes ── */}
+            {feature.icon === "scan" && (
+              <div class="mock-frame">
+                <div class="mock-chrome">
+                  <div class="mock-dots"><div/><div/><div/></div>
+                  <span class="mock-label">FIG. 1</span>
+                </div>
+                <div class="p-5 relative">
+                  {/* Block diagram — numerals only, no names */}
+                  <div class="flex flex-col items-center gap-3">
+                    {/* Top row */}
+                    <div class="flex items-center gap-8 w-full justify-center">
+                      <div class="fb-block relative px-6 py-4 border border-stone-300 rounded-lg bg-white text-center">
+                        <span class="text-[11px] font-mono font-bold text-stone-400">102</span>
+                        <div class="fb-box fb-box-102 absolute -inset-1 border-2 border-amber-400 rounded-xl pointer-events-none"></div>
+                      </div>
+                      <div class="w-10 border-t border-dashed border-stone-300"></div>
+                      <div class="fb-block relative px-6 py-4 border border-stone-300 rounded-lg bg-white text-center">
+                        <span class="text-[11px] font-mono font-bold text-stone-400">104</span>
+                        <div class="fb-box fb-box-104 absolute -inset-1 border-2 border-amber-400 rounded-xl pointer-events-none"></div>
+                      </div>
+                    </div>
+                    {/* Vertical connectors */}
+                    <div class="flex gap-8 w-full justify-center">
+                      <div class="w-20 flex justify-center"><div class="h-4 border-l border-dashed border-stone-300"></div></div>
+                      <div class="w-10"></div>
+                      <div class="w-20 flex justify-center"><div class="h-4 border-l border-dashed border-stone-300"></div></div>
+                    </div>
+                    {/* Bottom row */}
+                    <div class="flex items-center gap-8 w-full justify-center">
+                      <div class="fb-block relative px-6 py-4 border border-stone-300 rounded-lg bg-white text-center">
+                        <span class="text-[11px] font-mono font-bold text-stone-400">108</span>
+                      </div>
+                      <div class="w-10 border-t border-dashed border-stone-300"></div>
+                      <div class="fb-block relative px-6 py-4 border border-stone-300 rounded-lg bg-white text-center">
+                        <span class="text-[11px] font-mono font-bold text-stone-400">106</span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Tooltip */}
+                  <div class="mt-4 relative h-7 overflow-hidden">
+                    <div class="fb-tip fb-tip-102 absolute inset-x-0 flex items-center gap-2 px-3 py-1.5 bg-stone-800 rounded-lg">
+                      <span class="text-[10px] font-mono font-bold text-amber-300">102</span>
+                      <span class="text-[10px] text-stone-300">— sensor array</span>
+                      <span class="text-[9px] text-stone-500 ml-auto">6 occurrences</span>
+                    </div>
+                    <div class="fb-tip fb-tip-104 absolute inset-x-0 flex items-center gap-2 px-3 py-1.5 bg-stone-800 rounded-lg">
+                      <span class="text-[10px] font-mono font-bold text-amber-300">104</span>
+                      <span class="text-[10px] text-stone-300">— processing unit</span>
+                      <span class="text-[9px] text-stone-500 ml-auto">4 occurrences</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Mock 5: Side-by-side ── */}
+            {feature.icon === "columns" && (
+              <div class="mock-frame">
+                <div class="mock-chrome">
+                  <div class="mock-dots"><div/><div/><div/></div>
+                  <span class="mock-label">Side-by-Side</span>
+                </div>
+                <div class="flex overflow-hidden" style="min-height: 240px">
+                  {/* Left panel */}
+                  <div class="flex-1 p-3 border-r border-stone-100">
+                    <div class="sbs-scroll-left">
+                      <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[9px] font-mono font-bold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">US11,423,567B2</span>
+                      </div>
+                      <p class="text-[10px] font-medium text-stone-700 mb-3">Methods and systems for detecting head location and orientation</p>
+                      <p class="mock-section-label mb-1">Claims</p>
+                      <div class="space-y-1.5">
+                        <div class="flex gap-1.5">
+                          <span class="mock-claim-num">1.</span>
+                          <p class="mock-text">A method for detecting head location, the method comprising: receiving image data from a sensor array…</p>
+                        </div>
+                        <div class="flex gap-1.5">
+                          <span class="mock-claim-num">2.</span>
+                          <p class="mock-text">The method of claim 1, wherein the sensor comprises a depth camera…</p>
+                        </div>
+                        <div class="flex gap-1.5">
+                          <span class="mock-claim-num">3.</span>
+                          <p class="mock-text">The method of claim 1, further comprising calibrating the sensor…</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Right panel — slides in */}
+                  <div class="flex-1 p-3 sbs-panel-right">
+                    <div class="sbs-scroll-right">
+                      <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[9px] font-mono font-bold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">US10,891,234B1</span>
+                      </div>
+                      <p class="text-[10px] font-medium text-stone-700 mb-3">Sensor-based spatial tracking with neural network processing</p>
+                      <p class="mock-section-label mb-1">Description</p>
+                      <div class="space-y-1.5">
+                        <div class="flex gap-1.5">
+                          <span class="mock-para-num">[0012]</span>
+                          <p class="mock-text">The sensor array includes a plurality of infrared emitters positioned around the headset frame…</p>
+                        </div>
+                        <div class="flex gap-1.5">
+                          <span class="mock-para-num">[0013]</span>
+                          <p class="mock-text">A depth map is generated from the sensor data using a convolutional neural network…</p>
+                        </div>
+                        <div class="flex gap-1.5">
+                          <span class="mock-para-num">[0014]</span>
+                          <p class="mock-text">The orientation is computed as a quaternion representing rotation relative to a reference frame…</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Mock 6: Multi-term Search ── */}
+            {feature.icon === "search" && (
+              <div class="mock-frame">
+                <div class="mock-chrome">
+                  <div class="mock-dots"><div/><div/><div/></div>
+                  <span class="mock-label">Search</span>
+                </div>
+                <div class="p-4">
+                  {/* Search bar with chips */}
+                  <div class="flex items-center gap-2 p-2 border border-stone-200 rounded-lg bg-stone-50/80 mb-4">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-300 shrink-0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <div class="flex gap-1.5 flex-wrap">
+                      <span class="ms-chip ms-chip-1 px-2 py-0.5 text-[9px] font-medium rounded-full bg-blue-100 text-blue-700 whitespace-nowrap">sensor</span>
+                      <span class="ms-chip ms-chip-2 px-2 py-0.5 text-[9px] font-medium rounded-full bg-emerald-100 text-emerald-700 whitespace-nowrap">depth map</span>
+                      <span class="ms-chip ms-chip-3 px-2 py-0.5 text-[9px] font-medium rounded-full bg-pink-100 text-pink-700 whitespace-nowrap">processor</span>
+                    </div>
+                  </div>
+                  {/* Text with highlights */}
+                  <div class="space-y-2 mb-4">
+                    <div class="flex gap-2">
+                      <span class="mock-para-num">[0003]</span>
+                      <p class="mock-text">The <span class="ms-hl ms-hl-1">sensor</span> array captures data and generates a <span class="ms-hl ms-hl-2">depth map</span> using the <span class="ms-hl ms-hl-3">processor</span>. Multiple <span class="ms-hl ms-hl-1">sensor</span> elements are arranged in a grid pattern.</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <span class="mock-para-num">[0004]</span>
+                      <p class="mock-text">The <span class="ms-hl ms-hl-3">processor</span> computes orientation from the <span class="ms-hl ms-hl-2">depth map</span>. Each <span class="ms-hl ms-hl-1">sensor</span> reading is filtered before being passed to the <span class="ms-hl ms-hl-3">processor</span>.</p>
+                    </div>
+                  </div>
+                  {/* Stats bar */}
+                  <div class="flex items-center gap-5 pt-3 border-t border-stone-100">
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+                      <span class="text-[9px] text-stone-400">sensor <span class="font-medium text-stone-500">×14</span></span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
+                      <span class="text-[9px] text-stone-400">depth map <span class="font-medium text-stone-500">×8</span></span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-2 h-2 rounded-full bg-pink-400"></div>
+                      <span class="text-[9px] text-stone-400">processor <span class="font-medium text-stone-500">×6</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       ))}
+
     </div>
 
     <!-- CTA -->
@@ -189,3 +414,307 @@ const features = [
     </div>
   </div>
 </section>
+
+<style>
+  /* ── Shared mock frame ── */
+  .mock-frame {
+    border-radius: 0.75rem;
+    border: 1px solid rgb(231 229 228 / 0.8);
+    background: white;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.04), 0 4px 12px rgb(0 0 0 / 0.03);
+    overflow: hidden;
+  }
+  .mock-chrome {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgb(250 250 249);
+    border-bottom: 1px solid rgb(245 245 244);
+  }
+  .mock-dots {
+    display: flex;
+    gap: 0.3rem;
+  }
+  .mock-dots div {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: rgb(214 211 209);
+  }
+  .mock-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: rgb(168 162 158);
+  }
+  .mock-section-label {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgb(168 162 158);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .mock-text {
+    font-size: 11px;
+    line-height: 1.6;
+    color: rgb(87 83 78);
+  }
+  .mock-para-num {
+    font-size: 9px;
+    font-family: ui-monospace, monospace;
+    color: rgb(214 211 209);
+    user-select: none;
+    padding-top: 2px;
+    flex-shrink: 0;
+    width: 2rem;
+    text-align: right;
+  }
+  .mock-claim-num {
+    font-size: 10px;
+    font-family: ui-monospace, monospace;
+    font-weight: 500;
+    color: rgb(168 162 158);
+    flex-shrink: 0;
+    width: 1rem;
+    text-align: right;
+    padding-top: 1px;
+  }
+
+  /* ───────────────────────────────────────
+     Mock 1: Structured Viewing (9s cycle)
+     Phase A (0-33%): reference numerals glow amber
+     Phase B (33-66%): FIG reference glows blue
+     Phase C (66-100%): claim ref glows violet
+     ─────────────────────────────────────── */
+  .sv-num {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85em;
+    padding: 0 3px;
+    border-radius: 3px;
+    color: rgb(146 64 14);
+    transition: background 0.3s ease;
+    animation: sv-num-pulse 9s ease infinite;
+  }
+  .sv-fig {
+    font-weight: 600;
+    padding: 0 2px;
+    border-radius: 3px;
+    color: rgb(37 99 235);
+    transition: background 0.3s ease;
+    animation: sv-fig-pulse 9s ease infinite;
+  }
+  .sv-claim {
+    font-weight: 600;
+    padding: 0 2px;
+    border-radius: 3px;
+    color: rgb(124 58 237);
+    transition: background 0.3s ease;
+    animation: sv-claim-pulse 9s ease infinite;
+  }
+  @keyframes sv-num-pulse {
+    0%, 3% { background: transparent; }
+    6%, 27% { background: rgb(251 191 36 / 0.3); }
+    30%, 100% { background: transparent; }
+  }
+  @keyframes sv-fig-pulse {
+    0%, 36% { background: transparent; }
+    39%, 60% { background: rgb(96 165 250 / 0.3); }
+    63%, 100% { background: transparent; }
+  }
+  @keyframes sv-claim-pulse {
+    0%, 69% { background: transparent; }
+    72%, 93% { background: rgb(167 139 250 / 0.3); }
+    96%, 100% { background: transparent; }
+  }
+
+  /* ───────────────────────────────────────
+     Mock 2: Reference Numerals (8s cycle)
+     Phase A: 102 selected in sidebar + highlighted in text
+     Phase B: 104 selected in sidebar + highlighted in text
+     ─────────────────────────────────────── */
+  .rn-badge {
+    font-size: 10px;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    color: rgb(146 64 14);
+    background: rgb(254 243 199 / 0.7);
+    padding: 1px 5px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .rn-num {
+    font-family: ui-monospace, monospace;
+    font-size: 0.85em;
+    padding: 0 3px;
+    border-radius: 3px;
+    color: rgb(146 64 14);
+  }
+  .rn-102 {
+    animation: rn-a-text 8s ease infinite;
+  }
+  .rn-104 {
+    animation: rn-b-text 8s ease infinite;
+  }
+  .rn-row-102 {
+    animation: rn-a-row 8s ease infinite;
+  }
+  .rn-row-104 {
+    animation: rn-b-row 8s ease infinite;
+  }
+  @keyframes rn-a-text {
+    0%, 3% { background: transparent; }
+    6%, 42% { background: rgb(251 191 36 / 0.3); }
+    45%, 100% { background: transparent; }
+  }
+  @keyframes rn-b-text {
+    0%, 53% { background: transparent; }
+    56%, 92% { background: rgb(251 191 36 / 0.3); }
+    95%, 100% { background: transparent; }
+  }
+  @keyframes rn-a-row {
+    0%, 3% { background: transparent; }
+    6%, 42% { background: rgb(254 243 199 / 0.6); }
+    45%, 100% { background: transparent; }
+  }
+  @keyframes rn-b-row {
+    0%, 53% { background: transparent; }
+    56%, 92% { background: rgb(254 243 199 / 0.6); }
+    95%, 100% { background: transparent; }
+  }
+
+  /* ───────────────────────────────────────
+     Mock 4: Figure Bounding Boxes (8s cycle)
+     Phase A: box 102 appears + tooltip
+     Phase B: box 104 appears + tooltip
+     ─────────────────────────────────────── */
+  .fb-box {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .fb-box-102 {
+    animation: fb-a-box 8s ease infinite;
+  }
+  .fb-box-104 {
+    animation: fb-b-box 8s ease infinite;
+  }
+  .fb-tip {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .fb-tip-102 {
+    animation: fb-a-tip 8s ease infinite;
+  }
+  .fb-tip-104 {
+    animation: fb-b-tip 8s ease infinite;
+  }
+  @keyframes fb-a-box {
+    0%, 3% { opacity: 0; }
+    6%, 42% { opacity: 1; }
+    45%, 100% { opacity: 0; }
+  }
+  @keyframes fb-b-box {
+    0%, 53% { opacity: 0; }
+    56%, 92% { opacity: 1; }
+    95%, 100% { opacity: 0; }
+  }
+  @keyframes fb-a-tip {
+    0%, 3% { opacity: 0; }
+    6%, 42% { opacity: 1; }
+    45%, 100% { opacity: 0; }
+  }
+  @keyframes fb-b-tip {
+    0%, 53% { opacity: 0; }
+    56%, 92% { opacity: 1; }
+    95%, 100% { opacity: 0; }
+  }
+
+  /* ───────────────────────────────────────
+     Mock 5: Side-by-side (12s cycle)
+     Right panel slides in, then both scroll independently
+     ─────────────────────────────────────── */
+  .sbs-panel-right {
+    animation: sbs-slide-in 12s ease infinite;
+  }
+  .sbs-scroll-left {
+    animation: sbs-drift-left 12s ease infinite;
+  }
+  .sbs-scroll-right {
+    animation: sbs-drift-right 12s ease infinite;
+  }
+  @keyframes sbs-slide-in {
+    0%, 5% { transform: translateX(100%); opacity: 0; }
+    15%, 90% { transform: translateX(0); opacity: 1; }
+    95%, 100% { transform: translateX(100%); opacity: 0; }
+  }
+  @keyframes sbs-drift-left {
+    0%, 25% { transform: translateY(0); }
+    50%, 65% { transform: translateY(-12px); }
+    85%, 100% { transform: translateY(0); }
+  }
+  @keyframes sbs-drift-right {
+    0%, 35% { transform: translateY(0); }
+    55%, 70% { transform: translateY(-18px); }
+    90%, 100% { transform: translateY(0); }
+  }
+
+  /* ───────────────────────────────────────
+     Mock 6: Multi-term Search (10s cycle)
+     Terms appear additively then reset:
+     Phase A (0-30%): "sensor" (blue) appears
+     Phase B (30-60%): "depth map" (green) adds
+     Phase C (60-90%): "processor" (pink) adds
+     Reset at 90-100%
+     ─────────────────────────────────────── */
+  .ms-chip-1, .ms-hl-1 {
+    animation: ms-phase-1 10s ease infinite;
+  }
+  .ms-chip-2, .ms-hl-2 {
+    animation: ms-phase-2 10s ease infinite;
+  }
+  .ms-chip-3, .ms-hl-3 {
+    animation: ms-phase-3 10s ease infinite;
+  }
+  .ms-hl-1 { background: transparent; border-radius: 2px; padding: 0 1px; }
+  .ms-hl-2 { background: transparent; border-radius: 2px; padding: 0 1px; }
+  .ms-hl-3 { background: transparent; border-radius: 2px; padding: 0 1px; }
+  @keyframes ms-phase-1 {
+    0%, 5% { opacity: 0; }
+    10%, 88% { opacity: 1; }
+    93%, 100% { opacity: 0; }
+  }
+  @keyframes ms-phase-2 {
+    0%, 32% { opacity: 0; }
+    37%, 88% { opacity: 1; }
+    93%, 100% { opacity: 0; }
+  }
+  @keyframes ms-phase-3 {
+    0%, 58% { opacity: 0; }
+    63%, 88% { opacity: 1; }
+    93%, 100% { opacity: 0; }
+  }
+  /* Override background when visible — use separate keyframes for highlights */
+  .ms-hl-1 {
+    animation: ms-hl-blue 10s ease infinite;
+  }
+  .ms-hl-2 {
+    animation: ms-hl-green 10s ease infinite;
+  }
+  .ms-hl-3 {
+    animation: ms-hl-pink 10s ease infinite;
+  }
+  @keyframes ms-hl-blue {
+    0%, 5% { background: transparent; }
+    10%, 88% { background: rgb(96 165 250 / 0.25); }
+    93%, 100% { background: transparent; }
+  }
+  @keyframes ms-hl-green {
+    0%, 32% { background: transparent; }
+    37%, 88% { background: rgb(52 211 153 / 0.25); }
+    93%, 100% { background: transparent; }
+  }
+  @keyframes ms-hl-pink {
+    0%, 58% { background: transparent; }
+    63%, 88% { background: rgb(244 114 182 / 0.25); }
+    93%, 100% { background: transparent; }
+  }
+</style>
