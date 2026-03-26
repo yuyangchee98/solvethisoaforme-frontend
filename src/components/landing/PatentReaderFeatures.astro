@@ -1,33 +1,81 @@
 ---
 const features = [
   {
-    title: "Structured patent viewing",
-    description: "See the full patent broken into sections — abstract, claims, description, and figures — with a clean reading layout instead of raw PDF.",
+    label: "Structured viewing",
+    title: "The full patent, structured for reading",
+    description:
+      "Abstract, description, claims, and figures — all in one continuous layout. Reference numerals are clickable throughout the text: click one to highlight every occurrence and see it on the figures. Figure references like \"FIG. 3\" jump to the drawing. Claim cross-references like \"the method of claim 1\" link back to the parent claim. Paragraph numbers are preserved so you can cite exactly where something appears.",
+    details: [
+      "Reference numerals are interactive — click to cross-highlight across the entire document",
+      "Figure references (FIG. 1, FIG. 2A) jump directly to the drawing",
+      "Claim cross-references link back to parent claims",
+      "Paragraph numbers preserved for precise citation",
+    ],
     icon: "layout",
   },
   {
-    title: "Claim dependency trees",
-    description: "Visualize how claims relate to each other. Independent and dependent claims shown in a collapsible tree with depth indicators.",
+    label: "Claim trees",
+    title: "See the full claim structure at a glance",
+    description:
+      "Claims are parsed into a dependency tree — independent claims at the top, dependents nested underneath. You can see which claims ultimately depend on which independent claim, collapse branches you're not interested in, and click any node to jump to the full claim text. When you're reviewing a rejection that targets claim 7 depending from claim 1, the tree makes it obvious what limitations are actually in play.",
+    details: [
+      "Independent claims shown as root nodes, dependents nested below",
+      "Collapse and expand branches to focus on specific claim chains",
+      "Click any claim node to jump to the full text",
+      "Instantly see which limitations a dependent claim inherits",
+    ],
     icon: "git-branch",
   },
   {
-    title: "Reference numeral mapping",
-    description: "Every reference numeral extracted and linked to the figures where it appears. Click a numeral, see the figure. Click a figure, see its numerals.",
+    label: "Reference numerals",
+    title: "Every reference numeral, extracted and indexed",
+    description:
+      "The reader extracts every reference numeral from the specification along with its description and how many times it appears. The sidebar gives you a browsable list — click any numeral to highlight it everywhere in the text and on the figures. Expand a numeral to see each occurrence with its surrounding context, so you can quickly understand how an element is used across the specification without scrolling through paragraphs.",
+    details: [
+      "Full list of numerals with descriptions and occurrence counts",
+      "Click to cross-highlight in text, figures, and sidebar simultaneously",
+      "Expand any numeral to browse each occurrence with surrounding context",
+      "Filter and search within the reference numeral list",
+    ],
     icon: "tag",
   },
   {
-    title: "Figure bounding boxes",
-    description: "Reference numerals mapped to their locations on patent figures. Hover a numeral, see it highlighted on the drawing.",
+    label: "Figure bounding boxes",
+    title: "Reference numerals overlaid on the drawings",
+    description:
+      "Reference numerals are detected on patent figures and drawn as clickable bounding boxes directly on the image. Select a numeral in the text and see it highlighted on the drawing. Or click a box on the figure to find that element in the specification. This is especially useful for mechanical and electrical patents where the relationship between the written description and the figures is critical to understanding the invention.",
+    details: [
+      "Clickable boxes drawn directly on patent figures",
+      "Bidirectional linking — text to figure and figure to text",
+      "Hover to preview the numeral's description without leaving the figure",
+      "Works with multi-sheet figures and detailed drawings",
+    ],
     icon: "scan",
   },
   {
-    title: "Side-by-side comparison",
-    description: "Compare two patents side by side. Load a cited reference next to the original and review claims, descriptions, and figures in parallel.",
+    label: "Side-by-side comparison",
+    title: "Compare two patents in a single view",
+    description:
+      "Load a second patent into a side-by-side panel. Each side has its own independent figures, reference numerals, search state, and scroll position. You can load a cited reference from the current patent's citation list, enter any patent number, or pick from another tab you already have open. This is the natural way to compare a cited reference against the patent under examination — the specification on one side, the prior art on the other.",
+    details: [
+      "Each panel has independent figures, search, and reference numeral state",
+      "Load from citations list, by patent number, or from open tabs",
+      "Scroll and navigate each side independently",
+      "Ideal for comparing application claims against cited prior art",
+    ],
     icon: "columns",
   },
   {
-    title: "Multi-term search",
-    description: "Search for multiple terms simultaneously with distinct color coding. Find where key terms appear across claims and description.",
+    label: "Multi-term search",
+    title: "Search for multiple terms at once, each color-coded",
+    description:
+      "Add multiple search terms and each gets its own highlight color. Browse matches by section — see how many times each term appears in the abstract, description, and claims. Click any result to jump to that occurrence. Toggle case-sensitive or whole-word matching per term. This is useful when you're tracking how specific claim terms appear across a specification, or locating where a prior art reference discusses particular features.",
+    details: [
+      "Each term gets a distinct highlight color for easy visual scanning",
+      "Match counts broken out by section (abstract, description, claims)",
+      "Click any match to jump directly to it in the text",
+      "Per-term toggles for case sensitivity and whole-word matching",
+    ],
     icon: "search",
   },
 ];
@@ -36,7 +84,7 @@ const features = [
 <section class="py-20 md:py-28">
   <div class="max-w-6xl mx-auto px-6">
     <!-- Section header -->
-    <div class="max-w-2xl mx-auto text-center mb-14">
+    <div class="max-w-2xl mx-auto text-center mb-20">
       <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Features</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
         Everything you need to read a patent
@@ -46,41 +94,90 @@ const features = [
       </p>
     </div>
 
-    <!-- Feature grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      {features.map((feature) => (
-        <div class="group p-6 rounded-xl border border-stone-100 bg-stone-50/50 hover:bg-white hover:border-stone-200 hover:shadow-md transition-all duration-200">
-          <!-- Icon -->
-          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-4">
-            {feature.icon === "layout" && (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-            )}
-            {feature.icon === "git-branch" && (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
-            )}
-            {feature.icon === "tag" && (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            )}
-            {feature.icon === "scan" && (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
-            )}
-            {feature.icon === "columns" && (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
-            )}
-            {feature.icon === "search" && (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            )}
+    <!-- Feature sections -->
+    <div class="space-y-24 md:space-y-32">
+      {features.map((feature, i) => (
+        <div class:list={[
+          "flex flex-col md:flex-row items-start gap-10 md:gap-16",
+          i % 2 === 1 && "md:flex-row-reverse",
+        ]}>
+          {/* Text content */}
+          <div class="flex-1 max-w-xl">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                {feature.icon === "layout" && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                )}
+                {feature.icon === "git-branch" && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                )}
+                {feature.icon === "tag" && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                )}
+                {feature.icon === "scan" && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+                )}
+                {feature.icon === "columns" && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
+                )}
+                {feature.icon === "search" && (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                )}
+              </div>
+              <span class="text-xs font-medium text-amber-600 uppercase tracking-wide">{feature.label}</span>
+            </div>
+
+            <h3 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4 leading-tight">
+              {feature.title}
+            </h3>
+            <p class="text-base text-stone-500 leading-relaxed mb-6">
+              {feature.description}
+            </p>
+
+            <ul class="space-y-3">
+              {feature.details.map((detail) => (
+                <li class="flex items-start gap-3 text-sm text-stone-600">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-500 shrink-0 mt-0.5"><path d="M20 6 9 17l-5-5"/></svg>
+                  {detail}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <!-- Content -->
-          <h3 class="text-base font-semibold text-stone-900 mb-2">{feature.title}</h3>
-          <p class="text-sm text-stone-500 leading-relaxed">{feature.description}</p>
+          {/* Visual placeholder */}
+          <div class="flex-1 w-full">
+            <div class="aspect-[4/3] rounded-xl border border-stone-200/80 bg-stone-50 flex items-center justify-center">
+              <div class="text-center px-6">
+                <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mx-auto mb-3">
+                  {feature.icon === "layout" && (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                  )}
+                  {feature.icon === "git-branch" && (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                  )}
+                  {feature.icon === "tag" && (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  )}
+                  {feature.icon === "scan" && (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+                  )}
+                  {feature.icon === "columns" && (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
+                  )}
+                  {feature.icon === "search" && (
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  )}
+                </div>
+                <p class="text-sm text-stone-400">Screenshot placeholder</p>
+              </div>
+            </div>
+          </div>
         </div>
       ))}
     </div>
 
     <!-- CTA -->
-    <div class="text-center mt-10">
+    <div class="text-center mt-24">
       <a
         href="/patent-reader"
         class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"

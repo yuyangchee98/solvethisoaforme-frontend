@@ -18,22 +18,8 @@ const organizationSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
   <LandingNav />
   <main>
-    <!-- Hero -->
-    <section class="relative overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
-      <div class="relative max-w-4xl mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-20 text-center">
-        <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
-          Read patents.
-          <span class="text-amber-600"> Respond to Office Actions.</span>
-        </h1>
-        <p class="text-lg text-stone-500 leading-relaxed max-w-2xl mx-auto">
-          Free structured patent viewer with claim trees, reference mapping, and figure analysis. AI-powered Office Action analysis with argue/amend recommendations. Built for patent prosecution professionals.
-        </p>
-      </div>
-    </section>
-
     <!-- Product cards -->
-    <section class="py-12 md:py-16">
+    <section class="pt-20 pb-12 md:pt-28 md:pb-16">
       <div class="max-w-5xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Patent Reader -->
@@ -71,6 +57,201 @@ const organizationSchema = {
               Learn more
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="py-16 md:py-24 bg-stone-50/70">
+      <div class="max-w-3xl mx-auto px-6">
+        <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+          Patent tools built for patent work
+        </h2>
+        <div class="space-y-4 text-base text-stone-500 leading-relaxed">
+          <p>
+            Most patent tools are built by software companies that treat patents like any other document. The result is generic viewers, generic AI, and workflows that don't match how prosecution actually works.
+          </p>
+          <p>
+            Solve This OA For Me is built specifically for patent prosecution. The patent viewer understands claim dependencies, reference numerals, and figure annotations. The OA agent reads the actual cited prior art, follows the examiner's specific paragraph and column citations, and maps claim elements to references — the same mechanical work you do before you can start thinking about strategy.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Patent Reader detail -->
+    <section class="py-16 md:py-24">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">Patent Reader</h2>
+          </div>
+        </div>
+        <p class="text-base text-stone-500 leading-relaxed mb-8 max-w-2xl">
+          Enter any patent number and get a structured view of the full patent. Free, no account required.
+        </p>
+
+        <!-- Bento grid -->
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+          <!-- Claim trees — wide -->
+          <div class="md:col-span-4 p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Claim dependency trees</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Independent and dependent claims in a collapsible tree. See which claims depend on which at a glance, click any node to jump to the claim text.</p>
+          </div>
+
+          <!-- Reference numerals — tall -->
+          <div class="md:col-span-2 md:row-span-2 p-6 rounded-2xl border border-stone-150 bg-stone-50/80 flex flex-col">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Reference numeral mapping</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Every reference numeral extracted with its description and occurrence count. Click any numeral to cross-highlight it in the text, figures, and sidebar — or expand it to browse each occurrence with surrounding context.</p>
+          </div>
+
+          <!-- Figure bounding boxes -->
+          <div class="md:col-span-2 p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Figure bounding boxes</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Reference numerals overlaid on patent figures as clickable boxes. Select a numeral in the text and see it on the drawing.</p>
+          </div>
+
+          <!-- Side-by-side -->
+          <div class="md:col-span-2 p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Side-by-side comparison</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Compare two patents side by side. Each panel has its own figures, search, and reference numeral state.</p>
+          </div>
+
+          <!-- Search — wide -->
+          <div class="md:col-span-3 p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Multi-term search</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Search for multiple terms at once, each color-coded. Browse occurrences by section with case-sensitive and whole-word matching.</p>
+          </div>
+
+          <!-- Any patent -->
+          <div class="md:col-span-3 p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Any patent number</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">US, EP, CN, JP, KR, PCT, and more. Paste a patent or publication number and the reader fetches everything from Google Patents.</p>
+          </div>
+        </div>
+
+        <div class="mt-8 flex items-center gap-3">
+          <a
+            href="/patent-reader"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+          >
+            Try now
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a
+            href="/patent-reader/about"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 border border-stone-200 hover:border-stone-300 rounded-lg transition-colors"
+          >
+            Learn more
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- OA Response Agent detail -->
+    <section class="py-16 md:py-24 bg-stone-50/70">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight">OA Response Agent</h2>
+        </div>
+        <p class="text-base text-stone-500 leading-relaxed mb-8 max-w-2xl">
+          Upload your Office Action and your application. The AI reads the cited prior art, maps each claim limitation to the examiner's cited evidence, and recommends whether to argue or amend.
+        </p>
+
+        <!-- Bento grid -->
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
+          <!-- Reads prior art — wide -->
+          <div class="md:col-span-3 p-6 rounded-2xl border border-stone-200 bg-white">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Reads the actual prior art</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Follows the examiner's specific paragraph and column citations to the relevant passages. Checks whether they actually teach what the examiner says.</p>
+          </div>
+
+          <!-- Maps elements — wide -->
+          <div class="md:col-span-3 p-6 rounded-2xl border border-stone-200 bg-white">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Maps claim elements to references</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">For every rejection, maps each claim limitation to the passage the examiner relies on. For combinations, shows which element comes from which reference.</p>
+          </div>
+
+          <!-- Argue/amend — tall -->
+          <div class="md:col-span-2 md:row-span-2 p-6 rounded-2xl border border-stone-200 bg-white flex flex-col">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Argue or amend recommendations</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Looks for arguments first. Suggests amendments only when arguing alone isn't enough. You get draft argument language and suggested claim amendments with spec support.</p>
+          </div>
+
+          <!-- Every step visible -->
+          <div class="md:col-span-4 p-6 rounded-2xl border border-stone-200 bg-white">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Every step is visible</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">See which document is being read, which passage is being analyzed, which conclusion is being drawn. Click any citation to jump to the source and check it yourself.</p>
+          </div>
+
+          <!-- All rejection types -->
+          <div class="md:col-span-4 p-6 rounded-2xl border border-stone-200 bg-white">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">All rejection types</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Novelty, obviousness, subject matter eligibility, written description, definiteness — and their equivalents at the EPO, CNIPA, JPO, KIPO, and PCT.</p>
+          </div>
+
+          <!-- Conversational -->
+          <div class="md:col-span-6 p-6 rounded-2xl border border-stone-200 bg-white">
+            <div class="w-9 h-9 rounded-lg bg-amber-100/80 flex items-center justify-center mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h3 class="text-sm font-semibold text-stone-900 mb-1">Conversational</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">Ask follow-ups. Drill into a specific rejection. Ask it to check a particular passage or draft an argument for a specific limitation. Use it like a research assistant.</p>
+          </div>
+        </div>
+
+        <div class="mt-8 flex items-center gap-3">
+          <a
+            href="/login?plan=individual"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+          >
+            Try now
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a
+            href="/oa-response/about"
+            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 border border-stone-200 hover:border-stone-300 rounded-lg transition-colors"
+          >
+            Learn more
           </a>
         </div>
       </div>
