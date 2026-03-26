@@ -1,17 +1,7 @@
 ---
 import LandingLayout from '../layouts/LandingLayout.astro';
 import LandingNav from '../components/landing/LandingNav.astro';
-import Hero from '../components/landing/Hero.astro';
-import ProductToggle from '../components/landing/ProductToggle.astro';
-import PatentReaderFeatures from '../components/landing/PatentReaderFeatures.astro';
-import PatentReaderHowItWorks from '../components/landing/PatentReaderHowItWorks.astro';
-import Stats from '../components/landing/Stats.astro';
-import Features from '../components/landing/Features.astro';
-import Jurisdictions from '../components/landing/Jurisdictions.astro';
-import BeforeAfter from '../components/landing/BeforeAfter.astro';
-import Testimonials from '../components/landing/Testimonials.astro';
 import Pricing from '../components/landing/Pricing.astro';
-import FAQ from '../components/landing/FAQ.astro';
 import Footer from '../components/landing/Footer.astro';
 
 const organizationSchema = {
@@ -22,174 +12,71 @@ const organizationSchema = {
   logo: "https://solvethisoaforme.chyuang.com/favicon.ico",
   description: "Patent tools for prosecution professionals. Free structured patent viewer with claim trees and reference mapping. AI-powered Office Action analysis with argue/amend recommendations.",
 };
-
-const faqSchema = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "Is Patent Reader really free?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. There are no usage limits or hidden paywalls.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Where does Patent Reader get its data?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Patent data is fetched from Google Patents. This includes the full specification, claims, figures, citations, legal events, and family information. The reader structures this data into a more usable format with claim trees, reference numeral extraction, and figure mapping.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Does the AI hallucinate? How can I trust the analysis?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "The OA Response AI Agent works directly from your uploaded documents, not from memory or training data. Every conclusion cites a specific passage, and those citations are verified against the source. You can click any reference to jump to the passage and check it yourself. Every claim is traceable and verifiable.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "What types of rejections does it handle?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "All major rejection types across all jurisdictions. Novelty, obviousness, subject matter eligibility, written description, definiteness, and their equivalents at the EPO, CNIPA, JPO, KIPO, and PCT. Upload your Office Action and the AI adapts to the relevant framework.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Can it draft the actual response?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Think of it as a thinking tool, not a drafting tool. You get a complete analysis with recommendations, draft arguments, and suggested amendments. It's designed to help you work through the response, not to produce a filing-ready document. You make the final calls and write in your own voice.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "How does it compare to other AI patent tools?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Most AI patent tools focus on drafting, proofreading, or prior art search. This is specifically for Office Action responses. You upload an OA and your documents, and the AI reads the cited references, maps claim elements, and produces argue/amend recommendations. We're not aware of another tool that does this end to end.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Why not just use ChatGPT or Gemini?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "You can paste an Office Action into ChatGPT, but it can't read your actual prior art PDFs, verify its own citations, or maintain a structured workspace of your documents. This is a specialized AI agent with tools to read, search, and cross-reference your actual files. It follows the examiner's specific citations to the relevant passages and checks them. A general-purpose chatbot gives you a plausible-sounding answer. This gives you a verifiable one.",
-      },
-    },
-  ],
-};
 ---
 
 <LandingLayout title="Solve This OA For Me - Patent Tools for Prosecution">
   <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
-  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <LandingNav />
   <main>
-    <Hero />
-
-    <div id="product-toggle">
-      <ProductToggle />
-    </div>
-
-    <!-- Toggle script — inline so it runs immediately, no bundling -->
-    <script is:inline>
-      function switchProduct(product) {
-        var el = document.getElementById('product-sections');
-        if (!el) return;
-        el.className = 'show-' + product;
-        document.querySelectorAll('[data-product-toggle]').forEach(function(btn) {
-          var isActive = btn.dataset.productToggle === product;
-          btn.classList.toggle('border-amber-500', isActive && product === 'oa-agent');
-          btn.classList.toggle('bg-amber-50/50', isActive && product === 'oa-agent');
-          btn.classList.toggle('border-emerald-500', isActive && product === 'patent-reader');
-          btn.classList.toggle('bg-emerald-50/50', isActive && product === 'patent-reader');
-          btn.classList.toggle('border-stone-200', !isActive);
-          btn.classList.toggle('bg-white', !isActive);
-        });
-        history.replaceState(null, '', '#' + product);
-      }
-      document.addEventListener('DOMContentLoaded', function() {
-        var hash = location.hash.replace('#', '');
-        if (hash === 'patent-reader') switchProduct('patent-reader');
-      });
-    </script>
-
-    <!-- Both sections rendered in HTML for SEO; CSS toggles visibility -->
-    <div id="product-sections" class="show-oa-agent">
-      <div id="product-patent-reader">
-        <PatentReaderFeatures />
-        <PatentReaderHowItWorks />
-      </div>
-      <div id="product-oa-agent">
-        <!-- Product intro video -->
-        <section class="py-16 md:py-20 bg-stone-50/50">
-          <div class="max-w-4xl mx-auto px-6">
-            <div class="relative rounded-2xl overflow-hidden shadow-xl border border-stone-200/60 bg-black">
-              <video
-                controls
-                preload="metadata"
-                poster=""
-                class="w-full aspect-video"
-              >
-                <source src="/intro-video.mp4" type="video/mp4" />
-              </video>
-            </div>
-            <p class="text-center text-sm text-stone-400 mt-4">See how it works in 40 seconds</p>
-          </div>
-        </section>
-
-        <Stats />
-        <Features />
-        <Jurisdictions />
-        <BeforeAfter />
-      </div>
-    </div>
-
-    <Testimonials />
-    <Pricing />
-    <FAQ />
-
-    <!-- Final CTA -->
-    <section class="py-20 md:py-28 bg-white">
-      <div class="max-w-2xl mx-auto px-6 text-center">
-        <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-          Patent prosecution, less painful
-        </h2>
-        <p class="text-lg text-stone-500 leading-relaxed mb-8">
-          Read patents with structure. Respond to Office Actions with confidence.
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
+      <div class="relative max-w-4xl mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-20 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
+          Read patents.
+          <span class="text-amber-600"> Respond to Office Actions.</span>
+        </h1>
+        <p class="text-lg text-stone-500 leading-relaxed max-w-2xl mx-auto">
+          Free structured patent viewer with claim trees, reference mapping, and figure analysis. AI-powered Office Action analysis with argue/amend recommendations. Built for patent prosecution professionals.
         </p>
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href="/patent-reader"
-            class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
-          >
-            Try Patent Reader
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </div>
+    </section>
+
+    <!-- Product cards -->
+    <section class="py-12 md:py-16">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Patent Reader -->
+          <a href="/patent-reader/about" class="group block p-8 rounded-xl border border-stone-200 bg-white hover:border-amber-300 hover:shadow-lg transition-all">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-stone-900">Patent Reader</h2>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-100 text-amber-700">Free</span>
+              </div>
+            </div>
+            <p class="text-sm text-stone-500 leading-relaxed mb-6">
+              A structured patent viewer built for patent professionals. Enter any patent number and get claim dependency trees, reference numeral mapping, figure bounding boxes, side-by-side comparison, and multi-term search.
+            </p>
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-amber-600 group-hover:text-amber-700 transition-colors">
+              Learn more
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
           </a>
-          <a
-            href="/login?plan=individual"
-            class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
-          >
-            Analyze Your First OA
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+
+          <!-- OA Response Agent -->
+          <a href="/oa-response/about" class="group block p-8 rounded-xl border border-stone-200 bg-white hover:border-amber-300 hover:shadow-lg transition-all">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h2 class="text-xl font-bold text-stone-900">OA Response Agent</h2>
+            </div>
+            <p class="text-sm text-stone-500 leading-relaxed mb-6">
+              Upload your Office Action and let AI analyze every rejection, read the cited prior art, and recommend argue-or-amend strategies. Every conclusion cites a specific passage you can verify yourself.
+            </p>
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-amber-600 group-hover:text-amber-700 transition-colors">
+              Learn more
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
           </a>
         </div>
       </div>
     </section>
+
+    <Pricing />
   </main>
   <Footer />
 </LandingLayout>
-
-<style>
-  #product-sections.show-oa-agent #product-patent-reader { display: none; }
-  #product-sections.show-oa-agent #product-oa-agent { display: block; }
-  #product-sections.show-patent-reader #product-oa-agent { display: none; }
-  #product-sections.show-patent-reader #product-patent-reader { display: block; }
-</style>

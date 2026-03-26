@@ -1,0 +1,149 @@
+---
+import LandingLayout from '../../layouts/LandingLayout.astro';
+import LandingNav from '../../components/landing/LandingNav.astro';
+import OAAgentMock from '../../components/landing/OAAgentMock.astro';
+import Stats from '../../components/landing/Stats.astro';
+import Features from '../../components/landing/Features.astro';
+import Jurisdictions from '../../components/landing/Jurisdictions.astro';
+import BeforeAfter from '../../components/landing/BeforeAfter.astro';
+import Testimonials from '../../components/landing/Testimonials.astro';
+import OAAgentFAQ from '../../components/landing/OAAgentFAQ.astro';
+import Pricing from '../../components/landing/Pricing.astro';
+import Footer from '../../components/landing/Footer.astro';
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Does the AI hallucinate? How can I trust the analysis?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The OA Response AI Agent works directly from your uploaded documents, not from memory or training data. Every conclusion cites a specific passage, and those citations are verified against the source. You can click any reference to jump to the passage and check it yourself. Every claim is traceable and verifiable.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What types of rejections does it handle?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "All major rejection types across all jurisdictions. Novelty, obviousness, subject matter eligibility, written description, definiteness, and their equivalents at the EPO, CNIPA, JPO, KIPO, and PCT. Upload your Office Action and the AI adapts to the relevant framework.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can it draft the actual response?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Think of it as a thinking tool, not a drafting tool. You get a complete analysis with recommendations, draft arguments, and suggested amendments. It's designed to help you work through the response, not to produce a filing-ready document. You make the final calls and write in your own voice.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How does it compare to other AI patent tools?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Most AI patent tools focus on drafting, proofreading, or prior art search. This is specifically for Office Action responses. You upload an OA and your documents, and the AI reads the cited references, maps claim elements, and produces argue/amend recommendations. We're not aware of another tool that does this end to end.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Why not just use ChatGPT or Gemini?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "You can paste an Office Action into ChatGPT, but it can't read your actual prior art PDFs, verify its own citations, or maintain a structured workspace of your documents. This is a specialized AI agent with tools to read, search, and cross-reference your actual files. It follows the examiner's specific citations to the relevant passages and checks them. A general-purpose chatbot gives you a plausible-sounding answer. This gives you a verifiable one.",
+      },
+    },
+  ],
+};
+---
+
+<LandingLayout
+  title="OA Response AI Agent - Solve This OA For Me"
+  description="AI-powered Office Action analysis. Upload your OA, cited prior art, and application — get argue/amend recommendations with draft language in minutes."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <LandingNav />
+  <main>
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
+      <div class="relative max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+        <div class="max-w-4xl mx-auto text-center">
+          <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
+            Respond to Office Actions
+            <span class="text-amber-600"> in minutes,</span>
+            not days
+          </h1>
+          <p class="text-lg text-stone-500 leading-relaxed mb-10 max-w-2xl mx-auto">
+            Upload your Office Action and let AI analyze every rejection, read the cited prior art, and recommend argue-or-amend strategies so you can focus on the prosecution decisions that matter.
+          </p>
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-5">
+            <a
+              href="/login?plan=individual"
+              class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+            >
+              Analyze Your First OA
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+            <span class="inline-flex items-center gap-1.5 text-sm text-stone-400">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+              Scroll to learn more
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <OAAgentMock />
+
+    <!-- Product intro video -->
+    <section class="py-16 md:py-20 bg-stone-50/50">
+      <div class="max-w-4xl mx-auto px-6">
+        <div class="relative rounded-2xl overflow-hidden shadow-xl border border-stone-200/60 bg-black">
+          <video
+            controls
+            preload="metadata"
+            poster=""
+            class="w-full aspect-video"
+          >
+            <source src="/intro-video.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <p class="text-center text-sm text-stone-400 mt-4">See how it works in 40 seconds</p>
+      </div>
+    </section>
+
+    <Stats />
+    <Features />
+    <Jurisdictions />
+    <BeforeAfter />
+    <Testimonials />
+    <Pricing />
+    <OAAgentFAQ />
+
+    <!-- Final CTA -->
+    <section class="py-20 md:py-28 bg-white">
+      <div class="max-w-2xl mx-auto px-6 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+          Your next Office Action doesn't have to take all day
+        </h2>
+        <p class="text-lg text-stone-500 leading-relaxed mb-4">
+          Upload it, get a complete analysis with argue/amend recommendations, and start drafting your response from a position of strength.
+        </p>
+        <p class="text-sm text-stone-400 mb-8">
+          The AI does the reading and mapping. You make the prosecution decisions.
+        </p>
+        <a
+          href="/login?plan=individual"
+          class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+        >
+          Analyze Your First OA
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</LandingLayout>

@@ -1,0 +1,268 @@
+---
+import LandingLayout from '../../layouts/LandingLayout.astro';
+import LandingNav from '../../components/landing/LandingNav.astro';
+import PatentReaderFeatures from '../../components/landing/PatentReaderFeatures.astro';
+import PatentReaderHowItWorks from '../../components/landing/PatentReaderHowItWorks.astro';
+import PatentReaderFAQ from '../../components/landing/PatentReaderFAQ.astro';
+import Footer from '../../components/landing/Footer.astro';
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "Is Patent Reader really free?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. There are no usage limits or hidden paywalls.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Where does Patent Reader get its data?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Patent data is fetched from Google Patents. This includes the full specification, claims, figures, citations, legal events, and family information. The reader structures this data into a more usable format with claim trees, reference numeral extraction, and figure mapping.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What patent offices are supported?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Any patent indexed by Google Patents. This includes US (USPTO), European (EPO), Chinese (CNIPA), Japanese (JPO), Korean (KIPO), PCT (WIPO), and many more. Enter the publication number in any standard format.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I use Patent Reader during prosecution?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Absolutely. Patent Reader is designed for patent professionals. Use it to quickly understand a cited reference, compare two patents side by side, or check how claim elements map to figures. It pairs naturally with the OA Response Agent — read the prior art in Patent Reader, then analyze the rejection with the agent.",
+      },
+    },
+  ],
+};
+
+const supportedOffices = [
+  { code: "US", name: "United States Patent and Trademark Office (USPTO)" },
+  { code: "EP", name: "European Patent Office (EPO)" },
+  { code: "WO", name: "World Intellectual Property Organization (WIPO/PCT)" },
+  { code: "CN", name: "China National Intellectual Property Administration (CNIPA)" },
+  { code: "JP", name: "Japan Patent Office (JPO)" },
+  { code: "KR", name: "Korean Intellectual Property Office (KIPO)" },
+  { code: "CA", name: "Canadian Intellectual Property Office (CIPO)" },
+  { code: "AU", name: "IP Australia" },
+  { code: "IN", name: "Indian Patent Office (IPO)" },
+  { code: "GB", name: "UK Intellectual Property Office (UKIPO)" },
+  { code: "DE", name: "German Patent and Trade Mark Office (DPMA)" },
+  { code: "FR", name: "French National Institute of Industrial Property (INPI)" },
+];
+---
+
+<LandingLayout
+  title="Patent Reader - Free Structured Patent Viewer"
+  description="Free patent viewer with claim dependency trees, reference numeral mapping, figure bounding boxes, side-by-side comparison, and multi-term search. No account required."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <LandingNav />
+  <main>
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
+      <div class="relative max-w-4xl mx-auto px-6 pt-20 pb-20 md:pt-28 md:pb-28 text-center">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 mb-6">
+          Free — no account required
+        </span>
+        <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
+          A better way to
+          <span class="text-amber-600"> read patents</span>
+        </h1>
+        <p class="text-lg text-stone-500 leading-relaxed mb-10 max-w-2xl mx-auto">
+          Structured viewing with claim dependency trees, reference numeral mapping, figure bounding boxes, and side-by-side comparison. Enter a patent number and start reading.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="/patent-reader"
+            class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+          >
+            Open Patent Reader
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <span class="inline-flex items-center gap-1.5 text-sm text-stone-400">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+            Scroll to learn more
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product mock -->
+    <section class="pb-16 md:pb-20">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="relative rounded-xl border border-stone-200/80 bg-white shadow-lg overflow-hidden">
+          <!-- App chrome bar -->
+          <div class="flex items-center justify-between px-4 py-2.5 bg-stone-50 border-b border-stone-100">
+            <div class="flex items-center gap-3">
+              <div class="flex gap-1.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+              </div>
+              <span class="text-[11px] font-medium text-stone-400">Patent Reader</span>
+            </div>
+            <div class="px-2 py-0.5 rounded bg-stone-100 text-[10px] text-stone-400 font-medium">US11423567B2</div>
+          </div>
+
+          <!-- Patent title bar -->
+          <div class="px-4 py-2 border-b border-stone-100 bg-white">
+            <p class="text-[12px] font-medium text-stone-700 truncate">Methods and systems for detecting head location and orientation using sensor data</p>
+          </div>
+
+          <!-- 2-panel layout -->
+          <div class="flex" style="min-height: 400px;">
+            <!-- Main content: Title → Abstract → Description → Claims -->
+            <div class="flex-1 p-4 overflow-hidden relative border-r border-stone-100 bg-stone-50/50">
+              <!-- Abstract -->
+              <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Abstract</p>
+              <p class="text-[11px] text-stone-700 leading-relaxed mb-4">A method for detecting head location and orientation using a sensor array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">102</span> and processing unit <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">104</span>. The system generates a depth map and applies machine learning models to determine position and orientation in real time.</p>
+
+              <!-- Description -->
+              <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Description</p>
+              <div class="space-y-2.5 text-[11px] text-stone-700 leading-relaxed mb-4">
+                <div class="flex gap-2">
+                  <span class="text-[10px] font-mono text-stone-300 select-none pt-0.5 shrink-0 w-8 text-right">[0001]</span>
+                  <p>The present invention relates to methods and systems for detecting head location and orientation using sensor data.</p>
+                </div>
+                <div class="flex gap-2">
+                  <span class="text-[10px] font-mono text-stone-300 select-none pt-0.5 shrink-0 w-8 text-right">[0002]</span>
+                  <p>In various applications, such as virtual reality, augmented reality, and human-computer interaction, it is desirable to accurately track the position and orientation of a user's head.</p>
+                </div>
+                <div class="flex gap-2">
+                  <span class="text-[10px] font-mono text-stone-300 select-none pt-0.5 shrink-0 w-8 text-right">[0003]</span>
+                  <p><span class="text-blue-600 font-medium">FIG. 1</span> illustrates an exemplary system <span class="font-mono text-[0.8em] bg-amber-200/70 text-amber-900 rounded px-0.5">100</span> for head tracking. The system <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">100</span> includes a sensor array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">102</span> and a processing unit <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">104</span> connected via a data bus <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">106</span>.</p>
+                </div>
+              </div>
+
+              <!-- Claims -->
+              <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1">Claims</p>
+              <div class="space-y-2.5">
+                <div class="flex items-start gap-2">
+                  <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-4 text-right pt-0.5 select-none">1.</span>
+                  <p class="text-[11px] text-stone-700 leading-relaxed">A method for detecting head location and orientation, the method comprising: receiving, by a processor, image data from a sensor array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">102</span>; generating a depth map...</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-4 text-right pt-0.5 select-none">2.</span>
+                  <p class="text-[11px] text-stone-700 leading-relaxed">The method of <span class="text-violet-600 font-medium">claim 1</span>, wherein the sensor comprises a depth camera configured to capture infrared structured light patterns.</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-4 text-right pt-0.5 select-none">3.</span>
+                  <p class="text-[11px] text-stone-700 leading-relaxed">The method of <span class="text-violet-600 font-medium">claim 1</span>, further comprising calibrating the sensor based on ambient lighting conditions.</p>
+                </div>
+              </div>
+              <div class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-stone-50/50 to-transparent pointer-events-none"></div>
+            </div>
+
+            <!-- Right sidebar (w-72) -->
+            <div class="w-72 shrink-0 flex flex-col overflow-hidden relative">
+              <!-- Sidebar tab bar -->
+              <div class="flex items-center gap-4 px-4 pt-3 pb-0 border-b border-stone-100">
+                <button class="text-[11px] font-semibold text-stone-800 pb-2 border-b-2 border-amber-500">Figures</button>
+                <button class="text-[11px] font-medium text-stone-400 pb-2 border-b-2 border-transparent">Outline</button>
+                <button class="text-[11px] font-medium text-stone-400 pb-2 border-b-2 border-transparent">Info</button>
+                <button class="text-[11px] font-medium text-stone-400 pb-2 border-b-2 border-transparent">Search</button>
+              </div>
+
+              <div class="p-4 space-y-4">
+                <!-- Figure thumbnail -->
+                <div class="aspect-[4/3] rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center">
+                  <div class="text-center">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="text-stone-300 mx-auto mb-1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <p class="text-[10px] text-stone-400">FIG. 1</p>
+                  </div>
+                </div>
+
+                <!-- Reference numerals -->
+                <div>
+                  <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Reference Numerals</p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2 p-1.5 rounded hover:bg-stone-50">
+                      <span class="text-[11px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">100</span>
+                      <span class="text-[11px] text-stone-500">head tracking system</span>
+                    </div>
+                    <div class="flex items-center gap-2 p-1.5 rounded hover:bg-stone-50">
+                      <span class="text-[11px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">102</span>
+                      <span class="text-[11px] text-stone-500">sensor array</span>
+                    </div>
+                    <div class="flex items-center gap-2 p-1.5 rounded hover:bg-stone-50">
+                      <span class="text-[11px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">104</span>
+                      <span class="text-[11px] text-stone-500">processing unit</span>
+                    </div>
+                    <div class="flex items-center gap-2 p-1.5 rounded hover:bg-stone-50">
+                      <span class="text-[11px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">106</span>
+                      <span class="text-[11px] text-stone-500">data bus</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <PatentReaderFeatures />
+    <PatentReaderHowItWorks />
+
+    <!-- Supported Patent Offices -->
+    <section class="py-20 md:py-28 bg-white">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="max-w-2xl mx-auto text-center mb-14">
+          <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Coverage</p>
+          <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+            Any patent indexed by Google Patents
+          </h2>
+          <p class="text-lg text-stone-500 leading-relaxed">
+            Enter a publication number from any of these offices. The reader fetches and structures the full patent automatically.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          {supportedOffices.map((office) => (
+            <div class="flex items-center gap-3 p-4 rounded-xl border border-stone-100 bg-stone-50/50">
+              <code class="text-sm font-mono font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded shrink-0">{office.code}</code>
+              <span class="text-xs text-stone-500 leading-tight">{office.name}</span>
+            </div>
+          ))}
+        </div>
+
+        <p class="text-center text-sm text-stone-400 mt-8">
+          And any other jurisdiction indexed by Google Patents.
+        </p>
+      </div>
+    </section>
+
+    <!-- Use with OA Agent callout -->
+    <section class="py-16 md:py-20 bg-stone-50/70">
+      <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+          Pairs naturally with the OA Response Agent
+        </h2>
+        <p class="text-base text-stone-500 leading-relaxed mb-6 max-w-2xl mx-auto">
+          Read the cited prior art in Patent Reader, then analyze the rejection with the AI agent. The reader helps you understand the references; the agent helps you respond.
+        </p>
+        <a
+          href="/oa-response/about"
+          class="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+        >
+          Learn about the OA Response Agent
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <PatentReaderFAQ />
+  </main>
+  <Footer />
+</LandingLayout>

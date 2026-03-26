@@ -1,14 +1,6 @@
 ---
 const faqs = [
   {
-    question: "Is Patent Reader really free?",
-    answer: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. There are no usage limits or hidden paywalls.",
-  },
-  {
-    question: "Where does Patent Reader get its data?",
-    answer: "Patent data is fetched from Google Patents. This includes the full specification, claims, figures, citations, legal events, and family information. The reader structures this data into a more usable format with claim trees, reference numeral extraction, and figure mapping.",
-  },
-  {
     question: "Does the AI hallucinate? How can I trust the analysis?",
     answer: "The OA Response AI Agent works directly from your uploaded documents, not from memory or training data. Every conclusion cites a specific passage, and those citations are verified against the source. You can click any reference to jump to the passage and check it yourself. Every claim is traceable and verifiable.",
   },
@@ -36,7 +28,7 @@ const faqs = [
     <div class="text-center mb-14">
       <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">FAQ</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        FAQ
+        OA Response Agent FAQ
       </h2>
     </div>
 
@@ -47,6 +39,17 @@ const faqs = [
           <p class="text-sm text-stone-500 leading-relaxed">{faq.answer}</p>
         </div>
       ))}
+    </div>
+
+    <!-- CTA -->
+    <div class="text-center mt-12">
+      <a
+        href="/login?plan=individual"
+        class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+      >
+        Analyze Your First OA
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
     </div>
   </div>
 </section>

@@ -1,36 +1,132 @@
 ---
-import { LandingMobileMenu } from './LandingMobileMenu';
+const products = [
+  { href: '/patent-reader', label: 'Patent Reader', description: 'Structured patent viewer' },
+  { href: '/oa-response', label: 'OA Response Agent', description: 'AI Office Action analysis' },
+];
+
+const learnMore = [
+  { href: '/', label: 'Overview' },
+  { href: '/patent-reader/about', label: 'About Patent Reader' },
+  { href: '/oa-response/about', label: 'About OA Agent' },
+  { href: '/oa-response/about#pricing', label: 'Pricing' },
+];
+
+const blogPosts = [
+  { href: '/blog/best-ai-tools-for-responding-to-patent-office-actions', label: 'Best AI Tools for Patent OA Response' },
+  { href: '/blog/how-agentic-ai-reads-prior-art-differently-than-chatgpt', label: 'How Agentic AI Reads Prior Art' },
+  { href: '/blog/ai-for-patent-prosecution-what-works-and-what-doesnt', label: 'AI for Patent Prosecution: What Works' },
+  { href: '/blog/why-patent-attorneys-still-spend-hours-on-every-office-action', label: 'Why OAs Still Take 6 Hours' },
+  { href: '/blog/antecedent-basis-mistakes-examiners-catch-that-ai-catches-first', label: 'Antecedent Basis Mistakes AI Catches' },
+];
+
+const allLinks = [
+  ...products.map(p => ({ href: p.href, label: p.label })),
+  ...learnMore,
+  ...blogPosts,
+  { href: '/blog', label: 'All Posts' },
+];
 ---
 
 <nav class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-black/5 z-50">
   <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
-    <!-- Logo -->
-    <a href="/" class="text-lg font-semibold text-stone-900 tracking-tight">
-      Solve This OA For Me
-    </a>
+    <!-- Logo with mega dropdown (desktop) -->
+    <div class="group/nav relative">
+      <a href="/" class="inline-flex items-center gap-1.5 text-lg font-semibold text-stone-900 tracking-tight">
+        Solve This OA For Me
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-400 group-hover/nav:text-stone-600 transition-colors mt-0.5"><path d="m6 9 6 6 6-6"/></svg>
+      </a>
 
-    <!-- Center nav links (hidden on mobile) -->
-    <div class="hidden md:flex items-center gap-8">
-      <a href="/patent-reader" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
-        Patent Reader
-      </a>
-      <a href="#product-toggle" onclick="switchProduct && switchProduct('oa-agent')" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
-        OA Agent
-      </a>
-      <a href="#pricing" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
-        Pricing
-      </a>
-      <a href="/blog" class="text-sm font-medium text-stone-500 hover:text-stone-900 transition-colors">
-        Blog
-      </a>
+      <!-- Mega dropdown -->
+      <div class="invisible opacity-0 group-hover/nav:visible group-hover/nav:opacity-100 transition-all duration-150 absolute top-full left-0 mt-1 w-[540px] bg-white rounded-xl border border-stone-200 shadow-xl p-5">
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Left column: Products + Learn -->
+          <div>
+            <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Tools</p>
+            <div class="space-y-1 mb-5">
+              {products.map(({ href, label, description }) => (
+                <a href={href} class="block px-3 py-2 rounded-lg hover:bg-stone-50 transition-colors">
+                  <p class="text-sm font-medium text-stone-900">{label}</p>
+                  <p class="text-xs text-stone-400">{description}</p>
+                </a>
+              ))}
+            </div>
+
+            <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Learn</p>
+            <div class="space-y-0.5">
+              {learnMore.map(({ href, label }) => (
+                <a href={href} class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          <!-- Right column: Blog -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Blog</p>
+              <a href="/blog" class="text-[11px] font-medium text-amber-600 hover:text-amber-700 transition-colors">All posts →</a>
+            </div>
+            <div class="space-y-0.5">
+              {blogPosts.map(({ href, label }) => (
+                <a href={href} class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">
+                  {label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Right side: mobile hamburger + Go to App -->
+    <!-- Right side: mobile menu + Go to App -->
     <div class="flex items-center gap-3">
-      <LandingMobileMenu client:only="react" />
+      <!-- Mobile menu (SSR, no JS) -->
+      <details class="md:hidden relative">
+        <summary class="list-none cursor-pointer rounded-md p-1.5 text-stone-600 hover:bg-stone-100 transition-colors">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+        </summary>
+        <div class="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl border border-stone-200 shadow-xl p-4">
+          <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Tools</p>
+          {products.map(({ href, label, description }) => (
+            <a href={href} class="block px-3 py-2 rounded-lg hover:bg-stone-50 transition-colors">
+              <p class="text-sm font-medium text-stone-900">{label}</p>
+              <p class="text-xs text-stone-400">{description}</p>
+            </a>
+          ))}
+
+          <div class="border-t border-stone-100 my-3"></div>
+          <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Learn</p>
+          {learnMore.map(({ href, label }) => (
+            <a href={href} class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">
+              {label}
+            </a>
+          ))}
+
+          <div class="border-t border-stone-100 my-3"></div>
+          <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Blog</p>
+          {blogPosts.slice(0, 3).map(({ href, label }) => (
+            <a href={href} class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">
+              {label}
+            </a>
+          ))}
+          <a href="/blog" class="block px-3 py-1.5 rounded-lg text-sm font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-50 transition-colors">
+            All posts →
+          </a>
+
+          <div class="border-t border-stone-100 my-3"></div>
+          <a
+            href="/oa-response"
+            class="block px-3 py-2 rounded-lg text-sm font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-50 transition-colors"
+          >
+            Go to App →
+          </a>
+        </div>
+      </details>
+
       <a
         href="/oa-response"
-        class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+        class="hidden md:inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
       >
         Go to App
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -41,3 +137,8 @@ import { LandingMobileMenu } from './LandingMobileMenu';
 
 <!-- Spacer for fixed nav -->
 <div class="h-16"></div>
+
+<style>
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary { background-color: var(--color-stone-100, #f5f5f4); border-radius: 0.375rem; }
+</style>
