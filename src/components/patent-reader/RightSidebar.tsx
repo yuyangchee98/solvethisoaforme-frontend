@@ -164,6 +164,20 @@ function FiguresTab({
     );
   }
 
+  const elementsOnSheet: { numeral: string; label: string }[] = [];
+  if (selectedFigure !== null) {
+    const seen = new Set<string>();
+    for (const [numeral, locs] of Object.entries(numeralLocations)) {
+      for (const loc of locs) {
+        if (loc.sheet === selectedFigure && loc.type !== "figure" && !seen.has(numeral)) {
+          seen.add(numeral);
+          elementsOnSheet.push({ numeral, label: numeralLabels[numeral] ?? "" });
+        }
+      }
+    }
+    elementsOnSheet.sort((a, b) => parseInt(a.numeral, 10) - parseInt(b.numeral, 10));
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Thumbnail strip — skip index 0 (cover sheet) */}
@@ -298,6 +312,32 @@ function FiguresTab({
               })()}
             </div>
           </div>
+          {/* Element numbers list */}
+          {elementsOnSheet.length > 0 && (
+            <div className="shrink-0 border-t border-stone-100">
+              <div className="px-3 py-1.5">
+                <span className="text-[10px] font-medium text-stone-400 uppercase tracking-wide">
+                  Elements on sheet
+                </span>
+              </div>
+              <div className="max-h-48 overflow-y-auto px-1 pb-2">
+                {elementsOnSheet.map(({ numeral, label }) => (
+                  <button
+                    key={numeral}
+                    onClick={() => onBboxClick(numeral)}
+                    className="w-full flex items-baseline gap-2 px-2 py-0.5 rounded text-left hover:bg-amber-50 transition-colors group"
+                  >
+                    <span className="font-mono text-xs text-amber-700 group-hover:text-amber-900 w-8 text-right shrink-0">
+                      {numeral}
+                    </span>
+                    <span className="text-xs text-stone-500 group-hover:text-stone-700 truncate">
+                      {label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex-1 flex items-center justify-center">
