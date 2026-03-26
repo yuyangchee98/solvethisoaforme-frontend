@@ -176,7 +176,9 @@ function PanelSidebar({
       onScrollTo={onScrollTo}
       highlightedLocation={panel.highlightedLocation}
       showAllBboxes={panel.showAllBboxes}
+      showBboxLabels={panel.showBboxLabels}
       onToggleBboxes={panel.toggleBboxes}
+      onToggleBboxLabels={panel.toggleBboxLabels}
       numeralLocations={panel.numeralLocations}
       numeralLabels={panel.numeralLabels}
       onBboxClick={panel.handleBboxClick}
@@ -207,6 +209,7 @@ export function PatentReader() {
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
+  const [formatsOpen, setFormatsOpen] = useState(false);
 
   // Auto-expand sidebar when interaction targets it (comparison mode).
   // In normal mode these set state that isn't read, so it's a harmless no-op.
@@ -401,108 +404,66 @@ export function PatentReader() {
                   </code>
                 ))}
               </div>
-              <details className="mt-3 text-left max-w-md mx-auto">
-                <summary className="text-xs text-stone-400 cursor-pointer hover:text-stone-600 text-center select-none">
+              <Dialog open={formatsOpen} onOpenChange={setFormatsOpen}>
+                <button
+                  type="button"
+                  onClick={() => setFormatsOpen(true)}
+                  className="mt-3 text-xs text-stone-400 cursor-pointer hover:text-stone-600 text-center select-none mx-auto block"
+                >
                   Supported formats &amp; jurisdictions
-                </summary>
-                <div className="mt-2 text-xs text-stone-500 space-y-3 bg-stone-50 border border-stone-200 rounded-lg p-4">
-                  {/* Input format */}
-                  <div>
-                    <p className="font-medium text-stone-600 mb-1">How to enter a patent number</p>
-                    <p className="leading-relaxed">
-                      Enter the <span className="font-medium">publication number</span> (not the
-                      application serial number). You can type it with or without spaces, commas,
-                      slashes, or kind codes &mdash; we normalize it automatically.
-                    </p>
-                    <div className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 font-mono text-[11px]">
-                      <span className="text-stone-400">US granted:</span>
-                      <span>US 11,423,567 B2 <span className="text-stone-400">or</span> US11423567B2</span>
-                      <span className="text-stone-400">US application:</span>
-                      <span>US 2022/0075747 A1 <span className="text-stone-400">or</span> US20220075747A1</span>
-                      <span className="text-stone-400">US design:</span>
-                      <span>USD1234567S</span>
-                      <span className="text-stone-400">US reissue:</span>
-                      <span>USRE49000E</span>
-                      <span className="text-stone-400">US plant:</span>
-                      <span>USPP12345P3</span>
-                      <span className="text-stone-400">EP:</span>
-                      <span>EP 3 081 497 B1 <span className="text-stone-400">or</span> EP3081497B1</span>
-                      <span className="text-stone-400">WO/PCT:</span>
-                      <span>WO 2016/116889 A1 <span className="text-stone-400">or</span> WO2016116889A1</span>
-                      <span className="text-stone-400">CN:</span>
-                      <span>CN110546615B</span>
-                      <span className="text-stone-400">JP:</span>
-                      <span>JP6876012B2</span>
-                      <span className="text-stone-400">KR:</span>
-                      <span>KR102345678B1</span>
+                </button>
+                <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Supported formats &amp; jurisdictions</DialogTitle>
+                  </DialogHeader>
+                  <div className="text-xs text-stone-500 space-y-4">
+                    {/* Format examples */}
+                    <div>
+                      <p className="font-medium text-stone-600 mb-2">Accepted formats</p>
+                      <div className="rounded-md border border-stone-200 overflow-hidden font-mono text-[11px]">
+                        {[
+                          ["US granted", "US11423567B2"],
+                          ["US pub", "US20220075747A1"],
+                          ["US design", "USD1234567S"],
+                          ["EP", "EP3081497B1"],
+                          ["WO/PCT", "WO2016116889A1"],
+                          ["CN / JP / KR", "CN110546615B"],
+                        ].map(([label, example], i) => (
+                          <div key={label} className={`flex items-center px-3 py-1.5 ${i % 2 === 0 ? "bg-white" : "bg-stone-50/70"}`}>
+                            <span className="text-stone-400 w-24 shrink-0">{label}</span>
+                            <span className="text-stone-600">{example}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-[11px] text-stone-400 leading-relaxed">
+                        Spaces, commas, slashes, and kind codes are all optional.
+                      </p>
+                    </div>
+
+                    {/* Jurisdictions */}
+                    <div>
+                      <p className="font-medium text-stone-600 mb-2">Supported jurisdictions</p>
+                      {[
+                        { region: "Americas", codes: ["US", "CA", "MX", "BR", "AR", "CL", "CO", "UY"] },
+                        { region: "Europe", codes: ["EP", "DE", "GB", "FR", "NL", "BE", "AT", "CH", "SE", "NO", "DK", "FI", "IE", "ES", "IT", "PL", "CZ", "RO", "GR", "HU"] },
+                        { region: "Asia-Pacific", codes: ["CN", "JP", "KR", "TW", "IN", "AU", "NZ", "SG", "PH", "MY", "TH", "HK"] },
+                        { region: "International", codes: ["WO", "EA", "RU", "UA", "IL", "SA", "TR", "EG", "ZA", "AP"] },
+                      ].map(({ region, codes }) => (
+                        <div key={region} className="mt-2.5 first:mt-0">
+                          <p className="text-[10px] font-medium text-stone-400 uppercase tracking-wider mb-1">{region}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {codes.map((code) => (
+                              <span key={code} className="inline-block px-1.5 py-0.5 text-[11px] font-mono text-stone-500 bg-stone-50 border border-stone-200 rounded">
+                                {code}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-
-                  {/* Kind codes */}
-                  <div>
-                    <p className="font-medium text-stone-600 mb-1">Kind codes</p>
-                    <p className="leading-relaxed">
-                      If you omit the kind code (the letter suffix like B2 or A1), we
-                      automatically try common variants. Including it is recommended for
-                      faster, more precise lookups.
-                    </p>
-                  </div>
-
-                  {/* Jurisdictions */}
-                  <div>
-                    <p className="font-medium text-stone-600 mb-1">Supported jurisdictions</p>
-                    <p className="leading-relaxed mb-1.5">
-                      Data comes from Google Patents, which indexes 100+ patent offices.
-                      Verified jurisdictions:
-                    </p>
-                    <div className="space-y-1.5">
-                      <div>
-                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">Americas</p>
-                        <p className="text-[11px] leading-relaxed">
-                          US (United States), CA (Canada), MX (Mexico), BR (Brazil),
-                          AR (Argentina), CL (Chile), CO (Colombia), UY (Uruguay)
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">Europe</p>
-                        <p className="text-[11px] leading-relaxed">
-                          EP (European Patent Office), DE (Germany), GB (United Kingdom),
-                          FR (France), NL (Netherlands), BE (Belgium), AT (Austria),
-                          CH (Switzerland), SE (Sweden), NO (Norway), DK (Denmark),
-                          FI (Finland), IE (Ireland), ES (Spain), IT (Italy), PL (Poland),
-                          CZ (Czech Republic), RO (Romania), GR (Greece), HU (Hungary)
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">Asia-Pacific</p>
-                        <p className="text-[11px] leading-relaxed">
-                          CN (China), JP (Japan), KR (South Korea), TW (Taiwan),
-                          IN (India), AU (Australia), NZ (New Zealand), SG (Singapore),
-                          PH (Philippines), MY (Malaysia), TH (Thailand), HK (Hong Kong)
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-stone-400 text-[11px] uppercase tracking-wider mb-0.5">International &amp; Other</p>
-                        <p className="text-[11px] leading-relaxed">
-                          WO (WIPO/PCT), EA (Eurasian Patent Org), RU (Russia),
-                          UA (Ukraine), MD (Moldova), IL (Israel), SA (Saudi Arabia),
-                          TR (Turkey), EG (Egypt), ZA (South Africa), AP (ARIPO)
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Not supported */}
-                  <div>
-                    <p className="font-medium text-stone-600 mb-1">Not supported</p>
-                    <ul className="list-disc list-inside text-[11px] leading-relaxed space-y-0.5">
-                      <li>Application serial numbers (e.g. 16/904,029)</li>
-                      <li>Provisional application numbers</li>
-                      <li>Patents not indexed by Google Patents</li>
-                    </ul>
-                  </div>
-                </div>
-              </details>
+                </DialogContent>
+              </Dialog>
             </div>
 
             {/* Example patents */}

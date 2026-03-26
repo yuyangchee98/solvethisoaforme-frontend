@@ -47,7 +47,9 @@ interface RightSidebarProps {
   onScrollTo: (id: string) => void;
   highlightedLocation: NumeralLocation | null;
   showAllBboxes: boolean;
+  showBboxLabels: boolean;
   onToggleBboxes: () => void;
+  onToggleBboxLabels: () => void;
   numeralLocations: Record<string, NumeralLocation[]>;
   numeralLabels: Record<string, string>;
   onBboxClick: (numeral: string) => void;
@@ -139,7 +141,9 @@ function FiguresTab({
   onSelectFigure,
   highlightedLocation,
   showAllBboxes,
+  showBboxLabels,
   onToggleBboxes,
+  onToggleBboxLabels,
   numeralLocations,
   numeralLabels,
   onBboxClick,
@@ -150,7 +154,9 @@ function FiguresTab({
   onSelectFigure: (i: number | null) => void;
   highlightedLocation: NumeralLocation | null;
   showAllBboxes: boolean;
+  showBboxLabels: boolean;
   onToggleBboxes: () => void;
+  onToggleBboxLabels: () => void;
   numeralLocations: Record<string, NumeralLocation[]>;
   numeralLabels: Record<string, string>;
   onBboxClick: (numeral: string) => void;
@@ -215,8 +221,8 @@ function FiguresTab({
       {/* Selected figure — sized to fit vertically */}
       {selectedFigure !== null ? (
         <div className="flex-1 min-h-0 flex flex-col">
-          {/* Bbox toggle */}
-          <div className="flex items-center justify-end px-3 pt-2">
+          {/* Bbox toggles */}
+          <div className="flex items-center justify-end gap-1 px-3 pt-2">
             <button
               onClick={onToggleBboxes}
               className={cn(
@@ -228,7 +234,20 @@ function FiguresTab({
               title="Show all detected reference numeral bounding boxes"
             >
               <ScanSearch className="size-3.5" />
-              Bounding boxes
+              Boxes
+            </button>
+            <button
+              onClick={onToggleBboxLabels}
+              className={cn(
+                "flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors",
+                showBboxLabels
+                  ? "bg-amber-100 text-amber-700"
+                  : "text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+              )}
+              title="Always show labels on bounding boxes"
+            >
+              <Tag className="size-3.5" />
+              Labels
             </button>
           </div>
           <div className="flex-1 min-h-0 flex items-center justify-center px-3 pb-3">
@@ -249,49 +268,76 @@ function FiguresTab({
                     }
                   }
                 }
+                const bboxEl = ({ numeral, loc, i }: { numeral: string; loc: NumeralLocation; i: number }) => {
+                  const isFigLabel = loc.type === "figure";
+                  const label = isFigLabel ? null : numeralLabels[numeral];
+                  const displayLabel = isFigLabel
+                    ? `FIG. ${numeral.replace(/^FIG\.\s*/, "")}`
+                    : label
+                      ? `${numeral} — ${label}`
+                      : numeral;
+
+                  const boxDiv = (
+                    <div
+                      className={cn(
+                        "absolute rounded-sm cursor-pointer transition-colors",
+                        isFigLabel
+                          ? "border border-sky-500/60 bg-sky-400/15 hover:bg-sky-400/35 hover:border-sky-500"
+                          : "border border-amber-500/60 bg-amber-400/15 hover:bg-amber-400/35 hover:border-amber-500"
+                      )}
+                      onClick={() => {
+                        if (isFigLabel) {
+                          const figNum = parseInt(numeral.replace(/^FIG\.\s*/, ""), 10);
+                          if (!isNaN(figNum)) onFigureClick(figNum);
+                        } else {
+                          onBboxClick(numeral);
+                        }
+                      }}
+                      style={{
+                        left: `${Math.max(0, loc.x - pad) * 100}%`,
+                        top: `${Math.max(0, loc.y - pad) * 100}%`,
+                        width: `${(loc.w + pad * 2) * 100}%`,
+                        height: `${(loc.h + pad * 2) * 100}%`,
+                      }}
+                    >
+                      {showBboxLabels && (
+                        <span
+                          className={cn(
+                            "absolute left-0 bottom-full mb-0.5 whitespace-nowrap text-[9px] leading-tight px-1 py-0.5 rounded shadow-sm pointer-events-none select-none",
+                            isFigLabel
+                              ? "bg-sky-600 text-white"
+                              : "bg-amber-600 text-white"
+                          )}
+                        >
+                          {displayLabel}
+                        </span>
+                      )}
+                    </div>
+                  );
+
+                  if (showBboxLabels) {
+                    return <div key={`${numeral}-${i}`}>{boxDiv}</div>;
+                  }
+
+                  return (
+                    <Tooltip key={`${numeral}-${i}`}>
+                      <TooltipTrigger asChild>{boxDiv}</TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={4}>
+                        {isFigLabel ? (
+                          <span>FIG. {numeral.replace(/^FIG\.\s*/, "")}</span>
+                        ) : label ? (
+                          <span><span className="font-mono">{numeral}</span> — {label}</span>
+                        ) : (
+                          <span className="font-mono">{numeral}</span>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                };
+
                 return (
                   <TooltipProvider>
-                    {allOnSheet.map(({ numeral, loc }, i) => {
-                      const isFigLabel = loc.type === "figure";
-                      const label = isFigLabel ? null : numeralLabels[numeral];
-                      return (
-                        <Tooltip key={`${numeral}-${i}`}>
-                          <TooltipTrigger asChild>
-                            <div
-                              className={cn(
-                                "absolute rounded-sm cursor-pointer transition-colors",
-                                isFigLabel
-                                  ? "border border-sky-500/60 bg-sky-400/15 hover:bg-sky-400/35 hover:border-sky-500"
-                                  : "border border-amber-500/60 bg-amber-400/15 hover:bg-amber-400/35 hover:border-amber-500"
-                              )}
-                              onClick={() => {
-                                if (isFigLabel) {
-                                  const figNum = parseInt(numeral.replace(/^FIG\.\s*/, ""), 10);
-                                  if (!isNaN(figNum)) onFigureClick(figNum);
-                                } else {
-                                  onBboxClick(numeral);
-                                }
-                              }}
-                              style={{
-                                left: `${Math.max(0, loc.x - pad) * 100}%`,
-                                top: `${Math.max(0, loc.y - pad) * 100}%`,
-                                width: `${(loc.w + pad * 2) * 100}%`,
-                                height: `${(loc.h + pad * 2) * 100}%`,
-                              }}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent side="top" sideOffset={4}>
-                            {isFigLabel ? (
-                              <span>FIG. {numeral.replace(/^FIG\.\s*/, "")}</span>
-                            ) : label ? (
-                              <span><span className="font-mono">{numeral}</span> — {label}</span>
-                            ) : (
-                              <span className="font-mono">{numeral}</span>
-                            )}
-                          </TooltipContent>
-                        </Tooltip>
-                      );
-                    })}
+                    {allOnSheet.map(({ numeral, loc }, i) => bboxEl({ numeral, loc, i }))}
                   </TooltipProvider>
                 );
               })()}
@@ -1028,7 +1074,9 @@ export function RightSidebar({
   onScrollTo,
   highlightedLocation,
   showAllBboxes,
+  showBboxLabels,
   onToggleBboxes,
+  onToggleBboxLabels,
   numeralLocations,
   numeralLabels,
   onBboxClick,
@@ -1123,7 +1171,9 @@ export function RightSidebar({
           onSelectFigure={onSelectFigure}
           highlightedLocation={highlightedLocation}
           showAllBboxes={showAllBboxes}
+          showBboxLabels={showBboxLabels}
           onToggleBboxes={onToggleBboxes}
+          onToggleBboxLabels={onToggleBboxLabels}
           numeralLocations={numeralLocations}
           numeralLabels={numeralLabels}
           onBboxClick={onBboxClick}

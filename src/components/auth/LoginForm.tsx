@@ -13,6 +13,7 @@ export function LoginForm() {
 
   const params = new URLSearchParams(window.location.search);
   const plan = params.get('plan');
+  const defaultTab = params.get('tab') === 'register' ? 'register' : 'login';
 
   // If already logged in, skip the form
   useEffect(() => {
@@ -137,7 +138,7 @@ export function LoginForm() {
       </div>
 
       <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm">
-        <Tabs defaultValue="login">
+        <Tabs defaultValue={defaultTab}>
           <TabsList className="w-full mb-4">
             <TabsTrigger value="login" className="flex-1">Log In</TabsTrigger>
             <TabsTrigger value="register" className="flex-1">Register</TabsTrigger>

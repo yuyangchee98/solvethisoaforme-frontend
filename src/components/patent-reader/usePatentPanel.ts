@@ -36,6 +36,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
   const [highlightedLocation, setHighlightedLocation] =
     useState<NumeralLocation | null>(null);
   const [showAllBboxes, setShowAllBboxes] = useState(true);
+  const [showBboxLabels, setShowBboxLabels] = useState(false);
   const [selectedFigure, setSelectedFigure] = useState<number | null>(null);
   const [sidebarTab, setSidebarTab] = useState("figures");
   const [claimElements, setClaimElements] = useState<ClaimElementsData>({
@@ -262,6 +263,10 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setShowAllBboxes((v) => !v);
   }, []);
 
+  const toggleBboxLabels = useCallback(() => {
+    setShowBboxLabels((v) => !v);
+  }, []);
+
   const numeralLabels = useMemo(() => {
     const map: Record<string, string> = {};
     for (const ref of referenceNumerals) {
@@ -353,6 +358,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     activeNumeral,
     highlightedLocation,
     showAllBboxes,
+    showBboxLabels,
     selectedFigure,
     sidebarTab,
     // Loading
@@ -386,6 +392,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setHighlightedLocation,
     setSidebarTab,
     toggleBboxes,
+    toggleBboxLabels,
   };
 }
 
