@@ -176,9 +176,7 @@ function PanelSidebar({
       onScrollTo={onScrollTo}
       highlightedLocation={panel.highlightedLocation}
       showAllBboxes={panel.showAllBboxes}
-      showBboxLabels={panel.showBboxLabels}
       onToggleBboxes={panel.toggleBboxes}
-      onToggleBboxLabels={panel.toggleBboxLabels}
       numeralLocations={panel.numeralLocations}
       numeralLabels={panel.numeralLabels}
       onBboxClick={panel.handleBboxClick}

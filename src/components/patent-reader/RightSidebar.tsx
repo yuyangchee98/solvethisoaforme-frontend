@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Image,
   Info,
@@ -21,6 +21,7 @@ import {
   Search,
   Plus,
   X,
+  RotateCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -47,9 +48,7 @@ interface RightSidebarProps {
   onScrollTo: (id: string) => void;
   highlightedLocation: NumeralLocation | null;
   showAllBboxes: boolean;
-  showBboxLabels: boolean;
   onToggleBboxes: () => void;
-  onToggleBboxLabels: () => void;
   numeralLocations: Record<string, NumeralLocation[]>;
   numeralLabels: Record<string, string>;
   onBboxClick: (numeral: string) => void;
@@ -141,9 +140,7 @@ function FiguresTab({
   onSelectFigure,
   highlightedLocation,
   showAllBboxes,
-  showBboxLabels,
   onToggleBboxes,
-  onToggleBboxLabels,
   numeralLocations,
   numeralLabels,
   onBboxClick,
@@ -154,9 +151,7 @@ function FiguresTab({
   onSelectFigure: (i: number | null) => void;
   highlightedLocation: NumeralLocation | null;
   showAllBboxes: boolean;
-  showBboxLabels: boolean;
   onToggleBboxes: () => void;
-  onToggleBboxLabels: () => void;
   numeralLocations: Record<string, NumeralLocation[]>;
   numeralLabels: Record<string, string>;
   onBboxClick: (numeral: string) => void;
@@ -169,6 +164,32 @@ function FiguresTab({
       </p>
     );
   }
+
+  const [rotation, setRotation] = useState(0);
+  // Reset rotation when switching figures
+  useEffect(() => setRotation(0), [selectedFigure]);
+
+  // Measure container so we can scale down when rotated sideways
+  const figContainerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = figContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setContainerSize({ w: width, h: height });
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const isSideways = rotation === 90 || rotation === 270;
+  // When rotated 90/270, the visual width becomes the layout height and vice versa.
+  // Scale down so the rotated image fits within the container.
+  const sideScale =
+    isSideways && containerSize && containerSize.h > 0
+      ? Math.min(1, containerSize.w / containerSize.h)
+      : 1;
 
   const elementsOnSheet: { numeral: string; label: string }[] = [];
   if (selectedFigure !== null) {
@@ -237,21 +258,19 @@ function FiguresTab({
               Boxes
             </button>
             <button
-              onClick={onToggleBboxLabels}
-              className={cn(
-                "flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors",
-                showBboxLabels
-                  ? "bg-amber-100 text-amber-700"
-                  : "text-stone-400 hover:bg-stone-100 hover:text-stone-600"
-              )}
-              title="Always show labels on bounding boxes"
+              onClick={() => setRotation((r) => (r + 90) % 360)}
+              className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-colors text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+              title="Rotate figure 90°"
             >
-              <Tag className="size-3.5" />
-              Labels
+              <RotateCw className="size-3.5" />
+              Rotate
             </button>
           </div>
-          <div className="flex-1 min-h-0 flex items-center justify-center px-3 pb-3">
-            <div className="relative inline-block max-w-full max-h-full">
+          <div ref={figContainerRef} className="flex-1 min-h-0 flex items-center justify-center px-3 pb-3 overflow-hidden">
+            <div
+              className="relative inline-block max-w-full max-h-full transition-transform duration-200"
+              style={{ transform: `rotate(${rotation}deg) scale(${sideScale})` }}
+            >
               <img
                 src={patent.figure_urls[selectedFigure]}
                 alt={`Figure ${selectedFigure}`}
@@ -271,11 +290,6 @@ function FiguresTab({
                 const bboxEl = ({ numeral, loc, i }: { numeral: string; loc: NumeralLocation; i: number }) => {
                   const isFigLabel = loc.type === "figure";
                   const label = isFigLabel ? null : numeralLabels[numeral];
-                  const displayLabel = isFigLabel
-                    ? `FIG. ${numeral.replace(/^FIG\.\s*/, "")}`
-                    : label
-                      ? `${numeral} — ${label}`
-                      : numeral;
 
                   const boxDiv = (
                     <div
@@ -299,25 +313,8 @@ function FiguresTab({
                         width: `${(loc.w + pad * 2) * 100}%`,
                         height: `${(loc.h + pad * 2) * 100}%`,
                       }}
-                    >
-                      {showBboxLabels && (
-                        <span
-                          className={cn(
-                            "absolute left-0 bottom-full mb-0.5 whitespace-nowrap text-[9px] leading-tight px-1 py-0.5 rounded shadow-sm pointer-events-none select-none",
-                            isFigLabel
-                              ? "bg-sky-600 text-white"
-                              : "bg-amber-600 text-white"
-                          )}
-                        >
-                          {displayLabel}
-                        </span>
-                      )}
-                    </div>
+                    />
                   );
-
-                  if (showBboxLabels) {
-                    return <div key={`${numeral}-${i}`}>{boxDiv}</div>;
-                  }
 
                   return (
                     <Tooltip key={`${numeral}-${i}`}>
@@ -1074,9 +1071,7 @@ export function RightSidebar({
   onScrollTo,
   highlightedLocation,
   showAllBboxes,
-  showBboxLabels,
   onToggleBboxes,
-  onToggleBboxLabels,
   numeralLocations,
   numeralLabels,
   onBboxClick,
@@ -1171,9 +1166,7 @@ export function RightSidebar({
           onSelectFigure={onSelectFigure}
           highlightedLocation={highlightedLocation}
           showAllBboxes={showAllBboxes}
-          showBboxLabels={showBboxLabels}
           onToggleBboxes={onToggleBboxes}
-          onToggleBboxLabels={onToggleBboxLabels}
           numeralLocations={numeralLocations}
           numeralLabels={numeralLabels}
           onBboxClick={onBboxClick}
