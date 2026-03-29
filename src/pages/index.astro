@@ -14,7 +14,7 @@ const organizationSchema = {
 };
 ---
 
-<LandingLayout title="Solve This OA For Me - Patent Tools for Prosecution">
+<LandingLayout title="Patent Tools for Prosecution | Solve This OA For Me">
   <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
   <LandingNav />
   <main>
@@ -91,7 +91,7 @@ const organizationSchema = {
           </div>
         </div>
         <p class="text-base text-stone-500 leading-relaxed mb-8 max-w-2xl">
-          Enter any patent number and get a structured view of the full patent. Free, no account required.
+          Enter a patent number like you would on Google Patents — but get claim dependency trees, reference numeral mapping, figure bounding boxes, and side-by-side comparison. Free, no account required.
         </p>
 
         <!-- Bento grid -->
@@ -147,16 +147,16 @@ const organizationSchema = {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
             </div>
             <h3 class="text-sm font-semibold text-stone-900 mb-1">Any patent number</h3>
-            <p class="text-sm text-stone-500 leading-relaxed">US, EP, CN, JP, KR, PCT, and more. Paste a patent or publication number and the reader fetches everything from Google Patents.</p>
+            <p class="text-sm text-stone-500 leading-relaxed">US, EP, CN, JP, KR, PCT, and more. Paste a patent or publication number and get the full document instantly.</p>
           </div>
         </div>
 
         <div class="mt-8 flex items-center gap-3">
           <a
-            href="/patent-reader"
+            href="/patent-reader?patent=US11423567B2"
             class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
           >
-            Try now
+            Try on a real patent
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </a>
           <a
@@ -165,6 +165,114 @@ const organizationSchema = {
           >
             Learn more
           </a>
+        </div>
+
+        <!-- Static product mock -->
+        <div class="mt-12 rounded-xl border border-stone-200/80 bg-white shadow-lg overflow-hidden">
+          <!-- App chrome bar -->
+          <div class="flex items-center justify-between px-4 py-2.5 bg-stone-50 border-b border-stone-100">
+            <div class="flex items-center gap-3">
+              <div class="flex gap-1.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+              </div>
+              <span class="text-[11px] font-medium text-stone-400">Patent Reader</span>
+            </div>
+            <div class="px-2 py-0.5 rounded bg-stone-100 text-[10px] text-stone-400 font-medium">US11423567B2</div>
+          </div>
+
+          <!-- Patent title bar -->
+          <div class="px-4 py-2 border-b border-stone-100 bg-white">
+            <p class="text-[12px] font-medium text-stone-700 truncate">Methods and systems for detecting head location and orientation using sensor data</p>
+          </div>
+
+          <!-- 2-panel layout -->
+          <div class="flex" style="min-height: 280px;">
+            <!-- Main content -->
+            <div class="flex-1 p-4 border-r border-stone-100 bg-stone-50/50 overflow-hidden">
+              <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Description</p>
+              <div class="space-y-3 text-[11px] text-stone-700 leading-relaxed">
+                <div class="flex gap-2">
+                  <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0003]</span>
+                  <p><span class="text-blue-600 font-medium">FIG. 1</span> illustrates an exemplary system <span class="font-mono text-[0.8em] text-amber-700 bg-amber-100/50 rounded px-0.5">100</span> for head tracking. The system <span class="font-mono text-[0.8em] text-amber-700 bg-amber-100/50 rounded px-0.5">100</span> includes a <mark class="bg-yellow-200/70 rounded-sm px-0.5">sensor</mark> array <span class="font-mono text-[0.8em] text-amber-700 bg-amber-100/50 rounded px-0.5">102</span> and a processing unit <span class="font-mono text-[0.8em] text-stone-400 rounded px-0.5">104</span>.</p>
+                </div>
+                <div class="flex gap-2">
+                  <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0004]</span>
+                  <p>The <mark class="bg-yellow-200/70 rounded-sm px-0.5">sensor</mark> array <span class="font-mono text-[0.8em] text-amber-700 bg-amber-100/50 rounded px-0.5">102</span> comprises one or more <mark class="bg-green-200/70 rounded-sm px-0.5">depth</mark> <mark class="bg-yellow-200/70 rounded-sm px-0.5">sensor</mark>s configured to capture three-dimensional point cloud data.</p>
+                </div>
+                <div class="flex gap-2">
+                  <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0005]</span>
+                  <p>The processing unit <span class="font-mono text-[0.8em] text-stone-400 rounded px-0.5">104</span> receives the point cloud data and generates a <mark class="bg-green-200/70 rounded-sm px-0.5">depth</mark> map representing the spatial distribution of surfaces in the captured scene.</p>
+                </div>
+              </div>
+
+              <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2 mt-5">Claims</p>
+              <div class="space-y-2">
+                <div class="flex items-start gap-2">
+                  <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-5 text-right pt-0.5 select-none">1.</span>
+                  <p class="text-[11px] text-stone-700 leading-relaxed">A method for detecting head location and orientation, the method comprising: receiving, by a processor, image data from a <mark class="bg-yellow-200/70 rounded-sm px-0.5">sensor</mark> array <span class="font-mono text-[0.8em] text-amber-700 bg-amber-100/50 rounded px-0.5">102</span>; generating a <mark class="bg-green-200/70 rounded-sm px-0.5">depth</mark> map...</p>
+                </div>
+                <div class="flex items-start gap-2">
+                  <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-5 text-right pt-0.5 select-none">2.</span>
+                  <p class="text-[11px] text-stone-700 leading-relaxed">The method of <span class="text-violet-600 font-medium">claim 1</span>, wherein the <mark class="bg-yellow-200/70 rounded-sm px-0.5">sensor</mark> comprises a <mark class="bg-green-200/70 rounded-sm px-0.5">depth</mark> camera configured to capture infrared structured light patterns.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right sidebar -->
+            <div class="w-64 shrink-0 hidden md:flex flex-col overflow-hidden">
+              <div class="flex items-center gap-4 px-4 pt-3 pb-0 border-b border-stone-100">
+                <span class="text-[11px] pb-2 border-b-2 font-semibold text-stone-800 border-amber-500">Figures</span>
+                <span class="text-[11px] pb-2 border-b-2 font-medium text-stone-400 border-transparent">Details</span>
+                <span class="text-[11px] pb-2 border-b-2 font-medium text-stone-400 border-transparent">Search</span>
+              </div>
+              <div class="p-3">
+                <!-- Figure with block diagram -->
+                <div class="rounded-lg bg-white border border-stone-200 p-3 mb-3">
+                  <svg viewBox="0 0 240 160" class="w-full" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="10" y="10" width="220" height="130" rx="3" fill="none" stroke="#78716c" stroke-width="1" stroke-dasharray="4 2"/>
+                    <text x="20" y="26" font-size="8" font-family="monospace" fill="#78716c">100</text>
+                    <rect x="25" y="45" width="80" height="50" rx="2" fill="none" stroke="#292524" stroke-width="1.2"/>
+                    <text x="65" y="68" font-size="8" text-anchor="middle" font-family="system-ui" fill="#292524">Sensor Array</text>
+                    <text x="65" y="82" font-size="8" text-anchor="middle" font-family="monospace" fill="#78716c">102</text>
+                    <rect x="140" y="45" width="80" height="50" rx="2" fill="none" stroke="#292524" stroke-width="1.2"/>
+                    <text x="180" y="68" font-size="8" text-anchor="middle" font-family="system-ui" fill="#292524">Processing Unit</text>
+                    <text x="180" y="82" font-size="8" text-anchor="middle" font-family="monospace" fill="#78716c">104</text>
+                    <line x1="105" y1="70" x2="140" y2="70" stroke="#292524" stroke-width="1.2"/>
+                    <polygon points="137,67 140,70 137,73" fill="#292524"/>
+                    <text x="122" y="64" font-size="7" text-anchor="middle" font-family="monospace" fill="#78716c">106</text>
+                    <!-- Bounding box overlays -->
+                    <rect x="52" y="74" width="26" height="14" rx="1" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.6)" stroke-width="0.8"/>
+                    <rect x="167" y="74" width="26" height="14" rx="1" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.6)" stroke-width="0.8"/>
+                    <rect x="112" y="56" width="20" height="12" rx="1" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.6)" stroke-width="0.8"/>
+                    <text x="120" y="155" font-size="9" text-anchor="middle" font-family="system-ui" font-weight="500" fill="#57534e">FIG. 1</text>
+                  </svg>
+                </div>
+
+                <!-- Elements on sheet -->
+                <p class="text-[10px] font-medium text-stone-400 uppercase tracking-wide mb-2">Elements on sheet</p>
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2 p-1 rounded">
+                    <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">100</span>
+                    <span class="text-[10px] text-stone-500">head tracking system</span>
+                  </div>
+                  <div class="flex items-center gap-2 p-1 rounded bg-amber-50/60">
+                    <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">102</span>
+                    <span class="text-[10px] text-stone-500">sensor array</span>
+                  </div>
+                  <div class="flex items-center gap-2 p-1 rounded">
+                    <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">104</span>
+                    <span class="text-[10px] text-stone-500">processing unit</span>
+                  </div>
+                  <div class="flex items-center gap-2 p-1 rounded">
+                    <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">106</span>
+                    <span class="text-[10px] text-stone-500">data bus</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

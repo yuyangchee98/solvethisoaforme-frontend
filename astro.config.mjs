@@ -12,5 +12,13 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
 
-  integrations: [react(), sitemap()]
+  integrations: [
+    react(),
+    sitemap({
+      filter: (page) =>
+        !['/login/', '/settings/', '/subscribe/', '/oa-response/', '/check-antecedent-basis/'].some(
+          (p) => new URL(page).pathname === p
+        ),
+    }),
+  ]
 });

@@ -2,13 +2,21 @@
 import { UserMenu } from '../auth/UserMenu';
 import { MobileNavDropdown } from './MobileNavDropdown';
 const currentPath = Astro.url.pathname;
+
+const pageLabels: Record<string, string> = {
+  '/oa-response': 'OA Response',
+  '/patent-reader': 'Patent Reader',
+  '/settings': 'Settings',
+  '/check-antecedent-basis': 'Antecedent Basis',
+};
+const currentPageLabel = pageLabels[currentPath];
 ---
 
 <nav class="fixed top-0 left-0 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-black/5 z-50">
   <div class="container mx-auto px-4 md:px-8 h-full flex items-center justify-between">
     <div class="flex items-center gap-4 md:gap-12">
       <!-- Logo with mega dropdown (desktop) -->
-      <div class="group/nav relative">
+      <div class="group/nav relative flex items-center">
         <a href="/" class="flex items-center gap-2 whitespace-nowrap">
           <img src="/icon.svg" alt="Solve This OA For Me" class="h-9 w-9" />
           <span class="hidden md:inline-flex items-center gap-1.5 text-lg font-semibold text-stone-900">
@@ -17,6 +25,16 @@ const currentPath = Astro.url.pathname;
           </span>
         </a>
 
+        {currentPageLabel && (
+          <span class="hidden md:inline-flex items-center gap-2 ml-3">
+            <span class="text-stone-300">/</span>
+            <span class="relative text-sm font-medium text-amber-600 pb-1">
+              {currentPageLabel}
+              <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600 rounded-full"></span>
+            </span>
+          </span>
+        )}
+
         <!-- Mega dropdown -->
         <div class="invisible opacity-0 group-hover/nav:visible group-hover/nav:opacity-100 transition-all duration-150 absolute top-full left-0 mt-1 w-[540px] bg-white rounded-xl border border-stone-200 shadow-xl p-5">
           <div class="grid grid-cols-2 gap-6">
@@ -24,12 +42,12 @@ const currentPath = Astro.url.pathname;
             <div>
               <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Tools</p>
               <div class="space-y-1 mb-5">
-                <a href="/patent-reader" class="block px-3 py-2 rounded-lg hover:bg-stone-50 transition-colors">
-                  <p class="text-sm font-medium text-stone-900">Patent Reader</p>
+                <a href="/patent-reader" class={`block px-3 py-2 rounded-lg transition-colors ${currentPath === '/patent-reader' ? 'bg-stone-50' : 'hover:bg-stone-50'}`}>
+                  <p class={`text-sm font-medium ${currentPath === '/patent-reader' ? 'text-amber-600' : 'text-stone-900'}`}>Patent Reader</p>
                   <p class="text-xs text-stone-400">Structured patent viewer</p>
                 </a>
-                <a href="/oa-response" class="block px-3 py-2 rounded-lg hover:bg-stone-50 transition-colors">
-                  <p class="text-sm font-medium text-stone-900">OA Response Agent</p>
+                <a href="/oa-response" class={`block px-3 py-2 rounded-lg transition-colors ${currentPath === '/oa-response' ? 'bg-stone-50' : 'hover:bg-stone-50'}`}>
+                  <p class={`text-sm font-medium ${currentPath === '/oa-response' ? 'text-amber-600' : 'text-stone-900'}`}>OA Response Agent</p>
                   <p class="text-xs text-stone-400">AI Office Action analysis</p>
                 </a>
               </div>
@@ -62,36 +80,6 @@ const currentPath = Astro.url.pathname;
       </div>
 
       <MobileNavDropdown currentPath={currentPath} client:only="react" />
-
-      <div class="hidden md:flex items-center gap-8">
-        <a
-          href="/oa-response"
-          class={`text-sm font-medium transition-colors relative pb-1 ${
-            currentPath === '/oa-response' || currentPath === '/'
-              ? 'text-amber-600'
-              : 'text-stone-600 hover:text-stone-900'
-          }`}
-        >
-          OA Response AI Agent
-          {(currentPath === '/oa-response' || currentPath === '/') && (
-            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600 rounded-full"></span>
-          )}
-        </a>
-
-        <a
-          href="/patent-reader"
-          class={`text-sm font-medium transition-colors relative pb-1 ${
-            currentPath === '/patent-reader'
-              ? 'text-amber-600'
-              : 'text-stone-600 hover:text-stone-900'
-          }`}
-        >
-          Patent Reader
-          {currentPath === '/patent-reader' && (
-            <span class="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-600 rounded-full"></span>
-          )}
-        </a>
-      </div>
     </div>
 
     <div class="flex items-center gap-3">

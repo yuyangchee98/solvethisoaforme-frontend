@@ -15,7 +15,15 @@ const faqSchema = {
       name: "Is Patent Reader really free?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. There are no usage limits or hidden paywalls.",
+        text: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. No hidden paywalls.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How is this different from Google Patents?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Google Patents shows you the raw document. Patent Reader structures it for prosecution work — claim dependency trees, clickable reference numerals cross-linked to figures, bounding boxes overlaid on drawings, and multi-term color-coded search. It's the viewer you wish Google Patents had.",
       },
     },
     {
@@ -23,7 +31,7 @@ const faqSchema = {
       name: "Where does Patent Reader get its data?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Patent data is fetched from Google Patents. This includes the full specification, claims, figures, citations, legal events, and family information. The reader structures this data into a more usable format with claim trees, reference numeral extraction, and figure mapping.",
+        text: "Patent data is sourced from official patent office publications. You get the full specification, claims, figures, citations, legal events, and family information — structured into claim trees, reference numeral extraction, and figure mapping.",
       },
     },
     {
@@ -31,7 +39,7 @@ const faqSchema = {
       name: "What patent offices are supported?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Any patent indexed by Google Patents. This includes US (USPTO), European (EPO), Chinese (CNIPA), Japanese (JPO), Korean (KIPO), PCT (WIPO), and many more. Enter the publication number in any standard format.",
+        text: "US (USPTO), European (EPO), Chinese (CNIPA), Japanese (JPO), Korean (KIPO), PCT (WIPO), and many more. Enter the publication number in any standard format.",
       },
     },
     {
@@ -80,14 +88,14 @@ const supportedOffices = [
           <span class="text-amber-600"> read patents</span>
         </h1>
         <p class="text-lg text-stone-500 leading-relaxed mb-10 max-w-2xl mx-auto">
-          Structured viewing with claim dependency trees, reference numeral mapping, figure bounding boxes, and side-by-side comparison. Enter a patent number and start reading.
+          Enter a patent number like you would on Google Patents — but get claim dependency trees, reference numeral mapping, figure bounding boxes, and side-by-side comparison.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="/patent-reader"
+            href="/patent-reader?patent=US11423567B2"
             class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
           >
-            Open Patent Reader
+            Try on a real patent
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </a>
           <span class="inline-flex items-center gap-1.5 text-sm text-stone-400">
@@ -832,7 +840,7 @@ const supportedOffices = [
         <div class="max-w-2xl mx-auto text-center mb-14">
           <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Coverage</p>
           <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-            Any patent indexed by Google Patents
+            Any patent, any jurisdiction
           </h2>
           <p class="text-lg text-stone-500 leading-relaxed">
             Enter a publication number from any of these offices. The reader fetches and structures the full patent automatically.
@@ -849,7 +857,7 @@ const supportedOffices = [
         </div>
 
         <p class="text-center text-sm text-stone-400 mt-8">
-          And any other jurisdiction indexed by Google Patents.
+          And many more jurisdictions worldwide.
         </p>
       </div>
     </section>

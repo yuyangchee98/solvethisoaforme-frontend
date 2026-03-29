@@ -24,6 +24,7 @@ const { title, description = "AI-powered patent prosecution assistant. Respond t
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site).href} />
     <meta property="og:site_name" content="Solve This OA For Me" />
     <meta property="og:image" content="https://solvethisoaforme.chyuang.com/og-image.png" />
     <meta property="og:image:width" content="1200" />

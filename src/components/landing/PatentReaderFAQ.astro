@@ -2,11 +2,23 @@
 const faqs = [
   {
     question: "Is Patent Reader really free?",
-    answer: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. There are no usage limits or hidden paywalls.",
+    answer: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and side-by-side comparison. No hidden paywalls.",
+  },
+  {
+    question: "How is this different from Google Patents?",
+    answer: "Google Patents shows you the raw document. Patent Reader structures it for prosecution work — claim dependency trees, clickable reference numerals cross-linked to figures, bounding boxes overlaid on drawings, and multi-term color-coded search. It's the viewer you wish Google Patents had.",
   },
   {
     question: "Where does Patent Reader get its data?",
-    answer: "Patent data is fetched from Google Patents. This includes the full specification, claims, figures, citations, legal events, and family information. The reader structures this data into a more usable format with claim trees, reference numeral extraction, and figure mapping.",
+    answer: "Patent data is sourced from official patent office publications. You get the full specification, claims, figures, citations, legal events, and family information — structured into claim trees, reference numeral extraction, and figure mapping.",
+  },
+  {
+    question: "What patent offices are supported?",
+    answer: "US (USPTO), European (EPO), Chinese (CNIPA), Japanese (JPO), Korean (KIPO), PCT (WIPO), and many more. Enter the publication number in any standard format.",
+  },
+  {
+    question: "Can I link to a specific patent view?",
+    answer: "Yes. The URL updates as you navigate, so you can share a direct link to any patent. Useful for sharing references with colleagues or bookmarking patents you're working with.",
   },
 ];
 ---
@@ -32,7 +44,7 @@ const faqs = [
     <!-- CTA -->
     <div class="text-center mt-12">
       <a
-        href="/patent-reader"
+        href="/patent-reader?patent=US11423567B2"
         class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
       >
         Try Patent Reader

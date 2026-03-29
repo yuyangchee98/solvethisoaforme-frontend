@@ -4,7 +4,7 @@ import TopNav from '../../components/layout/TopNav.astro';
 import { PatentReader } from '../../components/patent-reader/PatentReader';
 ---
 
-<Layout title="Patent Reader - Solve This OA For Me" noindex>
+<Layout title="Patent Reader - Solve This OA For Me">
   <TopNav />
   <main class="h-[calc(100vh-64px)] overflow-hidden bg-stone-50">
     <PatentReader client:only="react" />
