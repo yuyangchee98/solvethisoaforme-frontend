@@ -40,19 +40,6 @@ const features = [
     icon: "scan",
   },
   {
-    label: "Side-by-side comparison",
-    title: "Compare two patents in a single view",
-    description:
-      "Load a second patent into a side-by-side panel. Each side has its own independent figures, reference numerals, search state, and scroll position. You can load a cited reference from the current patent's citation list, enter any patent number, or pick from another tab you already have open. This is the natural way to compare a cited reference against the patent under examination — the specification on one side, the prior art on the other.",
-    details: [
-      "Each panel has independent figures, search, and reference numeral state",
-      "Load from citations list, by patent number, or from open tabs",
-      "Scroll and navigate each side independently",
-      "Ideal for comparing application claims against cited prior art",
-    ],
-    icon: "columns",
-  },
-  {
     label: "Multi-term search",
     title: "Search for multiple terms at once, each color-coded",
     description:
@@ -101,9 +88,6 @@ const features = [
                 )}
                 {feature.icon === "scan" && (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
-                )}
-                {feature.icon === "columns" && (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 3v18"/></svg>
                 )}
                 {feature.icon === "search" && (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -288,67 +272,7 @@ const features = [
               </div>
             )}
 
-            {/* ── Mock 5: Side-by-side ── */}
-            {feature.icon === "columns" && (
-              <div class="mock-frame">
-                <div class="mock-chrome">
-                  <div class="mock-dots"><div/><div/><div/></div>
-                  <span class="mock-label">Side-by-Side</span>
-                </div>
-                <div class="flex overflow-hidden" style="min-height: 240px">
-                  {/* Left panel */}
-                  <div class="flex-1 p-3 border-r border-stone-100">
-                    <div class="sbs-scroll-left">
-                      <div class="flex items-center gap-2 mb-2">
-                        <span class="text-[9px] font-mono font-bold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">US11,423,567B2</span>
-                      </div>
-                      <p class="text-[10px] font-medium text-stone-700 mb-3">Methods and systems for detecting head location and orientation</p>
-                      <p class="mock-section-label mb-1">Claims</p>
-                      <div class="space-y-1.5">
-                        <div class="flex gap-1.5">
-                          <span class="mock-claim-num">1.</span>
-                          <p class="mock-text">A method for detecting head location, the method comprising: receiving image data from a sensor array…</p>
-                        </div>
-                        <div class="flex gap-1.5">
-                          <span class="mock-claim-num">2.</span>
-                          <p class="mock-text">The method of claim 1, wherein the sensor comprises a depth camera…</p>
-                        </div>
-                        <div class="flex gap-1.5">
-                          <span class="mock-claim-num">3.</span>
-                          <p class="mock-text">The method of claim 1, further comprising calibrating the sensor…</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Right panel — slides in */}
-                  <div class="flex-1 p-3 sbs-panel-right">
-                    <div class="sbs-scroll-right">
-                      <div class="flex items-center gap-2 mb-2">
-                        <span class="text-[9px] font-mono font-bold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">US10,891,234B1</span>
-                      </div>
-                      <p class="text-[10px] font-medium text-stone-700 mb-3">Sensor-based spatial tracking with neural network processing</p>
-                      <p class="mock-section-label mb-1">Description</p>
-                      <div class="space-y-1.5">
-                        <div class="flex gap-1.5">
-                          <span class="mock-para-num">[0012]</span>
-                          <p class="mock-text">The sensor array includes a plurality of infrared emitters positioned around the headset frame…</p>
-                        </div>
-                        <div class="flex gap-1.5">
-                          <span class="mock-para-num">[0013]</span>
-                          <p class="mock-text">A depth map is generated from the sensor data using a convolutional neural network…</p>
-                        </div>
-                        <div class="flex gap-1.5">
-                          <span class="mock-para-num">[0014]</span>
-                          <p class="mock-text">The orientation is computed as a quaternion representing rotation relative to a reference frame…</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ── Mock 6: Multi-term Search ── */}
+            {/* ── Mock 5: Multi-term Search ── */}
             {feature.icon === "search" && (
               <div class="mock-frame">
                 <div class="mock-chrome">
@@ -629,36 +553,7 @@ const features = [
   }
 
   /* ───────────────────────────────────────
-     Mock 5: Side-by-side (12s cycle)
-     Right panel slides in, then both scroll independently
-     ─────────────────────────────────────── */
-  .sbs-panel-right {
-    animation: sbs-slide-in 12s ease infinite;
-  }
-  .sbs-scroll-left {
-    animation: sbs-drift-left 12s ease infinite;
-  }
-  .sbs-scroll-right {
-    animation: sbs-drift-right 12s ease infinite;
-  }
-  @keyframes sbs-slide-in {
-    0%, 5% { transform: translateX(100%); opacity: 0; }
-    15%, 90% { transform: translateX(0); opacity: 1; }
-    95%, 100% { transform: translateX(100%); opacity: 0; }
-  }
-  @keyframes sbs-drift-left {
-    0%, 25% { transform: translateY(0); }
-    50%, 65% { transform: translateY(-12px); }
-    85%, 100% { transform: translateY(0); }
-  }
-  @keyframes sbs-drift-right {
-    0%, 35% { transform: translateY(0); }
-    55%, 70% { transform: translateY(-18px); }
-    90%, 100% { transform: translateY(0); }
-  }
-
-  /* ───────────────────────────────────────
-     Mock 6: Multi-term Search (10s cycle)
+     Mock 5: Multi-term Search (10s cycle)
      Terms appear additively then reset:
      Phase A (0-30%): "sensor" (blue) appears
      Phase B (30-60%): "depth map" (green) adds

@@ -252,7 +252,7 @@ export function PatentReader() {
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-  const [formatsOpen, setFormatsOpen] = useState(false);
+
 
   // Auto-expand sidebar when interaction targets it (comparison mode).
   // In normal mode these set state that isn't read, so it's a harmless no-op.
@@ -405,16 +405,95 @@ export function PatentReader() {
   // Welcome screen when no patent is loaded
   if (!left.patent && !compareMode) {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex-1 flex items-center justify-center px-4">
+      <div className="flex flex-col h-full relative overflow-hidden">
+        {/* Background mockup */}
+        <div className="absolute inset-0 flex items-end justify-center pointer-events-none" aria-hidden="true">
+          <div className="w-full max-w-5xl mx-auto px-6 translate-y-[38%] md:translate-y-[30%]">
+            <div className="rounded-xl border border-stone-200/60 bg-white shadow-lg overflow-hidden opacity-40">
+              {/* Chrome bar */}
+              <div className="flex items-center justify-between px-4 py-2.5 bg-stone-50 border-b border-stone-100">
+                <div className="flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-stone-200" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-stone-200" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-stone-200" />
+                  </div>
+                  <span className="text-[11px] font-medium text-stone-400">Patent Reader</span>
+                </div>
+                <div className="px-2 py-0.5 rounded bg-stone-100 text-[10px] text-stone-400 font-medium">US11423567B2</div>
+              </div>
+              {/* Title bar */}
+              <div className="px-4 py-2 border-b border-stone-100 bg-white">
+                <p className="text-[12px] font-medium text-stone-700 truncate">Methods and systems for detecting head location and orientation</p>
+              </div>
+              {/* Two-panel layout */}
+              <div className="flex" style={{ minHeight: 340 }}>
+                {/* Main content */}
+                <div className="flex-1 p-4 border-r border-stone-100 bg-stone-50/50 space-y-3">
+                  <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Abstract</p>
+                  <p className="text-[11px] text-stone-600 leading-relaxed">
+                    A method for detecting head location and orientation using a sensor array{" "}
+                    <span className="font-mono text-[0.8em] text-amber-600 bg-amber-50 rounded px-0.5">102</span>{" "}
+                    and processing unit <span className="font-mono text-[0.8em] text-stone-400 rounded px-0.5">104</span>.
+                    The system generates a depth map and applies machine learning models.
+                  </p>
+                  <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Description</p>
+                  <div className="space-y-2">
+                    {[
+                      { para: "[0003]", text: "FIG. 1 illustrates an exemplary system 100 for head tracking. The system 100 includes a sensor array 102 and a processing unit 104 connected via a data bus 106." },
+                      { para: "[0004]", text: "The sensor array 102 comprises one or more depth sensors configured to capture three-dimensional point cloud data of a scene." },
+                      { para: "[0005]", text: "The processing unit 104 receives the point cloud data via the data bus 106 and generates a depth map representing the spatial distribution of surfaces." },
+                    ].map((p) => (
+                      <div key={p.para} className="flex gap-2">
+                        <span className="text-[10px] font-mono text-stone-300 shrink-0 w-10 text-right pt-0.5">{p.para}</span>
+                        <p className="text-[11px] text-stone-600 leading-relaxed">{p.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wider">Claims</p>
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <span className="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-5 text-right pt-0.5">1.</span>
+                      <p className="text-[11px] text-stone-600 leading-relaxed">A method for detecting head location and orientation, the method comprising: receiving, by a processor, image data from a sensor array...</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-5 text-right pt-0.5">2.</span>
+                      <p className="text-[11px] text-stone-600 leading-relaxed">The method of <span className="text-violet-600 font-medium">claim 1</span>, wherein the sensor comprises a depth camera.</p>
+                    </div>
+                  </div>
+                </div>
+                {/* Sidebar */}
+                <div className="w-48 p-3 bg-white space-y-1 hidden md:block">
+                  <p className="text-[9px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Reference Numerals</p>
+                  {[
+                    { num: "100", label: "system", count: 8 },
+                    { num: "102", label: "sensor array", count: 6, active: true },
+                    { num: "104", label: "processing unit", count: 4 },
+                    { num: "106", label: "data bus", count: 3 },
+                    { num: "108", label: "memory module", count: 2 },
+                  ].map((item) => (
+                    <div key={item.num} className={`flex items-center gap-2 px-2 py-1.5 rounded-md ${item.active ? "bg-amber-50" : ""}`}>
+                      <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${item.active ? "bg-amber-100 text-amber-700" : "bg-stone-100 text-stone-500"}`}>{item.num}</span>
+                      <span className="text-[10px] text-stone-500 flex-1 truncate">{item.label}</span>
+                      <span className="text-[9px] text-stone-300">{item.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Gradient fade at top so it blends into background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-stone-50 via-stone-50/80 to-transparent" />
+        </div>
+
+        {/* Foreground content */}
+        <div className="flex-1 flex items-center justify-center px-4 relative z-10">
           <div className="max-w-lg w-full space-y-6 -mt-16">
             {/* Heading */}
             <div className="text-center space-y-2">
               <h1 className="text-xl md:text-2xl font-semibold text-stone-800">Patent Reader</h1>
               <p className="text-sm text-stone-500 leading-relaxed">
-                Look up any US patent or published application by its publication number.
-                The document will be parsed into a structured, readable format with
-                navigable sections and claim dependency trees.
+                Enter any patent number to get a structured, navigable view with claim trees, reference numerals, and figure mapping.
               </p>
             </div>
 
@@ -435,80 +514,6 @@ export function PatentReader() {
               </div>
             )}
 
-            {/* Format hints */}
-            <div className="text-center">
-              <div className="flex flex-wrap justify-center gap-2">
-                {["US11423567B2", "EP3081497B1", "WO2016116889A1", "CN110546615B"].map((fmt) => (
-                  <code
-                    key={fmt}
-                    className="text-xs font-mono bg-stone-100 text-stone-500 px-2 py-0.5 rounded"
-                  >
-                    {fmt}
-                  </code>
-                ))}
-              </div>
-              <Dialog open={formatsOpen} onOpenChange={setFormatsOpen}>
-                <button
-                  type="button"
-                  onClick={() => setFormatsOpen(true)}
-                  className="mt-3 text-xs text-stone-400 cursor-pointer hover:text-stone-600 text-center select-none mx-auto block"
-                >
-                  Supported formats &amp; jurisdictions
-                </button>
-                <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Supported formats &amp; jurisdictions</DialogTitle>
-                  </DialogHeader>
-                  <div className="text-xs text-stone-500 space-y-4">
-                    {/* Format examples */}
-                    <div>
-                      <p className="font-medium text-stone-600 mb-2">Accepted formats</p>
-                      <div className="rounded-md border border-stone-200 overflow-hidden font-mono text-[11px]">
-                        {[
-                          ["US granted", "US11423567B2"],
-                          ["US pub", "US20220075747A1"],
-                          ["US design", "USD1234567S"],
-                          ["EP", "EP3081497B1"],
-                          ["WO/PCT", "WO2016116889A1"],
-                          ["CN / JP / KR", "CN110546615B"],
-                        ].map(([label, example], i) => (
-                          <div key={label} className={`flex items-center px-3 py-1.5 ${i % 2 === 0 ? "bg-white" : "bg-stone-50/70"}`}>
-                            <span className="text-stone-400 w-24 shrink-0">{label}</span>
-                            <span className="text-stone-600">{example}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <p className="mt-2 text-[11px] text-stone-400 leading-relaxed">
-                        Spaces, commas, slashes, and kind codes are all optional.
-                      </p>
-                    </div>
-
-                    {/* Jurisdictions */}
-                    <div>
-                      <p className="font-medium text-stone-600 mb-2">Supported jurisdictions</p>
-                      {[
-                        { region: "Americas", codes: ["US", "CA", "MX", "BR", "AR", "CL", "CO", "UY"] },
-                        { region: "Europe", codes: ["EP", "DE", "GB", "FR", "NL", "BE", "AT", "CH", "SE", "NO", "DK", "FI", "IE", "ES", "IT", "PL", "CZ", "RO", "GR", "HU"] },
-                        { region: "Asia-Pacific", codes: ["CN", "JP", "KR", "TW", "IN", "AU", "NZ", "SG", "PH", "MY", "TH", "HK"] },
-                        { region: "International", codes: ["WO", "EA", "RU", "UA", "IL", "SA", "TR", "EG", "ZA", "AP"] },
-                      ].map(({ region, codes }) => (
-                        <div key={region} className="mt-2.5 first:mt-0">
-                          <p className="text-[10px] font-medium text-stone-400 uppercase tracking-wider mb-1">{region}</p>
-                          <div className="flex flex-wrap gap-1">
-                            {codes.map((code) => (
-                              <span key={code} className="inline-block px-1.5 py-0.5 text-[11px] font-mono text-stone-500 bg-stone-50 border border-stone-200 rounded">
-                                {code}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
             {/* Example patents */}
             <div className="space-y-1.5">
               <p className="text-xs text-stone-400 text-center">Or try an example</p>
@@ -518,7 +523,7 @@ export function PatentReader() {
                     key={ex.number}
                     onClick={() => handleExampleClick(ex.number)}
                     disabled={left.loading}
-                    className="flex items-start gap-2.5 w-full text-left px-3 py-2 rounded-lg hover:bg-stone-100 transition-colors group disabled:opacity-50"
+                    className="flex items-start gap-2.5 w-full text-left px-3 py-2 rounded-lg hover:bg-stone-100/80 transition-colors group disabled:opacity-50"
                   >
                     <FileText className="size-4 text-stone-400 group-hover:text-amber-600 mt-0.5 shrink-0 transition-colors" />
                     <div className="min-w-0">

@@ -1,0 +1,696 @@
+---
+/**
+ * Interactive animated mock of Patent Reader.
+ * Reused on the main landing page (index.astro) and the patent-reader about page.
+ * Renders as a self-contained card — parent controls outer spacing/layout.
+ */
+---
+
+<style>
+  #mock-content::-webkit-scrollbar { display: none; }
+  .mock-search-hl { background-color: transparent; color: inherit; transition: background-color 0.4s ease; }
+  .mock-search-hl.active { background-color: rgb(253 224 71 / 0.7); }
+  .mock-depth-hl { background-color: transparent; color: inherit; transition: background-color 0.4s ease; }
+  .mock-depth-hl.active { background-color: rgb(134 239 172 / 0.7); }
+  #bbox-102 { transition: fill 0.3s ease, stroke 0.3s ease, stroke-width 0.3s ease; }
+</style>
+
+<div id="patent-mock" class="relative rounded-xl border border-stone-200/80 bg-white shadow-lg overflow-hidden">
+  <!-- Ghost cursor for animation -->
+  <div id="mock-cursor" class="absolute z-50 pointer-events-none" style="opacity: 0; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); transform-origin: 3px 1px;">
+    <svg width="20" height="20" viewBox="0 0 24 24"><path d="M4 1l14 10.5-6.5 1.5L8 20z" fill="white" stroke="#1c1917" stroke-width="1.5" stroke-linejoin="round"/></svg>
+  </div>
+  <!-- App chrome bar -->
+  <div class="flex items-center justify-between px-4 py-2.5 bg-stone-50 border-b border-stone-100">
+    <div class="flex items-center gap-3">
+      <div class="flex gap-1.5">
+        <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+        <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+        <div class="w-2.5 h-2.5 rounded-full bg-stone-200"></div>
+      </div>
+      <span class="text-[11px] font-medium text-stone-400">Patent Reader</span>
+    </div>
+    <div class="px-2 py-0.5 rounded bg-stone-100 text-[10px] text-stone-400 font-medium">US11423567B2</div>
+  </div>
+
+  <!-- Patent title bar -->
+  <div class="px-4 py-2 border-b border-stone-100 bg-white">
+    <p class="text-[12px] font-medium text-stone-700 truncate">Methods and systems for detecting head location and orientation using sensor data</p>
+  </div>
+
+  <!-- 2-panel layout -->
+  <div class="flex" style="min-height: 400px;">
+    <!-- Main content: Title → Abstract → Description → Claims -->
+    <div id="mock-content" class="flex-1 p-4 relative border-r border-stone-100 bg-stone-50/50" style="overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none;">
+      <!-- Abstract -->
+      <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Abstract</p>
+      <p class="text-[11px] text-stone-700 leading-relaxed mb-4">A method for detecting head location and orientation using a <mark class="mock-search-hl rounded-sm px-0.5">sensor</mark> array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5 mock-ref-102 transition-all duration-300">102</span> and processing unit <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">104</span>. The system generates a <mark class="mock-depth-hl rounded-sm px-0.5">depth</mark> map and applies machine learning models to determine position and orientation in real time.</p>
+
+      <!-- Description -->
+      <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Description</p>
+      <div class="space-y-3 text-[11px] text-stone-700 leading-relaxed mb-4">
+        <div class="flex gap-2">
+          <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0001]</span>
+          <p>The present invention relates to methods and systems for detecting head location and orientation using sensor data.</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0002]</span>
+          <p>In various applications, such as virtual reality, augmented reality, and human-computer interaction, it is desirable to accurately track the position and orientation of a user's head.</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0003]</span>
+          <p><span class="text-blue-600 font-medium">FIG. 1</span> illustrates an exemplary system <span class="font-mono text-[0.8em] text-stone-400 rounded px-0.5 mock-ref transition-all duration-300" data-ref="100">100</span> for head tracking. The system <span class="font-mono text-[0.8em] text-stone-400 rounded px-0.5 mock-ref transition-all duration-300" data-ref="100">100</span> includes a <mark class="mock-search-hl rounded-sm px-0.5">sensor</mark> array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5 mock-ref-102 transition-all duration-300">102</span> and a processing unit <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">104</span> connected via a data bus <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">106</span>.</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0004]</span>
+          <p>The <mark class="mock-search-hl rounded-sm px-0.5">sensor</mark> array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5 mock-ref-102 transition-all duration-300">102</span> comprises one or more <mark class="mock-depth-hl rounded-sm px-0.5">depth</mark> <mark class="mock-search-hl rounded-sm px-0.5">sensor</mark>s configured to capture three-dimensional point cloud data of a scene. In one embodiment, the sensor array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5 mock-ref-102 transition-all duration-300">102</span> includes a structured-light depth camera operating at a frame rate of at least 30 Hz.</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0005]</span>
+          <p>The processing unit <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">104</span> receives the point cloud data via the data bus <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">106</span> and generates a <mark class="mock-depth-hl rounded-sm px-0.5">depth</mark> map representing the spatial distribution of surfaces in the captured scene. The depth map is stored in a frame buffer for subsequent processing.</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0006]</span>
+          <p><span class="text-blue-600 font-medium">FIG. 2</span> illustrates a convolutional neural network architecture used by the processing unit <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5">104</span> to determine head position and orientation. The network receives the depth map as input and outputs a six-degree-of-freedom pose estimate comprising three translational and three rotational components.</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="text-[10px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">[0007]</span>
+          <p>Prior to inference, the system performs a calibration procedure in which the sensor array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5 mock-ref-102 transition-all duration-300">102</span> captures a series of reference frames under controlled lighting conditions. These reference frames are used to compute intrinsic and extrinsic camera parameters stored in a calibration table.</p>
+        </div>
+      </div>
+
+      <!-- Claims -->
+      <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Claims</p>
+      <div class="space-y-3">
+        <div class="flex items-start gap-2">
+          <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-5 text-right pt-0.5 select-none">1.</span>
+          <p class="text-[11px] text-stone-700 leading-relaxed">A method for detecting head location and orientation, the method comprising: receiving, by a processor, image data from a sensor array <span class="font-mono text-[0.8em] text-stone-400 hover:bg-amber-100/50 hover:text-amber-700 rounded px-0.5 mock-ref-102 transition-all duration-300">102</span>; generating a depth map...</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-5 text-right pt-0.5 select-none">2.</span>
+          <p class="text-[11px] text-stone-700 leading-relaxed">The method of <span class="text-violet-600 font-medium">claim 1</span>, wherein the sensor comprises a depth camera configured to capture infrared structured light patterns.</p>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-[10px] font-mono font-medium text-stone-400 shrink-0 w-5 text-right pt-0.5 select-none">3.</span>
+          <p class="text-[11px] text-stone-700 leading-relaxed">The method of <span class="text-violet-600 font-medium">claim 1</span>, further comprising calibrating the sensor based on ambient lighting conditions.</p>
+        </div>
+      </div>
+      <div class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-stone-50/50 to-transparent pointer-events-none"></div>
+    </div>
+
+    <!-- Right sidebar (w-72) -->
+    <div class="w-72 shrink-0 flex flex-col overflow-hidden relative hidden md:flex">
+      <!-- Sidebar tab bar -->
+      <div class="flex items-center gap-4 px-4 pt-3 pb-0 border-b border-stone-100">
+        <button id="tab-figures" class="text-[11px] pb-2 border-b-2 transition-all duration-300 font-semibold text-stone-800 border-amber-500">Figures</button>
+        <button id="tab-details" class="text-[11px] pb-2 border-b-2 transition-all duration-300 font-medium text-stone-400 border-transparent">Details</button>
+        <button id="tab-outline" class="text-[11px] pb-2 border-b-2 transition-all duration-300 font-medium text-stone-400 border-transparent">Outline</button>
+        <button id="tab-search" class="text-[11px] pb-2 border-b-2 transition-all duration-300 font-medium text-stone-400 border-transparent">Search</button>
+      </div>
+
+      <div class="relative p-4">
+        <!-- Figures panel -->
+        <div id="panel-figures" class="space-y-3 transition-opacity duration-300">
+          <!-- Bounding boxes toggle -->
+          <div class="flex items-center justify-end">
+            <div class="flex items-center gap-1.5 text-[10px] px-2 py-1 rounded-md bg-amber-100 text-amber-700">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="3"/></svg>
+              Bounding boxes
+            </div>
+          </div>
+
+          <!-- Figure with block diagram + bbox overlays -->
+          <div class="rounded-lg bg-white border border-stone-200 p-3 relative">
+            <svg viewBox="0 0 240 160" class="w-full" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="10" width="220" height="130" rx="3" fill="none" stroke="#78716c" stroke-width="1" stroke-dasharray="4 2"/>
+              <text x="20" y="26" font-size="8" font-family="monospace" fill="#78716c">100</text>
+              <rect x="25" y="45" width="80" height="50" rx="2" fill="none" stroke="#292524" stroke-width="1.2"/>
+              <text x="65" y="68" font-size="8" text-anchor="middle" font-family="system-ui" fill="#292524">Sensor Array</text>
+              <text x="65" y="82" font-size="8" text-anchor="middle" font-family="monospace" fill="#78716c">102</text>
+              <rect x="140" y="45" width="80" height="50" rx="2" fill="none" stroke="#292524" stroke-width="1.2"/>
+              <text x="180" y="68" font-size="8" text-anchor="middle" font-family="system-ui" fill="#292524">Processing Unit</text>
+              <text x="180" y="82" font-size="8" text-anchor="middle" font-family="monospace" fill="#78716c">104</text>
+              <line x1="105" y1="70" x2="140" y2="70" stroke="#292524" stroke-width="1.2"/>
+              <polygon points="137,67 140,70 137,73" fill="#292524"/>
+              <text x="122" y="64" font-size="7" text-anchor="middle" font-family="monospace" fill="#78716c">106</text>
+              <rect x="12" y="17" width="22" height="14" rx="1" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.6)" stroke-width="0.8"/>
+              <rect id="bbox-102" x="52" y="74" width="26" height="14" rx="1" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.6)" stroke-width="0.8" style="transition: fill 0.3s, stroke 0.3s;"/>
+              <rect x="167" y="74" width="26" height="14" rx="1" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.6)" stroke-width="0.8"/>
+              <rect x="112" y="56" width="20" height="12" rx="1" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.6)" stroke-width="0.8"/>
+              <rect x="98" y="146" width="44" height="14" rx="1" fill="rgba(56,189,248,0.15)" stroke="rgba(56,189,248,0.6)" stroke-width="0.8"/>
+              <text x="120" y="155" font-size="9" text-anchor="middle" font-family="system-ui" font-weight="500" fill="#57534e">FIG. 1</text>
+            </svg>
+          </div>
+
+          <!-- Elements on this sheet -->
+          <div>
+            <p class="text-[10px] font-medium text-stone-400 uppercase tracking-wide mb-2">Elements on sheet</p>
+            <div class="space-y-1">
+              <div id="sidebar-ref-100" class="flex items-center gap-2 p-1 rounded hover:bg-stone-50 transition-colors duration-300">
+                <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">100</span>
+                <span class="text-[10px] text-stone-500">head tracking system</span>
+              </div>
+              <div id="sidebar-ref-102" class="flex items-center gap-2 p-1 rounded hover:bg-stone-50 transition-colors duration-300">
+                <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">102</span>
+                <span class="text-[10px] text-stone-500">sensor array</span>
+              </div>
+              <div class="flex items-center gap-2 p-1 rounded hover:bg-stone-50">
+                <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">104</span>
+                <span class="text-[10px] text-stone-500">processing unit</span>
+              </div>
+              <div class="flex items-center gap-2 p-1 rounded hover:bg-stone-50">
+                <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-100/70 px-1.5 py-0.5 rounded">106</span>
+                <span class="text-[10px] text-stone-500">data bus</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outline panel (hidden initially) -->
+        <div id="panel-outline" class="absolute inset-0 p-4 transition-opacity duration-300 opacity-0 pointer-events-none">
+          <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Sections</p>
+          <div class="space-y-0.5 mb-4">
+            <div class="text-[11px] text-stone-600 p-1 rounded hover:bg-stone-50 cursor-pointer">Abstract</div>
+            <div class="text-[11px] text-stone-600 p-1 rounded hover:bg-stone-50 cursor-pointer">Description</div>
+            <div class="text-[11px] text-stone-400 p-1 rounded hover:bg-stone-50 cursor-pointer pl-4">Brief Description of Drawings</div>
+            <div class="text-[11px] text-stone-400 p-1 rounded hover:bg-stone-50 cursor-pointer pl-4">Detailed Description</div>
+            <div class="text-[11px] text-stone-600 p-1 rounded hover:bg-stone-50 cursor-pointer">Claims</div>
+          </div>
+          <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Claims</p>
+          <div class="space-y-0.5">
+            <div class="flex items-center gap-1.5 p-1 rounded bg-amber-50/60">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-300 shrink-0"><path d="m6 9 6 6 6-6"/></svg>
+              <span class="text-[10px] font-mono font-bold text-amber-700">1.</span>
+              <span class="text-[10px] text-stone-600 font-medium truncate">A method for detecting head location...</span>
+              <span class="text-[9px] text-stone-400 bg-stone-100 px-1 rounded shrink-0">+3</span>
+            </div>
+            <div class="flex items-center gap-1.5 p-1 rounded pl-6">
+              <span class="text-[10px] font-mono text-stone-400">2.</span>
+              <span class="text-[10px] text-stone-500 truncate">...wherein the sensor comprises a depth camera</span>
+            </div>
+            <div class="flex items-center gap-1.5 p-1 rounded pl-6">
+              <span class="text-[10px] font-mono text-stone-400">3.</span>
+              <span class="text-[10px] text-stone-500 truncate">...further comprising calibrating the sensor</span>
+            </div>
+            <div class="flex items-center gap-1.5 p-1 rounded pl-6">
+              <span class="text-[10px] font-mono text-stone-400">4.</span>
+              <span class="text-[10px] text-stone-500 truncate">...applying a convolutional neural network</span>
+            </div>
+            <div class="flex items-center gap-1.5 p-1 rounded bg-amber-50/60 mt-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-300 shrink-0"><path d="m6 9 6 6 6-6"/></svg>
+              <span class="text-[10px] font-mono font-bold text-amber-700">5.</span>
+              <span class="text-[10px] text-stone-600 font-medium truncate">A system comprising a sensor array...</span>
+              <span class="text-[9px] text-stone-400 bg-stone-100 px-1 rounded shrink-0">+1</span>
+            </div>
+            <div class="flex items-center gap-1.5 p-1 rounded pl-6">
+              <span class="text-[10px] font-mono text-stone-400">6.</span>
+              <span class="text-[10px] text-stone-500 truncate">...wherein the processor is configured to</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Details panel (hidden initially) -->
+        <div id="panel-details" class="absolute inset-0 p-3 transition-opacity duration-300 opacity-0 pointer-events-none overflow-hidden">
+          <div class="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-2">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Reference Numerals
+          </div>
+          <div class="border border-stone-200 rounded-md overflow-hidden mb-4">
+            <div class="border-b border-stone-100">
+              <div class="flex items-center px-2.5 py-1.5 text-[11px] bg-amber-100/70">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-400 shrink-0 mr-1 rotate-90"><path d="m9 18 6-6-6-6"/></svg>
+                <span class="font-mono text-stone-500 w-8 text-right mr-2">100</span>
+                <span class="text-stone-700 truncate">head tracking system</span>
+                <span class="ml-auto text-[9px] text-stone-500 bg-stone-100 rounded-full px-1.5 py-0.5 shrink-0 font-medium">5</span>
+              </div>
+              <div class="bg-stone-50 border-t border-stone-100 py-1">
+                <div class="px-3 py-1 flex gap-2 items-start hover:bg-amber-50">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16 truncate">Abstract</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...tracking <mark class="bg-amber-200/60 rounded-sm px-0.5">system</mark> for head detection...</span>
+                </div>
+                <div class="px-3 py-1 flex gap-2 items-start hover:bg-amber-50">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16 truncate">Description</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...exemplary <mark class="bg-amber-200/60 rounded-sm px-0.5">system</mark> <b class="font-mono text-[9px]">100</b> for head...</span>
+                </div>
+              </div>
+            </div>
+            <div class="border-b border-stone-100">
+              <div id="details-row-102" class="flex items-center px-2.5 py-1.5 text-[11px] hover:bg-stone-50 cursor-pointer">
+                <svg id="details-chevron-102" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-400 shrink-0 mr-1 transition-transform duration-300"><path d="m9 18 6-6-6-6"/></svg>
+                <span class="font-mono text-stone-500 w-8 text-right mr-2">102</span>
+                <span class="text-stone-700 truncate">sensor array</span>
+                <span class="ml-auto text-[9px] text-stone-500 bg-stone-100 rounded-full px-1.5 py-0.5 shrink-0 font-medium">8</span>
+              </div>
+              <div id="details-expand-102" class="bg-stone-50 border-t border-stone-100 py-1 transition-all duration-300" style="max-height: 0; opacity: 0; overflow: hidden; padding-top: 0; padding-bottom: 0;">
+                <div class="px-3 py-1 flex gap-2 items-start hover:bg-amber-50">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16 truncate">Abstract</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...using a <mark class="bg-amber-200/60 rounded-sm px-0.5">sensor array</mark> 102 and processing...</span>
+                </div>
+                <div class="px-3 py-1 flex gap-2 items-start hover:bg-amber-50">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16 truncate">Description</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...The <mark class="bg-amber-200/60 rounded-sm px-0.5">sensor array</mark> <b class="font-mono text-[9px]">102</b> comprises one...</span>
+                </div>
+                <div class="px-3 py-1 flex gap-2 items-start hover:bg-amber-50">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16 truncate">Claim 1</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...data from a <mark class="bg-amber-200/60 rounded-sm px-0.5">sensor array</mark> <b class="font-mono text-[9px]">102</b>; generating...</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center px-2.5 py-1.5 text-[11px] border-b border-stone-100 hover:bg-stone-50">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-400 shrink-0 mr-1"><path d="m9 18 6-6-6-6"/></svg>
+              <span class="font-mono text-stone-500 w-8 text-right mr-2">104</span>
+              <span class="text-stone-700 truncate">processing unit</span>
+              <span class="ml-auto text-[9px] text-stone-500 bg-stone-100 rounded-full px-1.5 py-0.5 shrink-0 font-medium">6</span>
+            </div>
+            <div class="flex items-center px-2.5 py-1.5 text-[11px] hover:bg-stone-50">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-400 shrink-0 mr-1"><path d="m9 18 6-6-6-6"/></svg>
+              <span class="font-mono text-stone-500 w-8 text-right mr-2">106</span>
+              <span class="text-stone-700 truncate">data bus</span>
+              <span class="ml-auto text-[9px] text-stone-500 bg-stone-100 rounded-full px-1.5 py-0.5 shrink-0 font-medium">3</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-2">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Classification
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded border border-stone-200 text-stone-600">G06F 3/01</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded border border-stone-200 text-stone-600">G06T 7/73</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded border border-stone-200 text-stone-600">G06V 40/10</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-2">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="shrink-0"><path d="m3 6 2 2 4-4"/><path d="M11 6h10"/><path d="m3 12 2 2 4-4"/><path d="M11 12h10"/><path d="m3 18 2 2 4-4"/><path d="M11 18h10"/></svg>
+            Claims
+          </div>
+          <p class="text-[11px] text-stone-600"><span class="font-medium">6</span><span class="mx-1.5 text-stone-300">&middot;</span><span class="font-medium">2</span> ind.<span class="mx-1.5 text-stone-300">&middot;</span><span class="font-medium">4</span> dep.</p>
+        </div>
+
+        <!-- Search panel (hidden initially) -->
+        <div id="panel-search" class="absolute inset-0 p-3 transition-opacity duration-300 opacity-0 pointer-events-none overflow-hidden">
+          <div class="flex gap-1.5 mb-3">
+            <div id="search-input-wrap" class="flex-1 flex items-center rounded-md border border-stone-200 bg-white transition-all duration-200">
+              <input id="search-input" type="text" disabled value="" placeholder="Search term..." class="flex-1 text-[11px] px-2.5 py-1.5 bg-transparent text-stone-700 min-w-0 outline-none" />
+              <div class="flex items-center gap-0.5 pr-1.5 shrink-0">
+                <span class="text-[10px] font-semibold rounded px-1 py-0.5 text-stone-400">Aa</span>
+                <span class="text-[10px] font-mono font-semibold rounded px-1 py-0.5 bg-amber-100 text-amber-700">W</span>
+              </div>
+            </div>
+            <button id="search-submit" class="px-2 py-1.5 rounded-md border border-stone-200 text-stone-300 transition-colors duration-200">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            </button>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <div id="search-chip-1" class="inline-flex items-center gap-1.5 text-[11px] rounded-md border border-stone-200 bg-white px-2 py-1 transition-opacity duration-300" style="opacity: 0;">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-yellow-300"></span>
+              <span class="text-stone-700">sensor</span>
+              <span class="text-stone-400 text-[9px]">12</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-400"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </div>
+            <div id="search-chip-2" class="inline-flex items-center gap-1.5 text-[11px] rounded-md border border-stone-200 bg-white px-2 py-1 transition-opacity duration-300" style="opacity: 0;">
+              <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-green-300"></span>
+              <span class="text-stone-700">depth</span>
+              <span class="text-stone-400 text-[9px]">8</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-stone-400"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div id="search-hits-1" class="transition-opacity duration-300" style="opacity: 0;">
+              <div class="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-1.5">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-yellow-300"></span>
+                sensor <span class="font-normal">(12)</span>
+              </div>
+              <div class="border border-stone-200 rounded-md overflow-hidden">
+                <div class="px-3 py-1.5 flex gap-2 items-start border-b border-stone-100">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16">Abstract</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...using a <mark class="bg-yellow-200/70 rounded-sm px-0.5">sensor</mark> array 102 and processing...</span>
+                </div>
+                <div class="px-3 py-1.5 flex gap-2 items-start">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16">Description</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...The <mark class="bg-yellow-200/70 rounded-sm px-0.5">sensor</mark> array 102 comprises one...</span>
+                </div>
+              </div>
+            </div>
+            <div id="search-hits-2" class="transition-opacity duration-300" style="opacity: 0;">
+              <div class="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-1.5">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0 bg-green-300"></span>
+                depth <span class="font-normal">(8)</span>
+              </div>
+              <div class="border border-stone-200 rounded-md overflow-hidden">
+                <div class="px-3 py-1.5 flex gap-2 items-start border-b border-stone-100">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16">Abstract</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...generates a <mark class="bg-green-200/70 rounded-sm px-0.5">depth</mark> map and applies...</span>
+                </div>
+                <div class="px-3 py-1.5 flex gap-2 items-start">
+                  <span class="text-[9px] text-amber-600 font-medium shrink-0 mt-0.5 w-16">Claim 2</span>
+                  <span class="text-[10px] text-stone-500 leading-snug">...comprises a <mark class="bg-green-200/70 rounded-sm px-0.5">depth</mark> camera configured...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initMockAnimation() {
+    const mock = document.getElementById('patent-mock');
+    const cursor = document.getElementById('mock-cursor');
+    const content = document.getElementById('mock-content');
+    if (!mock || !cursor || !content) return;
+
+    const refSpans = mock.querySelectorAll('.mock-ref[data-ref="100"]');
+    const sidebarRow = document.getElementById('sidebar-ref-100');
+    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+    const searchSubmit = document.getElementById('search-submit');
+    const searchInputWrap = document.getElementById('search-input-wrap');
+    const searchChip1 = document.getElementById('search-chip-1');
+    const searchChip2 = document.getElementById('search-chip-2');
+    const searchHits1 = document.getElementById('search-hits-1');
+    const searchHits2 = document.getElementById('search-hits-2');
+    const searchHls = mock.querySelectorAll('.mock-search-hl');
+    const depthHls = mock.querySelectorAll('.mock-depth-hl');
+    const detailsRow102 = document.getElementById('details-row-102');
+    const detailsChevron102 = document.getElementById('details-chevron-102');
+    const detailsExpand102 = document.getElementById('details-expand-102');
+
+    const tabs = {
+      figures: document.getElementById('tab-figures'),
+      details: document.getElementById('tab-details'),
+      outline: document.getElementById('tab-outline'),
+      search: document.getElementById('tab-search'),
+    };
+    const panels = {
+      figures: document.getElementById('panel-figures'),
+      details: document.getElementById('panel-details'),
+      outline: document.getElementById('panel-outline'),
+      search: document.getElementById('panel-search'),
+    };
+
+    const ACTIVE_TAB = 'text-[11px] pb-2 border-b-2 transition-all duration-300 font-semibold text-stone-800 border-amber-500';
+    const INACTIVE_TAB = 'text-[11px] pb-2 border-b-2 transition-all duration-300 font-medium text-stone-400 border-transparent';
+    const TRANSITION = 'left 0.8s cubic-bezier(0.4,0,0.2,1), top 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease, transform 0.1s ease';
+
+    let isAnimating = false;
+    let visible = false;
+
+    const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+    function setTab(active: string) {
+      for (const [name, tab] of Object.entries(tabs)) {
+        if (tab) tab.className = name === active ? ACTIVE_TAB : INACTIVE_TAB;
+      }
+      for (const [name, panel] of Object.entries(panels)) {
+        if (!panel) continue;
+        panel.style.opacity = name === active ? '1' : '0';
+        panel.style.pointerEvents = name === active ? '' : 'none';
+      }
+    }
+
+    function resetState() {
+      cursor.style.transition = 'none';
+      cursor.style.opacity = '0';
+      cursor.style.left = (mock.offsetWidth * 0.25) + 'px';
+      cursor.style.top = (mock.offsetHeight * 0.5) + 'px';
+      cursor.style.transform = '';
+      cursor.offsetHeight;
+      cursor.style.transition = TRANSITION;
+
+      refSpans.forEach(el => { (el as HTMLElement).style.backgroundColor = ''; (el as HTMLElement).style.color = ''; });
+      if (sidebarRow) (sidebarRow as HTMLElement).style.backgroundColor = '';
+      content.scrollTop = 0;
+      setTab('figures');
+
+      if (searchInput) searchInput.value = '';
+      [searchChip1, searchChip2, searchHits1, searchHits2].forEach(el => { if (el) (el as HTMLElement).style.opacity = '0'; });
+      if (searchSubmit) { (searchSubmit as HTMLElement).style.color = ''; (searchSubmit as HTMLElement).style.borderColor = ''; }
+      if (searchInputWrap) { (searchInputWrap as HTMLElement).style.borderColor = ''; (searchInputWrap as HTMLElement).style.boxShadow = ''; }
+      searchHls.forEach(el => el.classList.remove('active'));
+      depthHls.forEach(el => el.classList.remove('active'));
+
+      if (detailsChevron102) (detailsChevron102 as HTMLElement).style.transform = '';
+      if (detailsExpand102) { (detailsExpand102 as HTMLElement).style.maxHeight = '0'; (detailsExpand102 as HTMLElement).style.opacity = '0'; (detailsExpand102 as HTMLElement).style.paddingTop = '0'; (detailsExpand102 as HTMLElement).style.paddingBottom = '0'; }
+      if (detailsRow102) (detailsRow102 as HTMLElement).style.backgroundColor = '';
+    }
+
+    function moveCursorTo(el: Element) {
+      const mr = mock.getBoundingClientRect();
+      const er = el.getBoundingClientRect();
+      cursor.style.left = (er.left - mr.left + er.width / 2) + 'px';
+      cursor.style.top = (er.top - mr.top + er.height / 2) + 'px';
+    }
+
+    async function clickEffect() {
+      cursor.style.transform = 'scale(0.8)';
+      await delay(100);
+      cursor.style.transform = '';
+    }
+
+    async function clickTab(tabName: string) {
+      const tab = tabs[tabName as keyof typeof tabs];
+      if (!tab) return false;
+      moveCursorTo(tab);
+      await delay(700);
+      if (!visible) return false;
+      await clickEffect();
+      setTab(tabName);
+      return true;
+    }
+
+    async function repositionCursor(x: number, y: number) {
+      cursor.style.transition = 'none';
+      cursor.style.left = (mock.offsetWidth * x) + 'px';
+      cursor.style.top = (mock.offsetHeight * y) + 'px';
+      cursor.offsetHeight;
+      cursor.style.transition = TRANSITION;
+    }
+
+    function applyHover(el: HTMLElement, bg: string, color?: string) {
+      el.style.backgroundColor = bg;
+      if (color) el.style.color = color;
+    }
+    function clearHover(el: HTMLElement) {
+      el.style.backgroundColor = '';
+      el.style.color = '';
+    }
+
+    async function typeText(input: HTMLInputElement, text: string) {
+      for (let i = 0; i < text.length; i++) {
+        input.value = text.slice(0, i + 1);
+        await delay(80 + Math.random() * 60);
+      }
+    }
+
+    async function playAnimation() {
+      if (isAnimating) return;
+      isAnimating = true;
+      resetState();
+
+      // === Phase 1: Scroll the spec ===
+      await delay(800);
+      if (!visible) { isAnimating = false; return; }
+      content.scrollTo({ top: 180, behavior: 'smooth' });
+      await delay(2000);
+      if (!visible) { isAnimating = false; return; }
+      content.scrollTo({ top: 0, behavior: 'smooth' });
+      await delay(1200);
+      if (!visible) { isAnimating = false; return; }
+
+      // === Phase 2: Demo interactive element types ===
+      cursor.style.opacity = '1';
+      await delay(300);
+
+      // 2a: Hover a reference numeral → cross-highlight ALL 102s + sidebar + figure bbox
+      const refs102 = mock.querySelectorAll('.mock-ref-102');
+      const sidebarRef102 = document.getElementById('sidebar-ref-102');
+      const bbox102 = document.getElementById('bbox-102');
+      const firstRef102 = refs102[0];
+      if (firstRef102) {
+        moveCursorTo(firstRef102);
+        await delay(800);
+        refs102.forEach(el => { (el as HTMLElement).style.backgroundColor = 'rgb(253 230 138 / 0.7)'; (el as HTMLElement).style.color = 'rgb(120 53 15)'; });
+        if (sidebarRef102) sidebarRef102.style.backgroundColor = 'rgb(255 251 235)';
+        if (bbox102) { bbox102.style.fill = 'rgba(245,158,11,0.3)'; bbox102.style.stroke = 'rgba(245,158,11,1)'; bbox102.style.strokeWidth = '1.5'; }
+        await delay(1500);
+        refs102.forEach(el => { (el as HTMLElement).style.backgroundColor = ''; (el as HTMLElement).style.color = ''; });
+        if (sidebarRef102) sidebarRef102.style.backgroundColor = '';
+        if (bbox102) { bbox102.style.fill = ''; bbox102.style.stroke = ''; bbox102.style.strokeWidth = ''; }
+        await delay(300);
+      }
+
+      // 2b: Hover "FIG. 1" → blue highlight
+      const figRef = content.querySelector('.text-blue-600') as HTMLElement | null;
+      if (figRef) {
+        moveCursorTo(figRef);
+        await delay(700);
+        applyHover(figRef, 'rgb(239 246 255)', 'rgb(30 64 175)');
+        await delay(800);
+        clearHover(figRef);
+        await delay(200);
+      }
+      if (!visible) { isAnimating = false; return; }
+
+      // 2c: Click "100" → cross-highlights across text + sidebar
+      if (refSpans.length > 0) {
+        moveCursorTo(refSpans[0]);
+        await delay(700);
+        if (!visible) { isAnimating = false; return; }
+        await clickEffect();
+        refSpans.forEach(el => {
+          (el as HTMLElement).style.backgroundColor = 'rgb(253 230 138 / 0.7)';
+          (el as HTMLElement).style.color = 'rgb(120 53 15)';
+        });
+        if (sidebarRow) (sidebarRow as HTMLElement).style.backgroundColor = 'rgb(255 251 235)';
+      }
+
+      await delay(2000);
+      if (!visible) { isAnimating = false; return; }
+
+      // 2d: Scroll down to show "claim 1" link, hover it → violet
+      content.scrollTo({ top: 300, behavior: 'smooth' });
+      await delay(1200);
+      refSpans.forEach(el => { (el as HTMLElement).style.backgroundColor = ''; (el as HTMLElement).style.color = ''; });
+      if (sidebarRow) (sidebarRow as HTMLElement).style.backgroundColor = '';
+
+      const claimRef = content.querySelector('.text-violet-600') as HTMLElement | null;
+      if (claimRef) {
+        moveCursorTo(claimRef);
+        await delay(700);
+        applyHover(claimRef, 'rgb(245 243 255)', 'rgb(91 33 182)');
+        await delay(800);
+        clearHover(claimRef);
+      }
+      if (!visible) { isAnimating = false; return; }
+
+      // Scroll back up
+      content.scrollTo({ top: 0, behavior: 'smooth' });
+      cursor.style.opacity = '0';
+      await delay(1000);
+      if (!visible) { isAnimating = false; return; }
+
+      // === Phase 3: Details — click row to expand ===
+      await repositionCursor(0.6, 0.1);
+      cursor.style.opacity = '1';
+      await delay(200);
+
+      if (!(await clickTab('details'))) { isAnimating = false; return; }
+      await delay(1000);
+      if (!visible) { isAnimating = false; return; }
+
+      // Click 102 row to expand it
+      if (detailsRow102) {
+        moveCursorTo(detailsRow102);
+        await delay(700);
+        await clickEffect();
+        (detailsRow102 as HTMLElement).style.backgroundColor = 'rgb(254 243 199 / 0.7)';
+        if (detailsChevron102) (detailsChevron102 as HTMLElement).style.transform = 'rotate(90deg)';
+        if (detailsExpand102) {
+          (detailsExpand102 as HTMLElement).style.maxHeight = '120px';
+          (detailsExpand102 as HTMLElement).style.opacity = '1';
+          (detailsExpand102 as HTMLElement).style.paddingTop = '';
+          (detailsExpand102 as HTMLElement).style.paddingBottom = '';
+        }
+      }
+
+      await delay(2200);
+      if (!visible) { isAnimating = false; return; }
+
+      // === Phase 4: Outline ===
+      if (!(await clickTab('outline'))) { isAnimating = false; return; }
+      await delay(2000);
+      if (!visible) { isAnimating = false; return; }
+
+      // === Phase 5: Search — type two terms ===
+      if (!(await clickTab('search'))) { isAnimating = false; return; }
+      await delay(500);
+      if (!visible) { isAnimating = false; return; }
+
+      if (searchInput) {
+        // --- Term 1: "sensor" ---
+        moveCursorTo(searchInput);
+        await delay(600);
+        await clickEffect();
+        if (searchInputWrap) {
+          (searchInputWrap as HTMLElement).style.borderColor = 'rgb(245 158 11)';
+          (searchInputWrap as HTMLElement).style.boxShadow = '0 0 0 2px rgb(245 158 11 / 0.3)';
+        }
+        await delay(200);
+        await typeText(searchInput, 'sensor');
+        await delay(300);
+        if (searchSubmit) { (searchSubmit as HTMLElement).style.color = 'rgb(68 64 60)'; (searchSubmit as HTMLElement).style.borderColor = 'rgb(168 162 158)'; }
+        moveCursorTo(searchSubmit!);
+        await delay(500);
+        await clickEffect();
+        if (searchInputWrap) { (searchInputWrap as HTMLElement).style.borderColor = ''; (searchInputWrap as HTMLElement).style.boxShadow = ''; }
+        searchInput.value = '';
+
+        if (searchChip1) (searchChip1 as HTMLElement).style.opacity = '1';
+        if (searchHits1) (searchHits1 as HTMLElement).style.opacity = '1';
+        searchHls.forEach(el => el.classList.add('active'));
+
+        await delay(1500);
+        if (!visible) { isAnimating = false; return; }
+
+        // --- Term 2: "depth" ---
+        moveCursorTo(searchInput);
+        await delay(500);
+        await clickEffect();
+        if (searchInputWrap) {
+          (searchInputWrap as HTMLElement).style.borderColor = 'rgb(245 158 11)';
+          (searchInputWrap as HTMLElement).style.boxShadow = '0 0 0 2px rgb(245 158 11 / 0.3)';
+        }
+        await delay(200);
+        await typeText(searchInput, 'depth');
+        await delay(300);
+        if (searchSubmit) { (searchSubmit as HTMLElement).style.color = 'rgb(68 64 60)'; (searchSubmit as HTMLElement).style.borderColor = 'rgb(168 162 158)'; }
+        moveCursorTo(searchSubmit!);
+        await delay(500);
+        await clickEffect();
+        if (searchInputWrap) { (searchInputWrap as HTMLElement).style.borderColor = ''; (searchInputWrap as HTMLElement).style.boxShadow = ''; }
+        searchInput.value = '';
+
+        if (searchChip2) (searchChip2 as HTMLElement).style.opacity = '1';
+        if (searchHits2) (searchHits2 as HTMLElement).style.opacity = '1';
+        depthHls.forEach(el => el.classList.add('active'));
+
+        await delay(2500);
+        if (!visible) { isAnimating = false; return; }
+      }
+
+      // === Phase 6: Back to Figures, clean up ===
+      if (!(await clickTab('figures'))) { isAnimating = false; return; }
+      searchHls.forEach(el => el.classList.remove('active'));
+      depthHls.forEach(el => el.classList.remove('active'));
+      [searchChip1, searchChip2, searchHits1, searchHits2].forEach(el => { if (el) (el as HTMLElement).style.opacity = '0'; });
+      if (searchSubmit) { (searchSubmit as HTMLElement).style.color = ''; (searchSubmit as HTMLElement).style.borderColor = ''; }
+      if (detailsRow102) (detailsRow102 as HTMLElement).style.backgroundColor = '';
+      if (detailsChevron102) (detailsChevron102 as HTMLElement).style.transform = '';
+      if (detailsExpand102) { (detailsExpand102 as HTMLElement).style.maxHeight = '0'; (detailsExpand102 as HTMLElement).style.opacity = '0'; }
+      await delay(800);
+
+      cursor.style.opacity = '0';
+      await delay(3000);
+
+      isAnimating = false;
+      if (visible) playAnimation();
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      visible = entries[0].isIntersecting;
+      if (visible && !isAnimating) playAnimation();
+    }, { threshold: 0.3 });
+
+    observer.observe(mock);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMockAnimation);
+  } else {
+    initMockAnimation();
+  }
+</script>
