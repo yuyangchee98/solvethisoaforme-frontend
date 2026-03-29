@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Image,
   Info,
@@ -166,10 +166,26 @@ function FiguresTab({
   }
 
   const [rotation, setRotation] = useState(0);
-  // Reset rotation when switching figures
-  useEffect(() => setRotation(0), [selectedFigure]);
+  const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
+  const figImgRef = useRef<HTMLImageElement>(null);
+  // Reset rotation and natural size when switching figures
+  useEffect(() => { setRotation(0); setNaturalSize(null); }, [selectedFigure]);
 
-  // Measure container so we can scale down when rotated sideways
+  // Capture natural image dimensions — handles both cached and uncached images
+  useEffect(() => {
+    const img = figImgRef.current;
+    if (!img) return;
+    const update = () => {
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        setNaturalSize({ w: img.naturalWidth, h: img.naturalHeight });
+      }
+    };
+    if (img.complete) update();
+    img.addEventListener("load", update);
+    return () => img.removeEventListener("load", update);
+  }, [selectedFigure]);
+
+  // Measure container so we can fit the image properly
   const figContainerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState<{ w: number; h: number } | null>(null);
   useEffect(() => {
@@ -181,14 +197,27 @@ function FiguresTab({
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [selectedFigure]);
+
+  // Calculate exact fitted dimensions so the wrapper matches visible image size.
+  // This prevents tall/narrow images from overflowing and keeps bbox overlays aligned.
+  const fittedSize = useMemo(() => {
+    if (!containerSize || !naturalSize || naturalSize.w === 0 || naturalSize.h === 0) return null;
+    const imgRatio = naturalSize.w / naturalSize.h;
+    const containerRatio = containerSize.w / containerSize.h;
+    if (imgRatio > containerRatio) {
+      return { w: containerSize.w, h: containerSize.w / imgRatio };
+    } else {
+      return { w: containerSize.h * imgRatio, h: containerSize.h };
+    }
+  }, [containerSize, naturalSize]);
 
   const isSideways = rotation === 90 || rotation === 270;
   // When rotated 90/270, the visual width becomes the layout height and vice versa.
   // Scale down so the rotated image fits within the container.
   const sideScale =
-    isSideways && containerSize && containerSize.h > 0
-      ? Math.min(1, containerSize.w / containerSize.h)
+    isSideways && containerSize && fittedSize
+      ? Math.min(1, containerSize.w / fittedSize.h, containerSize.h / fittedSize.w)
       : 1;
 
   const elementsOnSheet: { numeral: string; label: string }[] = [];
@@ -268,13 +297,18 @@ function FiguresTab({
           </div>
           <div ref={figContainerRef} className="flex-1 min-h-0 flex items-center justify-center px-3 pb-3 overflow-hidden">
             <div
-              className="relative inline-block max-w-full max-h-full transition-transform duration-200"
-              style={{ transform: `rotate(${rotation}deg) scale(${sideScale})` }}
+              className="relative transition-transform duration-200"
+              style={{
+                width: fittedSize?.w,
+                height: fittedSize?.h,
+                transform: `rotate(${rotation}deg) scale(${sideScale})`,
+              }}
             >
               <img
+                ref={figImgRef}
                 src={patent.figure_urls[selectedFigure]}
                 alt={`Figure ${selectedFigure}`}
-                className="max-w-full max-h-full object-contain rounded border border-stone-200 bg-white block"
+                className="w-full h-full rounded border border-stone-200 bg-white block"
               />
               {/* All bounding boxes overlay */}
               {showAllBboxes && (() => {

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent, ClaimLimitation } from "./types";
@@ -564,6 +564,33 @@ export function CenterPanel({
   onElementHover,
   onElementClick,
 }: CenterPanelProps) {
+  const [showJumpTo, setShowJumpTo] = useState(false);
+  const [jumpInput, setJumpInput] = useState("");
+  const [flashParagraph, setFlashParagraph] = useState<string | null>(null);
+  const jumpInputRef = useRef<HTMLInputElement>(null);
+
+  const handleParagraphClick = useCallback(() => {
+    setShowJumpTo(true);
+    setJumpInput("");
+    requestAnimationFrame(() => jumpInputRef.current?.focus());
+  }, []);
+
+  const handleJumpTo = useCallback(() => {
+    const cleaned = jumpInput.replace(/[\[\]]/g, "").trim();
+    if (!cleaned) return;
+    let el = document.getElementById(`para-${cleaned}`);
+    if (!el && /^\d+$/.test(cleaned)) {
+      el = document.getElementById(`para-${cleaned.padStart(4, "0")}`);
+    }
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      const paraNum = el.id.replace("para-", "");
+      setFlashParagraph(paraNum);
+      setTimeout(() => setFlashParagraph(null), 1500);
+    }
+    setShowJumpTo(false);
+  }, [jumpInput]);
+
   // Build a lookup: claim_number -> spans
   const claimElementMap = new Map(
     claimElements.claim_elements.map((ce) => [ce.claim_number, ce.spans])
@@ -578,6 +605,32 @@ export function CenterPanel({
 
   return (
     <div className="flex-1 overflow-y-auto bg-stone-50">
+      {showJumpTo && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
+          onClick={() => setShowJumpTo(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl border border-stone-200 px-4 py-3 flex items-center gap-3 animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="text-sm font-medium text-stone-500">Go to ¶</span>
+            <input
+              ref={jumpInputRef}
+              type="text"
+              value={jumpInput}
+              onChange={(e) => setJumpInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleJumpTo();
+                if (e.key === "Escape") setShowJumpTo(false);
+              }}
+              placeholder="0042"
+              className="text-sm border border-stone-300 rounded-md px-2.5 py-1 w-28 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400"
+            />
+            <kbd className="text-[10px] text-stone-400 bg-stone-100 border border-stone-200 rounded px-1 py-0.5">Enter</kbd>
+          </div>
+        </div>
+      )}
       <div className="max-w-3xl mx-auto px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10 space-y-8">
         {/* Title & metadata */}
         <header className="space-y-3">
@@ -633,9 +686,20 @@ export function CenterPanel({
             </h2>
             <div className="space-y-3">
               {section.paragraphs.map((para, pi) => (
-                <div key={pi} className="flex gap-2">
+                <div
+                  key={pi}
+                  id={para.number ? `para-${para.number}` : undefined}
+                  className={cn(
+                    "flex gap-2 rounded-sm transition-colors duration-700",
+                    flashParagraph === para.number && "bg-amber-100/60",
+                  )}
+                >
                   {para.number && (
-                    <span className="text-[10px] lg:text-[11px] font-mono text-stone-300 select-none pt-1 shrink-0 w-10 text-right">
+                    <span
+                      onClick={handleParagraphClick}
+                      className="text-[10px] lg:text-[11px] font-mono text-stone-300 hover:text-amber-500 cursor-pointer select-none pt-1 shrink-0 w-10 text-right transition-colors"
+                      title="Jump to paragraph..."
+                    >
                       [{para.number}]
                     </span>
                   )}

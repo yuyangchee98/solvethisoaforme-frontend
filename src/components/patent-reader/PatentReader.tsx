@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CenterPanel } from "./CenterPanel";
 import { RightSidebar } from "./RightSidebar";
-import { CompareButton } from "./CompareButton";
 import { ComparisonToolbar } from "./ComparisonToolbar";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { usePatentPanel } from "./usePatentPanel";
@@ -635,12 +634,6 @@ export function PatentReader() {
             {navigator.platform?.includes("Mac") ? "\u2318" : "Ctrl+"}K
           </kbd>
         </Button>
-        <CompareButton
-          currentPatent={left.patent}
-          otherTabs={registry.others}
-          isMobile={isMobile}
-          onCompare={handleCompare}
-        />
       </div>
 
       {/* Content area */}
