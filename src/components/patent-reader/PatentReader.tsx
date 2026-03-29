@@ -252,7 +252,7 @@ export function PatentReader() {
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(true);
   const [rightSidebarCollapsed, setRightSidebarCollapsed] = useState(true);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
-
+  const [formatsOpen, setFormatsOpen] = useState(false);
 
   // Auto-expand sidebar when interaction targets it (comparison mode).
   // In normal mode these set state that isn't read, so it's a harmless no-op.
@@ -513,6 +513,65 @@ export function PatentReader() {
                 {left.error}
               </div>
             )}
+
+            {/* Supported formats link + modal */}
+            <Dialog open={formatsOpen} onOpenChange={setFormatsOpen}>
+              <button
+                type="button"
+                onClick={() => setFormatsOpen(true)}
+                className="text-xs text-stone-400 cursor-pointer hover:text-stone-600 text-center select-none mx-auto block"
+              >
+                Supported formats &amp; jurisdictions
+              </button>
+              <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Supported formats &amp; jurisdictions</DialogTitle>
+                </DialogHeader>
+                <div className="text-xs text-stone-500 space-y-4">
+                  <div>
+                    <p className="font-medium text-stone-600 mb-2">Accepted formats</p>
+                    <div className="rounded-md border border-stone-200 overflow-hidden font-mono text-[11px]">
+                      {[
+                        ["US granted", "US11423567B2"],
+                        ["US pub", "US20220075747A1"],
+                        ["US design", "USD1234567S"],
+                        ["EP", "EP3081497B1"],
+                        ["WO/PCT", "WO2016116889A1"],
+                        ["CN / JP / KR", "CN110546615B"],
+                      ].map(([label, example], i) => (
+                        <div key={label} className={`flex items-center px-3 py-1.5 ${i % 2 === 0 ? "bg-white" : "bg-stone-50/70"}`}>
+                          <span className="text-stone-400 w-24 shrink-0">{label}</span>
+                          <span className="text-stone-600">{example}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-[11px] text-stone-400 leading-relaxed">
+                      Spaces, commas, slashes, and kind codes are all optional.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium text-stone-600 mb-2">Supported jurisdictions</p>
+                    {[
+                      { region: "Americas", codes: ["US", "CA", "MX", "BR", "AR", "CL", "CO", "UY"] },
+                      { region: "Europe", codes: ["EP", "DE", "GB", "FR", "NL", "BE", "AT", "CH", "SE", "NO", "DK", "FI", "IE", "ES", "IT", "PL", "CZ", "RO", "GR", "HU"] },
+                      { region: "Asia-Pacific", codes: ["CN", "JP", "KR", "TW", "IN", "AU", "NZ", "SG", "PH", "MY", "TH", "HK"] },
+                      { region: "International", codes: ["WO", "EA", "RU", "UA", "IL", "SA", "TR", "EG", "ZA", "AP"] },
+                    ].map(({ region, codes }) => (
+                      <div key={region} className="mt-2.5 first:mt-0">
+                        <p className="text-[10px] font-medium text-stone-400 uppercase tracking-wider mb-1">{region}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {codes.map((code) => (
+                            <span key={code} className="inline-block px-1.5 py-0.5 text-[11px] font-mono text-stone-500 bg-stone-50 border border-stone-200 rounded">
+                              {code}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Example patents */}
             <div className="space-y-1.5">
