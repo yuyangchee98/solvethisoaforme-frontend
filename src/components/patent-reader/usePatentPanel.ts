@@ -50,6 +50,11 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Per-analysis loading states
+  const [numeralsLoading, setNumeralsLoading] = useState(false);
+  const [figureMapLoading, setFigureMapLoading] = useState(false);
+  const [claimElementsLoading, setClaimElementsLoading] = useState(false);
+
   const numeralClickCount = useRef<Record<string, number>>({});
   const searchIdRef = useRef(0);
 
@@ -89,22 +94,25 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
       const data = await fetchPatent(pubNumber);
       if (id !== searchIdRef.current) return;
       setPatent(data);
+      setNumeralsLoading(true);
+      setFigureMapLoading(true);
+      setClaimElementsLoading(true);
       fetchReferenceNumerals(pubNumber).then(({ numerals, highlights }) => {
         if (id === searchIdRef.current) {
           setReferenceNumerals(numerals);
           setNumeralHighlights(highlights);
         }
-      });
+      }).finally(() => { if (id === searchIdRef.current) setNumeralsLoading(false); });
       fetchFigureMap(pubNumber).then(({ figureMap: fm, numeralLocations: nl }) => {
         if (id !== searchIdRef.current) return;
         setFigureMap(fm);
         setNumeralLocations(nl);
-      });
+      }).finally(() => { if (id === searchIdRef.current) setFigureMapLoading(false); });
       fetchClaimElements(pubNumber).then((data) => {
         if (id === searchIdRef.current) {
           setClaimElements(data);
         }
-      });
+      }).finally(() => { if (id === searchIdRef.current) setClaimElementsLoading(false); });
     } catch (err) {
       if (id !== searchIdRef.current) return;
       setError(err instanceof Error ? err.message : "Failed to fetch patent");
@@ -359,6 +367,9 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     // Loading
     loading,
     error,
+    numeralsLoading,
+    figureMapLoading,
+    claimElementsLoading,
     // Search
     searchTerms,
     searchHighlights,

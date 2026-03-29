@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Search, Loader2, AlertCircle, FileText, PanelRight } from "lucide-react";
+import { Search, Loader2, AlertCircle, FileText, PanelRight, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -30,7 +30,6 @@ const EXAMPLE_PATENTS = [
   { number: "US11423567B2", title: "Head location/orientation detection method" },
   { number: "US20220075747A1", title: "Multiple hot pluggable device support via emulated switch" },
   { number: "US10956685B2", title: "Sequence-to-sequence prediction using a neural network model" },
-  { number: "EP3081497B1", title: "Packaging machine and method for producing packages from a packaging material" },
 ];
 
 function SearchForm({
@@ -192,6 +191,53 @@ function PanelSidebar({
       onToggleSearchWholeWord={panel.toggleSearchWholeWord}
       onToggleSearchCaseSensitive={panel.toggleSearchCaseSensitive}
     />
+  );
+}
+
+function AnalysisStatus({ panel }: { panel: PatentPanel }) {
+  const items = [
+    { key: "num", label: "Numerals", loading: panel.numeralsLoading },
+    { key: "fig", label: "Figures", loading: panel.figureMapLoading },
+    { key: "elem", label: "Elements", loading: panel.claimElementsLoading },
+  ];
+  const anyLoading = items.some((i) => i.loading);
+  const allDone = !anyLoading && panel.patent;
+
+  const [hasStarted, setHasStarted] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (anyLoading) {
+      setHasStarted(true);
+      setDismissed(false);
+    }
+  }, [anyLoading]);
+
+  useEffect(() => {
+    if (hasStarted && allDone) {
+      const t = setTimeout(() => setDismissed(true), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [hasStarted, allDone]);
+
+  if (!hasStarted || dismissed) return null;
+
+  return (
+    <>
+      <span className="text-stone-200 shrink-0">|</span>
+      {items.map((item) => (
+        <span key={item.key} className="flex items-center gap-1 shrink-0 text-[11px]">
+          {item.loading ? (
+            <Loader2 className="size-3 animate-spin text-amber-500" />
+          ) : (
+            <Check className="size-3 text-emerald-500" />
+          )}
+          <span className={item.loading ? "text-stone-500" : "text-stone-400"}>
+            {item.label}
+          </span>
+        </span>
+      ))}
+    </>
   );
 }
 
@@ -622,6 +668,7 @@ export function PatentReader() {
         <span className="text-sm text-stone-600 truncate min-w-0 flex-1">
           {left.patent!.title}
         </span>
+        <AnalysisStatus panel={left} />
         <Button
           variant="ghost"
           size="sm"
