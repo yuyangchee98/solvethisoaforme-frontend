@@ -1112,11 +1112,11 @@ function SourceTab({
 }) {
   const pdfUrl = `${API_BASE}/patents/${encodeURIComponent(patentNumber)}/pdf`;
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [pageSize, setPageSize] = useState<{ width: number; height: number } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(350);
+  const [pageSize, setPageSize] = useState<{ width: number; height: number } | null>(null);
 
-  // Track container width for responsive scaling
+  // Track container width
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -1127,61 +1127,91 @@ function SourceTab({
     return () => ro.disconnect();
   }, []);
 
-  // Determine which page to show
   const pageNumber = colLineSelection?.lineBreaks[0]?.page ?? null;
-
-  // Get the PDF coordinate dimensions from line_breaks
   const pdfPageWidth = colLineSelection?.lineBreaks[0]?.page_width ?? 612;
 
-  // Scale factor: rendered width / PDF coordinate width
-  const scale = containerWidth / pdfPageWidth;
+  // Render the PDF at 2x the sidebar width for readable text
+  const RENDER_SCALE = 2;
+  const renderWidth = containerWidth * RENDER_SCALE;
+  const scale = renderWidth / pdfPageWidth;
 
-  // Draw highlight overlay
+  // Compute the crop region in rendered-pixel space
+  const cropInfo = useMemo(() => {
+    if (!colLineSelection?.lineBreaks.length) return null;
+
+    const breaks = colLineSelection.lineBreaks.filter(
+      (lb) => lb.page === pageNumber && lb.y != null
+    );
+    if (!breaks.length) return null;
+
+    const ys = breaks.map((lb) => lb.y! * scale);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const lineH = 10 * scale;
+
+    // Vertical: center the selection with generous padding
+    const PADDING_Y = 40 * scale;
+    const cropTop = Math.max(0, minY - PADDING_Y);
+    const cropBottom = maxY + lineH + PADDING_Y;
+
+    // Horizontal: crop to the relevant column
+    const gutterX = (breaks[0].gutter_x ?? pdfPageWidth / 2) * scale;
+    const isCol1 = breaks[0].col % 2 === 1;
+    const PADDING_X = 10 * scale;
+    let cropLeft: number, cropRight: number;
+    if (isCol1) {
+      cropLeft = Math.max(0, 30 * scale);
+      cropRight = gutterX + PADDING_X;
+    } else {
+      cropLeft = gutterX - PADDING_X;
+      cropRight = renderWidth;
+    }
+
+    return { cropTop, cropBottom, cropLeft, cropRight, minY, maxY, lineH, gutterX, breaks };
+  }, [colLineSelection, pageNumber, scale, pdfPageWidth, renderWidth]);
+
+  // Draw highlight overlay on the canvas
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !colLineSelection || !pageNumber) return;
+    if (!canvas || !cropInfo) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size to match the rendered page
-    canvas.width = containerWidth;
-    canvas.height = pageSize ? pageSize.height * (containerWidth / pageSize.width) : 800;
+    const cropW = cropInfo.cropRight - cropInfo.cropLeft;
+    const cropH = cropInfo.cropBottom - cropInfo.cropTop;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Canvas matches the visible cropped region
+    canvas.width = cropW;
+    canvas.height = cropH;
 
-    // Draw highlight rectangles for each line in the selection
-    ctx.fillStyle = "rgba(251, 191, 36, 0.25)"; // amber-400 at 25%
-    ctx.strokeStyle = "rgba(251, 191, 36, 0.6)";
-    ctx.lineWidth = 0.5;
+    ctx.clearRect(0, 0, cropW, cropH);
 
-    for (const lb of colLineSelection.lineBreaks) {
-      if (lb.page !== pageNumber || lb.y == null || lb.gutter_x == null || lb.page_width == null) continue;
+    ctx.fillStyle = "rgba(251, 191, 36, 0.22)";
+    ctx.strokeStyle = "rgba(217, 119, 6, 0.5)";
+    ctx.lineWidth = 1;
+
+    for (const lb of cropInfo.breaks) {
+      if (lb.y == null || lb.gutter_x == null || lb.page_width == null) continue;
 
       const gutterX = lb.gutter_x * scale;
       const pageW = lb.page_width * scale;
-      const y = lb.y * scale;
-      const lineH = 10 * scale;
+      const y = lb.y * scale - cropInfo.cropTop;
 
-      // Determine column bounds
+      const isCol1 = lb.col % 2 === 1;
       let x0: number, x1: number;
-      // col1 = left of gutter, col2 = right of gutter
-      // We detect by checking if the original text x position would be left or right of gutter
-      // Since we stored col number, compare with the page's column layout
-      // Simple heuristic: if this is the first column on the page, it's left side
-      const isCol1 = lb.col % 2 === 1; // odd columns are left (col 1, 3, 5...)
       if (isCol1) {
-        x0 = 55 * scale;
-        x1 = gutterX - 5 * scale;
+        x0 = 45 * scale - cropInfo.cropLeft;
+        x1 = gutterX - 5 * scale - cropInfo.cropLeft;
       } else {
-        x0 = gutterX + 10 * scale;
-        x1 = pageW - 20 * scale;
+        x0 = gutterX + 10 * scale - cropInfo.cropLeft;
+        x1 = pageW - 20 * scale - cropInfo.cropLeft;
       }
 
-      ctx.fillRect(x0, y * 1 - 1 * scale, x1 - x0, lineH);
-      ctx.strokeRect(x0, y * 1 - 1 * scale, x1 - x0, lineH);
+      ctx.fillRect(x0, y - 1 * scale, x1 - x0, cropInfo.lineH);
+      ctx.strokeRect(x0, y - 1 * scale, x1 - x0, cropInfo.lineH);
     }
-  }, [colLineSelection, pageNumber, containerWidth, pageSize, scale]);
+  }, [cropInfo, scale]);
 
   const onPageLoadSuccess = useCallback((page: { width: number; height: number }) => {
     setPageSize({ width: page.width, height: page.height });
@@ -1197,6 +1227,11 @@ function SourceTab({
     );
   }
 
+  // The cropped region dimensions in rendered pixels, then scale down to fit sidebar
+  const cropW = cropInfo ? cropInfo.cropRight - cropInfo.cropLeft : renderWidth;
+  const cropH = cropInfo ? cropInfo.cropBottom - cropInfo.cropTop : 400;
+  const displayScale = (containerWidth - 16) / cropW; // fit width to container
+
   return (
     <div ref={containerRef} className="flex-1 overflow-y-auto p-2">
       {/* Label */}
@@ -1209,21 +1244,40 @@ function SourceTab({
         </span>
       </div>
 
-      {/* PDF page with highlight overlay */}
-      <div className="relative border border-stone-200 rounded overflow-hidden">
-        <Document file={pdfUrl} loading={null}>
-          <Page
-            pageNumber={pageNumber}
-            width={containerWidth - 16}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            onLoadSuccess={onPageLoadSuccess}
-          />
-        </Document>
+      {/* Cropped PDF view with highlight overlay */}
+      <div
+        className="relative border border-stone-200 rounded overflow-hidden"
+        style={{ height: cropH * displayScale }}
+      >
+        {/* PDF rendered large, then shifted to show only the crop region */}
+        <div
+          style={{
+            position: "absolute",
+            left: -(cropInfo?.cropLeft ?? 0) * displayScale,
+            top: -(cropInfo?.cropTop ?? 0) * displayScale,
+            transform: `scale(${displayScale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <Document file={pdfUrl} loading={null}>
+            <Page
+              pageNumber={pageNumber}
+              width={renderWidth}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              onLoadSuccess={onPageLoadSuccess}
+            />
+          </Document>
+        </div>
+
+        {/* Highlight canvas, sized to the crop region then scaled to display */}
         <canvas
           ref={canvasRef}
           className="absolute inset-0 pointer-events-none"
-          style={{ width: "100%", height: "100%" }}
+          style={{
+            width: cropW * displayScale,
+            height: cropH * displayScale,
+          }}
         />
       </div>
     </div>
