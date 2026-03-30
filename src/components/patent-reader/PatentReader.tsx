@@ -182,6 +182,7 @@ function PanelSidebar({
       activeTab={panel.sidebarTab}
       onTabChange={panel.setSidebarTab}
       colLineSelection={panel.colLineSelection}
+      needsColLines={panel.needsColLines}
       selectedFigure={panel.selectedFigure}
       onSelectFigure={(i) => {
         panel.setSelectedFigure(i);

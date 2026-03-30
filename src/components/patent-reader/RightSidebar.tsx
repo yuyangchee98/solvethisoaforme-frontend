@@ -73,6 +73,7 @@ interface RightSidebarProps {
   onToggleSearchWholeWord?: () => void;
   onToggleSearchCaseSensitive?: () => void;
   colLineSelection?: ColLineSelection | null;
+  needsColLines?: boolean;
   // Resize
   width?: number;
   isDragging?: boolean;
@@ -1196,6 +1197,8 @@ function SourceTab({
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(350);
   const [pageSize, setPageSize] = useState<{ width: number; height: number } | null>(null);
+  const [numPages, setNumPages] = useState(0);
+  const [browsePage, setBrowsePage] = useState(1);
 
   // Track container width
   useEffect(() => {
@@ -1300,10 +1303,41 @@ function SourceTab({
 
   if (!colLineSelection || !pageNumber) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 text-center">
-        <p className="text-sm text-stone-400">
-          Select text in the description to see the corresponding PDF location.
-        </p>
+      <div ref={containerRef} className="flex-1 flex flex-col min-h-0 p-2">
+        <div className="text-xs text-stone-400 text-center mb-2">
+          Select text in the description to highlight its location.
+        </div>
+        {numPages > 0 && (
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <button
+              onClick={() => setBrowsePage((p) => Math.max(1, p - 1))}
+              disabled={browsePage <= 1}
+              className="px-2 py-0.5 text-xs rounded border border-stone-200 disabled:opacity-30 hover:bg-stone-50"
+            >
+              Prev
+            </button>
+            <span className="text-xs text-stone-500">
+              {browsePage} / {numPages}
+            </span>
+            <button
+              onClick={() => setBrowsePage((p) => Math.min(numPages, p + 1))}
+              disabled={browsePage >= numPages}
+              className="px-2 py-0.5 text-xs rounded border border-stone-200 disabled:opacity-30 hover:bg-stone-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto">
+          <Document file={pdfUrl} loading={null} onLoadSuccess={({ numPages: n }) => setNumPages(n)}>
+            <Page
+              pageNumber={browsePage}
+              width={containerWidth - 16}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+            />
+          </Document>
+        </div>
       </div>
     );
   }
@@ -1401,6 +1435,7 @@ export function RightSidebar({
   onToggleSearchWholeWord,
   onToggleSearchCaseSensitive,
   colLineSelection,
+  needsColLines,
   width,
   isDragging,
   dragHandleProps,
@@ -1411,7 +1446,7 @@ export function RightSidebar({
       <div className="flex flex-col items-center pt-2 pb-2 gap-0.5 border-l border-stone-200 bg-white w-12">
         {[
           { value: "figures", icon: Image, label: "Figures" },
-          { value: "source", icon: FileText, label: "Source" },
+          ...(needsColLines ? [{ value: "source", icon: FileText, label: "Source" }] : []),
           { value: "details", icon: Info, label: "Details" },
           { value: "outline", icon: List, label: "Outline" },
           { value: "search", icon: Search, label: "Search" },
@@ -1477,7 +1512,7 @@ export function RightSidebar({
       {/* Tab bar + collapse */}
       <div className="flex items-center border-b border-stone-200">
         <TabsList className="flex flex-1 h-auto bg-transparent p-0 rounded-none -mb-px">
-          {(["figures", "source", "details", "outline", "search"] as const).map((tab) => (
+          {(["figures", ...(needsColLines ? ["source"] : []), "details", "outline", "search"] as const).map((tab) => (
             <TabsTrigger
               key={tab}
               value={tab}
