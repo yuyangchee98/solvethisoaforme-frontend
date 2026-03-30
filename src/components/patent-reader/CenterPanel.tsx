@@ -592,10 +592,9 @@ function formatSelectionRange(start: LineBreak, end: LineBreak): string {
   return `col.${start.col}, L${start.line} \u2013 col.${end.col}, L${end.line}`;
 }
 
-interface SelectionTooltip {
+interface SelectionIndicator {
   text: string;
-  x: number;
-  y: number;
+  y: number;  // top position relative to scroll container (with scroll offset)
 }
 
 export function CenterPanel({
@@ -615,7 +614,7 @@ export function CenterPanel({
   const [showJumpTo, setShowJumpTo] = useState(false);
   const [jumpInput, setJumpInput] = useState("");
   const [flashParagraph, setFlashParagraph] = useState<string | null>(null);
-  const [selectionTooltip, setSelectionTooltip] = useState<SelectionTooltip | null>(null);
+  const [selectionIndicator, setSelectionIndicator] = useState<SelectionIndicator | null>(null);
   const [copied, setCopied] = useState(false);
   const jumpInputRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -687,7 +686,7 @@ export function CenterPanel({
     try {
       const lineBreaks: LineBreak[] = JSON.parse(anchorPara.dataset.lineBreaks!);
       if (!lineBreaks.length) {
-        setSelectionTooltip(null);
+        setSelectionIndicator(null);
         return;
       }
 
@@ -718,21 +717,20 @@ export function CenterPanel({
 
       const text = formatSelectionRange(startLoc, endLoc);
 
-      // Position tooltip above the selection (account for scroll offset)
+      // Position indicator at the vertical center of the selection
       const range = sel.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       const container = scrollContainerRef.current;
       const containerRect = container?.getBoundingClientRect();
       const scrollTop = container?.scrollTop ?? 0;
-      const x = rect.left + rect.width / 2 - (containerRect?.left ?? 0);
-      const y = rect.top - (containerRect?.top ?? 0) + scrollTop - 8;
+      const y = rect.top + rect.height / 2 - (containerRect?.top ?? 0) + scrollTop;
 
-      console.log("[ColLine] resolved:", text, "pos:", { x, y, scrollTop });
-      setSelectionTooltip({ text, x, y });
+      console.log("[ColLine] resolved:", text, "y:", y);
+      setSelectionIndicator({ text, y });
       setCopied(false);
     } catch (err) {
       console.error("[ColLine] error:", err);
-      setSelectionTooltip(null);
+      setSelectionIndicator(null);
     }
   }, []);
 
@@ -741,7 +739,7 @@ export function CenterPanel({
     const onSelectionChange = () => {
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed) {
-        setSelectionTooltip(null);
+        setSelectionIndicator(null);
       }
     };
     document.addEventListener("selectionchange", onSelectionChange);
@@ -749,11 +747,11 @@ export function CenterPanel({
   }, []);
 
   const handleCopyLocation = useCallback(() => {
-    if (!selectionTooltip) return;
-    navigator.clipboard.writeText(selectionTooltip.text);
+    if (!selectionIndicator) return;
+    navigator.clipboard.writeText(selectionIndicator.text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
-  }, [selectionTooltip]);
+  }, [selectionIndicator]);
 
   // Build a lookup: claim_number -> spans
   const claimElementMap = new Map(
@@ -769,28 +767,22 @@ export function CenterPanel({
 
   return (
     <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-stone-50 relative" onMouseUp={handleTextSelect}>
-      {/* Selection col/line tooltip */}
-      {selectionTooltip && (
+      {/* Selection col/line indicator — left margin */}
+      {selectionIndicator && (
         <div
-          className="absolute z-40 -translate-x-1/2 pointer-events-auto flex items-center gap-1.5 bg-stone-800 text-white text-xs font-mono rounded-md px-2.5 py-1.5 shadow-lg animate-in fade-in zoom-in-95 duration-100"
-          style={{ left: selectionTooltip.x, top: selectionTooltip.y, transform: "translate(-50%, -100%)" }}
+          className="absolute left-2 z-40 pointer-events-auto flex items-center gap-1 cursor-pointer group"
+          style={{ top: selectionIndicator.y, transform: "translateY(-50%)" }}
+          onClick={handleCopyLocation}
+          title="Click to copy"
         >
-          <span>{selectionTooltip.text}</span>
-          <button
-            onClick={handleCopyLocation}
-            className="ml-1 text-stone-400 hover:text-white transition-colors"
-            title="Copy location"
-          >
-            {copied ? (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-            )}
-          </button>
+          <span className={cn(
+            "text-[10px] font-mono whitespace-nowrap px-1.5 py-0.5 rounded transition-colors",
+            copied
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-amber-100 text-amber-700 group-hover:bg-amber-200",
+          )}>
+            {copied ? "Copied!" : selectionIndicator.text}
+          </span>
         </div>
       )}
       {showJumpTo && (
