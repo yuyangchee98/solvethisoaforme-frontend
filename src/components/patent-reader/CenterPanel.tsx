@@ -1,7 +1,7 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Patent, PatentParagraph, ClaimLimitation } from "./types";
+import type { Patent, PatentParagraph, ClaimLimitation, LineBreak } from "./types";
 import type { ReferenceNumeralHighlights, HighlightSpan, ClaimElementSpan, ClaimElementsData } from "@/lib/api";
 import type { SearchHighlightSpan, SearchHighlights } from "./search-utils";
 import { SEARCH_COLORS } from "./search-utils";
@@ -570,6 +570,34 @@ function paraId(para: PatentParagraph): string | undefined {
   return undefined;
 }
 
+/** Resolve a character offset to col/line using binary search on line_breaks. */
+function resolveOffset(offset: number, lineBreaks: LineBreak[]): LineBreak {
+  let lo = 0, hi = lineBreaks.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (lineBreaks[mid].offset <= offset) lo = mid;
+    else hi = mid - 1;
+  }
+  return lineBreaks[lo];
+}
+
+/** Format a resolved selection range as a copyable string. */
+function formatSelectionRange(start: LineBreak, end: LineBreak): string {
+  if (start.col === end.col && start.line === end.line) {
+    return `col.${start.col}, L${start.line}`;
+  }
+  if (start.col === end.col) {
+    return `col.${start.col}, L${start.line}-${end.line}`;
+  }
+  return `col.${start.col}, L${start.line} \u2013 col.${end.col}, L${end.line}`;
+}
+
+interface SelectionTooltip {
+  text: string;
+  x: number;
+  y: number;
+}
+
 export function CenterPanel({
   patent,
   activeNumeral,
@@ -587,7 +615,10 @@ export function CenterPanel({
   const [showJumpTo, setShowJumpTo] = useState(false);
   const [jumpInput, setJumpInput] = useState("");
   const [flashParagraph, setFlashParagraph] = useState<string | null>(null);
+  const [selectionTooltip, setSelectionTooltip] = useState<SelectionTooltip | null>(null);
+  const [copied, setCopied] = useState(false);
   const jumpInputRef = useRef<HTMLInputElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleParagraphClick = useCallback(() => {
     setShowJumpTo(true);
@@ -618,6 +649,112 @@ export function CenterPanel({
     setShowJumpTo(false);
   }, [jumpInput]);
 
+  // Selection → col/line tooltip
+  const handleTextSelect = useCallback(() => {
+    const sel = window.getSelection();
+    console.log("[ColLine] mouseUp, selection:", sel?.toString().slice(0, 50), "collapsed:", sel?.isCollapsed);
+    if (!sel || sel.isCollapsed || !sel.rangeCount) {
+      setSelectionTooltip(null);
+      return;
+    }
+
+    // Walk up from the selection anchor to find the paragraph container with data-line-breaks
+    const findParaContainer = (node: Node | null): HTMLElement | null => {
+      let el = node instanceof HTMLElement ? node : node?.parentElement;
+      while (el) {
+        if (el.dataset.lineBreaks) return el;
+        el = el.parentElement;
+      }
+      return null;
+    };
+
+    const anchorPara = findParaContainer(sel.anchorNode);
+    const focusPara = findParaContainer(sel.focusNode);
+    console.log("[ColLine] anchorPara:", !!anchorPara, "hasLineBreaks:", !!anchorPara?.dataset.lineBreaks);
+    if (!anchorPara) {
+      setSelectionTooltip(null);
+      return;
+    }
+
+    // Get the full text content and compute offsets within it
+    const getOffsetInPara = (container: HTMLElement, node: Node, offset: number): number => {
+      const range = document.createRange();
+      range.setStart(container, 0);
+      range.setEnd(node, offset);
+      return range.toString().length;
+    };
+
+    try {
+      const lineBreaks: LineBreak[] = JSON.parse(anchorPara.dataset.lineBreaks!);
+      if (!lineBreaks.length) {
+        setSelectionTooltip(null);
+        return;
+      }
+
+      const startOffset = getOffsetInPara(anchorPara, sel.anchorNode!, sel.anchorOffset);
+
+      let endLineBreaks = lineBreaks;
+      let endOffset: number;
+      if (focusPara && focusPara !== anchorPara && focusPara.dataset.lineBreaks) {
+        // Selection spans multiple paragraphs — use the focus paragraph's line_breaks for end
+        endLineBreaks = JSON.parse(focusPara.dataset.lineBreaks!);
+        endOffset = getOffsetInPara(focusPara, sel.focusNode!, sel.focusOffset);
+      } else {
+        endOffset = getOffsetInPara(anchorPara, sel.focusNode!, sel.focusOffset);
+      }
+
+      // Normalize: ensure start < end within same paragraph
+      const actualStart = Math.min(startOffset, endOffset);
+      const actualEnd = Math.max(startOffset, endOffset);
+
+      const startLoc = resolveOffset(
+        focusPara === anchorPara ? actualStart : startOffset,
+        lineBreaks,
+      );
+      const endLoc = resolveOffset(
+        focusPara === anchorPara ? actualEnd : endOffset,
+        endLineBreaks,
+      );
+
+      const text = formatSelectionRange(startLoc, endLoc);
+
+      // Position tooltip above the selection (account for scroll offset)
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      const container = scrollContainerRef.current;
+      const containerRect = container?.getBoundingClientRect();
+      const scrollTop = container?.scrollTop ?? 0;
+      const x = rect.left + rect.width / 2 - (containerRect?.left ?? 0);
+      const y = rect.top - (containerRect?.top ?? 0) + scrollTop - 8;
+
+      console.log("[ColLine] resolved:", text, "pos:", { x, y, scrollTop });
+      setSelectionTooltip({ text, x, y });
+      setCopied(false);
+    } catch (err) {
+      console.error("[ColLine] error:", err);
+      setSelectionTooltip(null);
+    }
+  }, []);
+
+  // Dismiss tooltip when selection is cleared
+  useEffect(() => {
+    const onSelectionChange = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) {
+        setSelectionTooltip(null);
+      }
+    };
+    document.addEventListener("selectionchange", onSelectionChange);
+    return () => document.removeEventListener("selectionchange", onSelectionChange);
+  }, []);
+
+  const handleCopyLocation = useCallback(() => {
+    if (!selectionTooltip) return;
+    navigator.clipboard.writeText(selectionTooltip.text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [selectionTooltip]);
+
   // Build a lookup: claim_number -> spans
   const claimElementMap = new Map(
     claimElements.claim_elements.map((ce) => [ce.claim_number, ce.spans])
@@ -631,7 +768,31 @@ export function CenterPanel({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-stone-50">
+    <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-stone-50 relative" onMouseUp={handleTextSelect}>
+      {/* Selection col/line tooltip */}
+      {selectionTooltip && (
+        <div
+          className="absolute z-40 -translate-x-1/2 pointer-events-auto flex items-center gap-1.5 bg-stone-800 text-white text-xs font-mono rounded-md px-2.5 py-1.5 shadow-lg animate-in fade-in zoom-in-95 duration-100"
+          style={{ left: selectionTooltip.x, top: selectionTooltip.y, transform: "translate(-50%, -100%)" }}
+        >
+          <span>{selectionTooltip.text}</span>
+          <button
+            onClick={handleCopyLocation}
+            className="ml-1 text-stone-400 hover:text-white transition-colors"
+            title="Copy location"
+          >
+            {copied ? (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            )}
+          </button>
+        </div>
+      )}
       {showJumpTo && (
         <div
           className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
@@ -737,7 +898,10 @@ export function CenterPanel({
                       {locationLabel}
                     </span>
                   )}
-                  <p className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1">
+                  <p
+                    className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1"
+                    {...(para.line_breaks?.length ? { "data-line-breaks": JSON.stringify(para.line_breaks) } : {})}
+                  >
                     <RichText
                       text={para.text}
                       spans={highlights.description[si]?.[pi] ?? []}

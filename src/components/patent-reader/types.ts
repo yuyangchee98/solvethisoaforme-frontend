@@ -12,6 +12,12 @@ export interface PatentClaim {
   limitations: ClaimLimitation[];
 }
 
+export interface LineBreak {
+  offset: number;
+  col: number;
+  line: number;
+}
+
 export interface PatentParagraph {
   text: string;
   number: string | null;
@@ -19,6 +25,7 @@ export interface PatentParagraph {
   line?: number;
   end_col?: number;
   end_line?: number;
+  line_breaks?: LineBreak[];
 }
 
 export interface PatentSection {
