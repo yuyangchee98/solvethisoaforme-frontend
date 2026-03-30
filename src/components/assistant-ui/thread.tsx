@@ -82,13 +82,13 @@ const GeneratingWarning: FC = () => {
   const threadRuntime = useThreadRuntime();
 
   useEffect(() => {
-    return threadRuntime.unstable_on("run-start", () => {
+    return threadRuntime.unstable_on("run-start" as any, () => {
       const handler = (e: BeforeUnloadEvent) => {
         e.preventDefault();
       };
       window.addEventListener("beforeunload", handler);
 
-      const unsub = threadRuntime.unstable_on("run-end", () => {
+      const unsub = threadRuntime.unstable_on("run-end" as any, () => {
         window.removeEventListener("beforeunload", handler);
         unsub();
       });

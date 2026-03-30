@@ -357,7 +357,7 @@ const AttachmentPreviewDialog: FC<PropsWithChildren> = ({ children }) => {
 
 // PDF Thumbnail component - renders first page as a small preview
 // Accepts either a File object or a blob URL string
-const PdfThumbnail: FC<{ source: File | string }> = ({ source }) => {
+const PdfThumbnail: FC<{ source: File | string | { url: string; httpHeaders: Record<string, string> } }> = ({ source }) => {
   const [numPages, setNumPages] = useState<number | null>(null);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
