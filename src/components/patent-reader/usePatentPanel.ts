@@ -6,8 +6,19 @@ import type {
   NumeralLocation,
   ClaimElementsData,
 } from "@/lib/api";
-import type { Patent } from "./types";
+import type { Patent, LineBreak } from "./types";
 import type { SearchTerm, SearchHighlights, SearchOccurrence, SearchOptions } from "./search-utils";
+
+export interface ColLineSelection {
+  /** The formatted string, e.g. "col.3, L15-22" */
+  label: string;
+  /** Line breaks for the start of the selection range */
+  startBreak: LineBreak;
+  /** Line breaks for the end of the selection range */
+  endBreak: LineBreak;
+  /** All line breaks between start and end (for highlighting on PDF) */
+  lineBreaks: LineBreak[];
+}
 import { computeSearchHighlights, computeSearchOccurrences } from "./search-utils";
 
 interface UsePatentPanelOptions {
@@ -47,6 +58,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
   const [searchTerms, setSearchTerms] = useState<SearchTerm[]>([]);
   const [searchWholeWord, setSearchWholeWord] = useState(false);
   const [searchCaseSensitive, setSearchCaseSensitive] = useState(false);
+  const [colLineSelection, setColLineSelection] = useState<ColLineSelection | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -332,6 +344,14 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setSearchCaseSensitive((v) => !v);
   }, []);
 
+  const handleColLineSelect = useCallback((selection: ColLineSelection | null) => {
+    setColLineSelection(selection);
+    if (selection) {
+      setSidebarTab("source");
+      options?.onRequestSidebarOpen?.();
+    }
+  }, [options]);
+
   const scrollToSearchOccurrence = useCallback(
     (termIndex: number, globalOccurrenceIndex: number) => {
       const allSpans = qsa<HTMLElement>(`[data-search-term="${termIndex}"]`);
@@ -398,6 +418,8 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setHighlightedLocation,
     setSidebarTab,
     toggleBboxes,
+    colLineSelection,
+    handleColLineSelect,
   };
 }
 

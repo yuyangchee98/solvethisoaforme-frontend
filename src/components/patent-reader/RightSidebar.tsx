@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 import {
   Image,
   Info,
@@ -28,8 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
-import type { Patent, PatentClaim } from "./types";
+import type { Patent, PatentClaim, LineBreak } from "./types";
 import type { ReferenceNumeral, NumeralLocation } from "@/lib/api";
+import type { ColLineSelection } from "./usePatentPanel";
 import type { SearchTerm, SearchOccurrence } from "./search-utils";
 import { SEARCH_COLORS } from "./search-utils";
 
@@ -68,6 +72,7 @@ interface RightSidebarProps {
   searchCaseSensitive?: boolean;
   onToggleSearchWholeWord?: () => void;
   onToggleSearchCaseSensitive?: () => void;
+  colLineSelection?: ColLineSelection | null;
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -1088,6 +1093,144 @@ function SearchTab({
   );
 }
 
+// ── Source tab (PDF page with col/line highlights) ────────────────────────
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
+
+const API_BASE = import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
+
+function SourceTab({
+  patentNumber,
+  colLineSelection,
+}: {
+  patentNumber: string;
+  colLineSelection: ColLineSelection | null;
+}) {
+  const pdfUrl = `${API_BASE}/patents/${encodeURIComponent(patentNumber)}/pdf`;
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [pageSize, setPageSize] = useState<{ width: number; height: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(350);
+
+  // Track container width for responsive scaling
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Determine which page to show
+  const pageNumber = colLineSelection?.lineBreaks[0]?.page ?? null;
+
+  // Get the PDF coordinate dimensions from line_breaks
+  const pdfPageWidth = colLineSelection?.lineBreaks[0]?.page_width ?? 612;
+
+  // Scale factor: rendered width / PDF coordinate width
+  const scale = containerWidth / pdfPageWidth;
+
+  // Draw highlight overlay
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !colLineSelection || !pageNumber) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Set canvas size to match the rendered page
+    canvas.width = containerWidth;
+    canvas.height = pageSize ? pageSize.height * (containerWidth / pageSize.width) : 800;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw highlight rectangles for each line in the selection
+    ctx.fillStyle = "rgba(251, 191, 36, 0.25)"; // amber-400 at 25%
+    ctx.strokeStyle = "rgba(251, 191, 36, 0.6)";
+    ctx.lineWidth = 0.5;
+
+    for (const lb of colLineSelection.lineBreaks) {
+      if (lb.page !== pageNumber || lb.y == null || lb.gutter_x == null || lb.page_width == null) continue;
+
+      const gutterX = lb.gutter_x * scale;
+      const pageW = lb.page_width * scale;
+      const y = lb.y * scale;
+      const lineH = 10 * scale;
+
+      // Determine column bounds
+      let x0: number, x1: number;
+      // col1 = left of gutter, col2 = right of gutter
+      // We detect by checking if the original text x position would be left or right of gutter
+      // Since we stored col number, compare with the page's column layout
+      // Simple heuristic: if this is the first column on the page, it's left side
+      const isCol1 = lb.col % 2 === 1; // odd columns are left (col 1, 3, 5...)
+      if (isCol1) {
+        x0 = 55 * scale;
+        x1 = gutterX - 5 * scale;
+      } else {
+        x0 = gutterX + 10 * scale;
+        x1 = pageW - 20 * scale;
+      }
+
+      ctx.fillRect(x0, y * 1 - 1 * scale, x1 - x0, lineH);
+      ctx.strokeRect(x0, y * 1 - 1 * scale, x1 - x0, lineH);
+    }
+  }, [colLineSelection, pageNumber, containerWidth, pageSize, scale]);
+
+  const onPageLoadSuccess = useCallback((page: { width: number; height: number }) => {
+    setPageSize({ width: page.width, height: page.height });
+  }, []);
+
+  if (!colLineSelection || !pageNumber) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-6 text-center">
+        <p className="text-sm text-stone-400">
+          Select text in the description to see the corresponding PDF location.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="flex-1 overflow-y-auto p-2">
+      {/* Label */}
+      <div className="flex items-center justify-between mb-2 px-1">
+        <span className="text-xs font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
+          {colLineSelection.label}
+        </span>
+        <span className="text-[10px] text-stone-400">
+          Page {pageNumber}
+        </span>
+      </div>
+
+      {/* PDF page with highlight overlay */}
+      <div className="relative border border-stone-200 rounded overflow-hidden">
+        <Document file={pdfUrl} loading={null}>
+          <Page
+            pageNumber={pageNumber}
+            width={containerWidth - 16}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+            onLoadSuccess={onPageLoadSuccess}
+          />
+        </Document>
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 pointer-events-none"
+          style={{ width: "100%", height: "100%" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+
 // ── Main component ───────────────────────────────────────────────────────
 
 export function RightSidebar({
@@ -1122,6 +1265,7 @@ export function RightSidebar({
   searchCaseSensitive,
   onToggleSearchWholeWord,
   onToggleSearchCaseSensitive,
+  colLineSelection,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -1129,6 +1273,7 @@ export function RightSidebar({
       <div className="flex flex-col items-center pt-2 pb-2 gap-0.5 border-l border-stone-200 bg-white w-12">
         {[
           { value: "figures", icon: Image, label: "Figures" },
+          { value: "source", icon: FileText, label: "Source" },
           { value: "details", icon: Info, label: "Details" },
           { value: "outline", icon: List, label: "Outline" },
           { value: "search", icon: Search, label: "Search" },
@@ -1170,7 +1315,7 @@ export function RightSidebar({
       {/* Tab bar + collapse */}
       <div className="flex items-center border-b border-stone-200">
         <TabsList className="flex flex-1 h-auto bg-transparent p-0 rounded-none -mb-px">
-          {(["figures", "details", "outline", "search"] as const).map((tab) => (
+          {(["figures", "source", "details", "outline", "search"] as const).map((tab) => (
             <TabsTrigger
               key={tab}
               value={tab}
@@ -1205,6 +1350,12 @@ export function RightSidebar({
           numeralLabels={numeralLabels}
           onBboxClick={onBboxClick}
           onFigureClick={onFigureClick}
+        />
+      </TabsContent>
+      <TabsContent value="source" className="mt-0 flex-1 min-h-0 flex flex-col">
+        <SourceTab
+          patentNumber={patent.patent_number}
+          colLineSelection={colLineSelection ?? null}
         />
       </TabsContent>
       <TabsContent value="details" className="mt-0 flex-1 overflow-y-auto">

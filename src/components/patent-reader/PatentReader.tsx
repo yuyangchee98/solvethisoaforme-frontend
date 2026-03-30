@@ -161,6 +161,7 @@ function PanelSidebar({
       activeNumeral={panel.activeNumeral}
       activeTab={panel.sidebarTab}
       onTabChange={panel.setSidebarTab}
+      colLineSelection={panel.colLineSelection}
       selectedFigure={panel.selectedFigure}
       onSelectFigure={(i) => {
         panel.setSelectedFigure(i);
@@ -646,6 +647,7 @@ export function PatentReader() {
                 onClaimClick={left.handleClaimClick}
                 onElementHover={left.setActiveElementGroup}
                 onElementClick={left.handleElementClick}
+                onColLineSelect={left.handleColLineSelect}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -691,6 +693,7 @@ export function PatentReader() {
                 onClaimClick={right.handleClaimClick}
                 onElementHover={right.setActiveElementGroup}
                 onElementClick={right.handleElementClick}
+                onColLineSelect={right.handleColLineSelect}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -762,6 +765,7 @@ export function PatentReader() {
           onClaimClick={left.handleClaimClick}
           onElementHover={left.setActiveElementGroup}
           onElementClick={left.handleElementClick}
+          onColLineSelect={left.handleColLineSelect}
         />
 
         {/* Desktop: inline sidebar */}

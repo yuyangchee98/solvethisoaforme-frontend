@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { Patent, PatentParagraph, ClaimLimitation, LineBreak } from "./types";
+import type { ColLineSelection } from "./usePatentPanel";
 import type { ReferenceNumeralHighlights, HighlightSpan, ClaimElementSpan, ClaimElementsData } from "@/lib/api";
 import type { SearchHighlightSpan, SearchHighlights } from "./search-utils";
 import { SEARCH_COLORS } from "./search-utils";
@@ -97,6 +98,7 @@ interface CenterPanelProps {
   onClaimClick: (claimNumber: number) => void;
   onElementHover: (groupId: number | null) => void;
   onElementClick: (groupId: number) => void;
+  onColLineSelect?: (selection: ColLineSelection | null) => void;
 }
 
 /** Find the claim element span that covers a given character position. */
@@ -610,6 +612,7 @@ export function CenterPanel({
   onClaimClick,
   onElementHover,
   onElementClick,
+  onColLineSelect,
 }: CenterPanelProps) {
   const [showJumpTo, setShowJumpTo] = useState(false);
   const [jumpInput, setJumpInput] = useState("");
@@ -653,7 +656,7 @@ export function CenterPanel({
     const sel = window.getSelection();
     console.log("[ColLine] mouseUp, selection:", sel?.toString().slice(0, 50), "collapsed:", sel?.isCollapsed);
     if (!sel || sel.isCollapsed || !sel.rangeCount) {
-      setSelectionTooltip(null);
+      setSelectionIndicator(null);
       return;
     }
 
@@ -671,7 +674,7 @@ export function CenterPanel({
     const focusPara = findParaContainer(sel.focusNode);
     console.log("[ColLine] anchorPara:", !!anchorPara, "hasLineBreaks:", !!anchorPara?.dataset.lineBreaks);
     if (!anchorPara) {
-      setSelectionTooltip(null);
+      setSelectionIndicator(null);
       return;
     }
 
@@ -717,6 +720,18 @@ export function CenterPanel({
 
       const text = formatSelectionRange(startLoc, endLoc);
 
+      // Collect all line_breaks between start and end for PDF highlighting
+      // Combine both paragraphs' line_breaks, filter to the selected col/line range
+      const allBreaks = focusPara !== anchorPara
+        ? [...lineBreaks, ...endLineBreaks]
+        : lineBreaks;
+      const selectedBreaks = allBreaks.filter((lb) => {
+        const key = lb.col * 1000 + lb.line;
+        const startKey = startLoc.col * 1000 + startLoc.line;
+        const endKey = endLoc.col * 1000 + endLoc.line;
+        return key >= startKey && key <= endKey;
+      });
+
       // Position indicator at the vertical center of the selection
       const range = sel.getRangeAt(0);
       const rect = range.getBoundingClientRect();
@@ -728,11 +743,20 @@ export function CenterPanel({
       console.log("[ColLine] resolved:", text, "y:", y);
       setSelectionIndicator({ text, y });
       setCopied(false);
+
+      // Notify parent for sidebar Source tab
+      onColLineSelect?.({
+        label: text,
+        startBreak: startLoc,
+        endBreak: endLoc,
+        lineBreaks: selectedBreaks,
+      });
     } catch (err) {
       console.error("[ColLine] error:", err);
       setSelectionIndicator(null);
+      onColLineSelect?.(null);
     }
-  }, []);
+  }, [onColLineSelect]);
 
   // Dismiss tooltip when selection is cleared
   useEffect(() => {

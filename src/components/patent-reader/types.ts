@@ -16,6 +16,10 @@ export interface LineBreak {
   offset: number;
   col: number;
   line: number;
+  page?: number;
+  y?: number;
+  gutter_x?: number;
+  page_width?: number;
 }
 
 export interface PatentParagraph {
