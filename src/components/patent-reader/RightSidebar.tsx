@@ -1383,12 +1383,23 @@ export function RightSidebar({
       {dragHandleProps && (
         <div
           className={cn(
-            "absolute inset-y-0 left-0 w-1.5 z-10 cursor-col-resize",
+            "absolute inset-y-0 left-0 w-2 z-10 cursor-col-resize group/grip",
             "hover:bg-amber-500/20 active:bg-amber-500/30",
             isDragging && "bg-amber-500/30"
           )}
           {...dragHandleProps}
-        />
+        >
+          {/* Grip dots */}
+          <div className={cn(
+            "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-[3px] opacity-0 transition-opacity",
+            "group-hover/grip:opacity-100",
+            isDragging && "opacity-100"
+          )}>
+            {[0, 1, 2, 3, 4].map((j) => (
+              <div key={j} className="w-[3px] h-[3px] rounded-full bg-amber-400" />
+            ))}
+          </div>
+        </div>
       )}
       {/* Tab bar + collapse */}
       <div className="flex items-center border-b border-stone-200">

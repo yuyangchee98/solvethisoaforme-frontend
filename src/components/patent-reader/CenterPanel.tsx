@@ -328,14 +328,41 @@ function RichText({
             return <span key={i}>{raw}</span>;
           }
 
+          // Single figure: entire "FIG. 1" is one clickable unit
+          if (numMatches.length === 1) {
+            const figIndex = parseInt(numMatches[0][0], 10);
+            return (
+              <span
+                key={i}
+                data-fig-ref={String(figIndex)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFigureClick(figIndex);
+                }}
+                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 cursor-pointer rounded px-0.5 transition-colors font-medium"
+              >
+                {raw}
+              </span>
+            );
+          }
+
+          // Multiple figures: each number clickable, surrounding text clicks nearest figure
           const fragments: React.ReactNode[] = [];
           let fi = 0;
           for (let ni = 0; ni < numMatches.length; ni++) {
             const nm = numMatches[ni];
             const nmStart = nm.index!;
             if (nmStart > fi) {
+              const nearestFig = parseInt(numMatches[ni > 0 ? ni - 1 : 0][0], 10);
               fragments.push(
-                <span key={`${i}-t${ni}`} className="text-blue-600 font-medium">
+                <span
+                  key={`${i}-t${ni}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFigureClick(nearestFig);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 cursor-pointer font-medium"
+                >
                   {raw.slice(fi, nmStart)}
                 </span>
               );
@@ -357,8 +384,16 @@ function RichText({
             fi = nmStart + nm[0].length;
           }
           if (fi < raw.length) {
+            const lastFig = parseInt(numMatches[numMatches.length - 1][0], 10);
             fragments.push(
-              <span key={`${i}-te`} className="text-blue-600 font-medium">
+              <span
+                key={`${i}-te`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFigureClick(lastFig);
+                }}
+                className="text-blue-600 hover:text-blue-800 cursor-pointer font-medium"
+              >
                 {raw.slice(fi)}
               </span>
             );
@@ -552,16 +587,16 @@ function ClaimLimitationsRenderer({
   );
 }
 
-function formatParaLocation(para: PatentParagraph): string | null {
-  if (para.number) return `[${para.number}]`;
+function formatParaLocation(para: PatentParagraph): React.ReactNode | null {
+  if (para.number) return <>[{para.number}]</>;
   if (para.col != null && para.line != null) {
     if (para.end_col != null && para.end_line != null) {
       if (para.col === para.end_col) {
-        return `[col.${para.col}, L${para.line}-${para.end_line}]`;
+        return <>[col {para.col}<br />L{para.line}–{para.end_line}]</>;
       }
-      return `[col.${para.col}, L${para.line} \u2192 col.${para.end_col}, L${para.end_line}]`;
+      return <>[col {para.col}<br />L{para.line}<br /><span className="text-stone-300">↓</span><br />col {para.end_col}<br />L{para.end_line}]</>;
     }
-    return `[col.${para.col}, L${para.line}]`;
+    return <>[col {para.col}<br />L{para.line}]</>;
   }
   return null;
 }
@@ -586,17 +621,20 @@ function resolveOffset(offset: number, lineBreaks: LineBreak[]): LineBreak {
 /** Format a resolved selection range as a copyable string. */
 function formatSelectionRange(start: LineBreak, end: LineBreak): string {
   if (start.col === end.col && start.line === end.line) {
-    return `col.${start.col}, L${start.line}`;
+    return `col ${start.col}, L${start.line}`;
   }
   if (start.col === end.col) {
-    return `col.${start.col}, L${start.line}-${end.line}`;
+    return `col ${start.col}, L${start.line}–${end.line}`;
   }
-  return `col.${start.col}, L${start.line} \u2013 col.${end.col}, L${end.line}`;
+  return `col ${start.col}, L${start.line} → col ${end.col}, L${end.line}`;
 }
 
 interface SelectionIndicator {
   text: string;
-  y: number;  // top position relative to scroll container (with scroll offset)
+  paraId: string | null;
+  labelX: number;   // left edge of the label span, relative to scroll container
+  labelW: number;   // width of the label span
+  y: number;        // top of highlighted text, relative to scroll container
 }
 
 export function CenterPanel({
@@ -619,29 +657,60 @@ export function CenterPanel({
   const [flashParagraph, setFlashParagraph] = useState<string | null>(null);
   const [selectionIndicator, setSelectionIndicator] = useState<SelectionIndicator | null>(null);
   const [copied, setCopied] = useState(false);
+  const [jumpColInput, setJumpColInput] = useState("");
   const jumpInputRef = useRef<HTMLInputElement>(null);
+  const jumpColRef = useRef<HTMLInputElement>(null);
+  const jumpLineRef = useRef<HTMLInputElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const isColLinePatent = patent.description.some(s => s.paragraphs.some(p => p.col != null));
 
   const handleParagraphClick = useCallback(() => {
     setShowJumpTo(true);
     setJumpInput("");
-    requestAnimationFrame(() => jumpInputRef.current?.focus());
-  }, []);
+    setJumpColInput("");
+    requestAnimationFrame(() => {
+      if (isColLinePatent) jumpColRef.current?.focus();
+      else jumpInputRef.current?.focus();
+    });
+  }, [isColLinePatent]);
 
   const handleJumpTo = useCallback(() => {
-    const cleaned = jumpInput.replace(/[\[\]]/g, "").trim();
-    if (!cleaned) return;
-    let el = document.getElementById(`para-${cleaned}`);
-    if (!el && /^\d+$/.test(cleaned)) {
-      el = document.getElementById(`para-${cleaned.padStart(4, "0")}`);
-    }
-    // Try col/line format: "3,31" or "col.3, L31" or "3 31"
-    if (!el) {
-      const colLineMatch = cleaned.match(/(?:col\.?\s*)?(\d+)[,\s]+(?:L?\s*)?(\d+)/i);
-      if (colLineMatch) {
-        el = document.getElementById(`para-col${colLineMatch[1]}-L${colLineMatch[2]}`);
+    let el: HTMLElement | null = null;
+
+    if (isColLinePatent) {
+      const col = jumpColInput.trim();
+      const line = jumpInput.trim();
+      if (!col || !line) return;
+      // Find nearest paragraph: scan all para IDs matching this col, find closest line
+      const prefix = `para-col${col}-L`;
+      const allParas = document.querySelectorAll<HTMLElement>(`[id^="${prefix}"]`);
+      const targetLine = parseInt(line, 10);
+      let bestDist = Infinity;
+      allParas.forEach((p) => {
+        const pLine = parseInt(p.id.slice(prefix.length), 10);
+        const dist = Math.abs(pLine - targetLine);
+        if (dist < bestDist) {
+          bestDist = dist;
+          el = p;
+        }
+      });
+    } else {
+      const cleaned = jumpInput.replace(/[\[\]]/g, "").trim();
+      if (!cleaned) return;
+      el = document.getElementById(`para-${cleaned}`);
+      if (!el && /^\d+$/.test(cleaned)) {
+        el = document.getElementById(`para-${cleaned.padStart(4, "0")}`);
+      }
+      // Fallback: col/line format in single input
+      if (!el) {
+        const colLineMatch = cleaned.match(/(?:col\.?\s*)?(\d+)[,\s]+(?:L?\s*)?(\d+)/i);
+        if (colLineMatch) {
+          el = document.getElementById(`para-col${colLineMatch[1]}-L${colLineMatch[2]}`);
+        }
       }
     }
+
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       const paraKey = el.id.replace("para-", "");
@@ -649,7 +718,7 @@ export function CenterPanel({
       setTimeout(() => setFlashParagraph(null), 1500);
     }
     setShowJumpTo(false);
-  }, [jumpInput]);
+  }, [jumpInput, jumpColInput, isColLinePatent]);
 
   // Selection → col/line tooltip
   const handleTextSelect = useCallback(() => {
@@ -732,16 +801,25 @@ export function CenterPanel({
         return key >= startKey && key <= endKey;
       });
 
-      // Position indicator at the vertical center of the selection
+      // Find the paragraph div id and its label position
+      const paraDiv = anchorPara.parentElement;
+      const pid = paraDiv?.id ?? null;
+
       const range = sel.getRangeAt(0);
       const rect = range.getBoundingClientRect();
       const container = scrollContainerRef.current;
       const containerRect = container?.getBoundingClientRect();
       const scrollTop = container?.scrollTop ?? 0;
-      const y = rect.top + rect.height / 2 - (containerRect?.top ?? 0) + scrollTop;
+      const y = rect.top - (containerRect?.top ?? 0) + scrollTop;
 
-      console.log("[ColLine] resolved:", text, "y:", y);
-      setSelectionIndicator({ text, y });
+      // Get the label span's position so the indicator matches exactly
+      const labelSpan = pid ? document.getElementById(pid)?.querySelector("[data-para-label]") as HTMLElement | null : null;
+      const labelRect = labelSpan?.getBoundingClientRect();
+      const labelX = labelRect ? labelRect.left - (containerRect?.left ?? 0) : 0;
+      const labelW = labelRect ? labelRect.width : 56; // fallback w-14 = 56px
+
+      console.log("[ColLine] resolved:", text, "paraId:", pid, "y:", y);
+      setSelectionIndicator({ text, paraId: pid, labelX, labelW, y });
       setCopied(false);
 
       // Notify parent for sidebar Source tab
@@ -791,19 +869,19 @@ export function CenterPanel({
 
   return (
     <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-stone-50 relative" onMouseUp={handleTextSelect}>
-      {/* Selection col/line indicator — left margin */}
+      {/* Selection col/line indicator — same column as paragraph labels, at selection y */}
       {selectionIndicator && (
         <div
-          className="absolute left-2 z-40 pointer-events-auto flex items-center gap-1 cursor-pointer group"
-          style={{ top: selectionIndicator.y, transform: "translateY(-50%)" }}
+          className="absolute z-40 pointer-events-auto cursor-pointer group text-right"
+          style={{ left: selectionIndicator.labelX, width: selectionIndicator.labelW, top: selectionIndicator.y }}
           onClick={handleCopyLocation}
           title="Click to copy"
         >
           <span className={cn(
-            "text-[10px] font-mono whitespace-nowrap px-1.5 py-0.5 rounded transition-colors",
+            "text-[11px] lg:text-xs font-mono leading-tight transition-colors",
             copied
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-amber-100 text-amber-700 group-hover:bg-amber-200",
+              ? "text-emerald-600"
+              : "text-amber-600 group-hover:text-amber-700",
           )}>
             {copied ? "Copied!" : selectionIndicator.text}
           </span>
@@ -818,19 +896,55 @@ export function CenterPanel({
             className="bg-white rounded-lg shadow-xl border border-stone-200 px-4 py-3 flex items-center gap-3 animate-in fade-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-sm font-medium text-stone-500">Go to ¶</span>
-            <input
-              ref={jumpInputRef}
-              type="text"
-              value={jumpInput}
-              onChange={(e) => setJumpInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleJumpTo();
-                if (e.key === "Escape") setShowJumpTo(false);
-              }}
-              placeholder="0042"
-              className="text-sm border border-stone-300 rounded-md px-2.5 py-1 w-28 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400"
-            />
+            {isColLinePatent ? (
+              <>
+                <span className="text-sm font-medium text-stone-500">Go to</span>
+                <div className="flex items-center gap-1.5">
+                  <label className="text-xs text-stone-400">col</label>
+                  <input
+                    ref={jumpColRef}
+                    type="text"
+                    value={jumpColInput}
+                    onChange={(e) => setJumpColInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleJumpTo();
+                      if (e.key === "Escape") setShowJumpTo(false);
+                    }}
+                    placeholder="1"
+                    className="text-sm border border-stone-300 rounded-md px-2 py-1 w-12 text-center focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400"
+                  />
+                  <label className="text-xs text-stone-400">line</label>
+                  <input
+                    ref={jumpLineRef}
+                    type="text"
+                    value={jumpInput}
+                    onChange={(e) => setJumpInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleJumpTo();
+                      if (e.key === "Escape") setShowJumpTo(false);
+                    }}
+                    placeholder="46"
+                    className="text-sm border border-stone-300 rounded-md px-2 py-1 w-14 text-center focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="text-sm font-medium text-stone-500">Go to ¶</span>
+                <input
+                  ref={jumpInputRef}
+                  type="text"
+                  value={jumpInput}
+                  onChange={(e) => setJumpInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleJumpTo();
+                    if (e.key === "Escape") setShowJumpTo(false);
+                  }}
+                  placeholder="0042"
+                  className="text-sm border border-stone-300 rounded-md px-2.5 py-1 w-28 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400"
+                />
+              </>
+            )}
             <kbd className="text-[10px] text-stone-400 bg-stone-100 border border-stone-200 rounded px-1 py-0.5">Enter</kbd>
           </div>
         </div>
@@ -893,6 +1007,7 @@ export function CenterPanel({
                 const pid = paraId(para);
                 const locationLabel = formatParaLocation(para);
                 const hasColLine = para.col != null;
+                const isSelectionTarget = selectionIndicator && pid && selectionIndicator.paraId === pid;
                 return (
                 <div
                   key={pi}
@@ -904,10 +1019,12 @@ export function CenterPanel({
                 >
                   {locationLabel && (
                     <span
+                      data-para-label
                       onClick={handleParagraphClick}
                       className={cn(
-                        "text-[10px] lg:text-[11px] font-mono text-stone-300 hover:text-amber-500 cursor-pointer select-none pt-1 shrink-0 text-right transition-colors",
-                        hasColLine ? "w-fit whitespace-nowrap" : "w-10",
+                        "text-[11px] lg:text-xs font-mono leading-tight cursor-pointer select-none pt-1 shrink-0 text-right transition-colors text-stone-400 hover:text-amber-500",
+                        hasColLine ? "w-14" : "w-10",
+                        isSelectionTarget && "invisible",
                       )}
                       title="Jump to paragraph..."
                     >
