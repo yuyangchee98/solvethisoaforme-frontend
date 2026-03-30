@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { Patent, ClaimLimitation } from "./types";
+import type { Patent, PatentParagraph, ClaimLimitation } from "./types";
 import type { ReferenceNumeralHighlights, HighlightSpan, ClaimElementSpan, ClaimElementsData } from "@/lib/api";
 import type { SearchHighlightSpan, SearchHighlights } from "./search-utils";
 import { SEARCH_COLORS } from "./search-utils";
@@ -550,6 +550,26 @@ function ClaimLimitationsRenderer({
   );
 }
 
+function formatParaLocation(para: PatentParagraph): string | null {
+  if (para.number) return `[${para.number}]`;
+  if (para.col != null && para.line != null) {
+    if (para.end_col != null && para.end_line != null) {
+      if (para.col === para.end_col) {
+        return `[col.${para.col}, L${para.line}-${para.end_line}]`;
+      }
+      return `[col.${para.col}, L${para.line} \u2192 col.${para.end_col}, L${para.end_line}]`;
+    }
+    return `[col.${para.col}, L${para.line}]`;
+  }
+  return null;
+}
+
+function paraId(para: PatentParagraph): string | undefined {
+  if (para.number) return `para-${para.number}`;
+  if (para.col != null && para.line != null) return `para-col${para.col}-L${para.line}`;
+  return undefined;
+}
+
 export function CenterPanel({
   patent,
   activeNumeral,
@@ -582,10 +602,17 @@ export function CenterPanel({
     if (!el && /^\d+$/.test(cleaned)) {
       el = document.getElementById(`para-${cleaned.padStart(4, "0")}`);
     }
+    // Try col/line format: "3,31" or "col.3, L31" or "3 31"
+    if (!el) {
+      const colLineMatch = cleaned.match(/(?:col\.?\s*)?(\d+)[,\s]+(?:L?\s*)?(\d+)/i);
+      if (colLineMatch) {
+        el = document.getElementById(`para-col${colLineMatch[1]}-L${colLineMatch[2]}`);
+      }
+    }
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
-      const paraNum = el.id.replace("para-", "");
-      setFlashParagraph(paraNum);
+      const paraKey = el.id.replace("para-", "");
+      setFlashParagraph(paraKey);
       setTimeout(() => setFlashParagraph(null), 1500);
     }
     setShowJumpTo(false);
@@ -685,22 +712,29 @@ export function CenterPanel({
               {section.heading}
             </h2>
             <div className="space-y-3">
-              {section.paragraphs.map((para, pi) => (
+              {section.paragraphs.map((para, pi) => {
+                const pid = paraId(para);
+                const locationLabel = formatParaLocation(para);
+                const hasColLine = para.col != null;
+                return (
                 <div
                   key={pi}
-                  id={para.number ? `para-${para.number}` : undefined}
+                  id={pid}
                   className={cn(
                     "flex gap-2 rounded-sm transition-colors duration-700",
-                    flashParagraph === para.number && "bg-amber-100/60",
+                    pid && flashParagraph === pid.replace("para-", "") && "bg-amber-100/60",
                   )}
                 >
-                  {para.number && (
+                  {locationLabel && (
                     <span
                       onClick={handleParagraphClick}
-                      className="text-[10px] lg:text-[11px] font-mono text-stone-300 hover:text-amber-500 cursor-pointer select-none pt-1 shrink-0 w-10 text-right transition-colors"
+                      className={cn(
+                        "text-[10px] lg:text-[11px] font-mono text-stone-300 hover:text-amber-500 cursor-pointer select-none pt-1 shrink-0 text-right transition-colors",
+                        hasColLine ? "w-fit whitespace-nowrap" : "w-10",
+                      )}
                       title="Jump to paragraph..."
                     >
-                      [{para.number}]
+                      {locationLabel}
                     </span>
                   )}
                   <p className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1">
@@ -712,7 +746,8 @@ export function CenterPanel({
                     />
                   </p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         ))}

@@ -15,6 +15,10 @@ export interface PatentClaim {
 export interface PatentParagraph {
   text: string;
   number: string | null;
+  col?: number;
+  line?: number;
+  end_col?: number;
+  end_line?: number;
 }
 
 export interface PatentSection {
