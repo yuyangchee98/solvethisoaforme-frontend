@@ -10,6 +10,7 @@ import { ComparisonToolbar } from "./ComparisonToolbar";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { usePatentPanel } from "./usePatentPanel";
 import { usePatentRegistry } from "./usePatentRegistry";
+import { useResizableWidth } from "@/lib/useResizableWidth";
 import type { PatentPanel } from "./usePatentPanel";
 
 // ── URL state helpers ────────────────────────────────────────────────
@@ -146,13 +147,32 @@ function PanelSidebar({
   onToggle,
   onScrollTo,
   containerRef,
+  resizable = true,
 }: {
   panel: PatentPanel;
   collapsed: boolean;
   onToggle: () => void;
   onScrollTo: (id: string) => void;
   containerRef?: React.RefObject<HTMLElement | null>;
+  resizable?: boolean;
 }) {
+  const [sidebarWidth, setSidebarWidth] = useState(384);
+
+  const { isDragging, handleProps } = useResizableWidth({
+    initialWidth: sidebarWidth,
+    minWidth: 280,
+    maxWidth: () => window.innerWidth * 0.5,
+    onWidthChange: setSidebarWidth,
+  });
+
+  // Clamp width when viewport shrinks
+  useEffect(() => {
+    const handler = () =>
+      setSidebarWidth((w) => Math.min(w, window.innerWidth * 0.5));
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
   if (!panel.patent) return null;
   return (
     <RightSidebar
@@ -191,6 +211,9 @@ function PanelSidebar({
       searchCaseSensitive={panel.searchCaseSensitive}
       onToggleSearchWholeWord={panel.toggleSearchWholeWord}
       onToggleSearchCaseSensitive={panel.toggleSearchCaseSensitive}
+      width={resizable ? sidebarWidth : undefined}
+      isDragging={resizable ? isDragging : undefined}
+      dragHandleProps={resizable ? handleProps : undefined}
     />
   );
 }
@@ -803,6 +826,7 @@ export function PatentReader() {
                     setSheetOpen(false);
                     setTimeout(() => left.handleScrollTo(id), 300);
                   }}
+                  resizable={false}
                 />
               </SheetContent>
             </Sheet>

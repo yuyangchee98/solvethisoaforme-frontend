@@ -73,6 +73,14 @@ interface RightSidebarProps {
   onToggleSearchWholeWord?: () => void;
   onToggleSearchCaseSensitive?: () => void;
   colLineSelection?: ColLineSelection | null;
+  // Resize
+  width?: number;
+  isDragging?: boolean;
+  dragHandleProps?: {
+    onPointerDown: (e: React.PointerEvent) => void;
+    onPointerMove: (e: React.PointerEvent) => void;
+    onPointerUp: () => void;
+  };
 }
 
 // ── Outline tab internals ────────────────────────────────────────────────
@@ -1320,6 +1328,9 @@ export function RightSidebar({
   onToggleSearchWholeWord,
   onToggleSearchCaseSensitive,
   colLineSelection,
+  width,
+  isDragging,
+  dragHandleProps,
 }: RightSidebarProps) {
 
   if (collapsed) {
@@ -1363,9 +1374,22 @@ export function RightSidebar({
       value={activeTab}
       onValueChange={onTabChange}
       className={cn(
-        "flex flex-col border-l border-stone-200 bg-white shrink-0 w-96"
+        "flex flex-col border-l border-stone-200 bg-white shrink-0 relative",
+        !width && "w-96"
       )}
+      style={width ? { width } : undefined}
     >
+      {/* Drag handle */}
+      {dragHandleProps && (
+        <div
+          className={cn(
+            "absolute inset-y-0 left-0 w-1.5 z-10 cursor-col-resize",
+            "hover:bg-amber-500/20 active:bg-amber-500/30",
+            isDragging && "bg-amber-500/30"
+          )}
+          {...dragHandleProps}
+        />
+      )}
       {/* Tab bar + collapse */}
       <div className="flex items-center border-b border-stone-200">
         <TabsList className="flex flex-1 h-auto bg-transparent p-0 rounded-none -mb-px">
