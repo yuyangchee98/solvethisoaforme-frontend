@@ -181,8 +181,13 @@ function FiguresTab({
   const [rotation, setRotation] = useState(0);
   const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const figImgRef = useRef<HTMLImageElement>(null);
-  // Reset rotation and natural size when switching figures
-  useEffect(() => { setRotation(0); setNaturalSize(null); }, [selectedFigure]);
+  // Zoom & pan state
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const isPanningRef = useRef(false);
+  const panStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
+  // Reset rotation, zoom, and natural size when switching figures
+  useEffect(() => { setRotation(0); setNaturalSize(null); setZoom(1); setPan({ x: 0, y: 0 }); }, [selectedFigure]);
 
   // Capture natural image dimensions — handles both cached and uncached images
   useEffect(() => {
@@ -232,6 +237,51 @@ function FiguresTab({
     isSideways && containerSize && fittedSize
       ? Math.min(1, containerSize.w / fittedSize.h, containerSize.h / fittedSize.w)
       : 1;
+
+  // Wheel zoom — zoom toward cursor position
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const container = figContainerRef.current;
+    if (!container || !fittedSize) return;
+    const rect = container.getBoundingClientRect();
+    // Cursor position relative to container center (normalized -0.5 to 0.5)
+    const cx = (e.clientX - rect.left - rect.width / 2) / rect.width;
+    const cy = (e.clientY - rect.top - rect.height / 2) / rect.height;
+    setZoom((prev) => {
+      const next = Math.min(8, Math.max(1, prev * (1 - e.deltaY * 0.002)));
+      // Adjust pan so the point under the cursor stays fixed
+      setPan((p) => ({
+        x: p.x - cx * rect.width * (next - prev) / next,
+        y: p.y - cy * rect.height * (next - prev) / next,
+      }));
+      return next;
+    });
+  }, [fittedSize]);
+
+  // Drag-to-pan handlers
+  const handlePanStart = useCallback((e: React.PointerEvent) => {
+    if (zoom <= 1) return;
+    isPanningRef.current = true;
+    panStartRef.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, [zoom, pan]);
+
+  const handlePanMove = useCallback((e: React.PointerEvent) => {
+    if (!isPanningRef.current) return;
+    setPan({
+      x: panStartRef.current.panX + (e.clientX - panStartRef.current.x),
+      y: panStartRef.current.panY + (e.clientY - panStartRef.current.y),
+    });
+  }, []);
+
+  const handlePanEnd = useCallback(() => {
+    isPanningRef.current = false;
+  }, []);
+
+  const handleDoubleClick = useCallback(() => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }, []);
 
   const elementsOnSheet: { numeral: string; label: string }[] = [];
   if (selectedFigure !== null) {
@@ -285,7 +335,8 @@ function FiguresTab({
       {selectedFigure !== null ? (
         <div className="flex-1 min-h-0 flex flex-col">
           {/* Bbox toggles */}
-          <div className="flex items-center justify-end gap-1 px-3 pt-2">
+          <div className="flex items-center gap-1 px-3 pt-2">
+            <span className="text-[10px] text-stone-300 mr-auto">Scroll to zoom · double-click to reset</span>
             <button
               onClick={onToggleBboxes}
               className={cn(
@@ -308,13 +359,25 @@ function FiguresTab({
               Rotate
             </button>
           </div>
-          <div ref={figContainerRef} className="flex-1 min-h-0 flex items-center justify-center px-3 pb-3 overflow-hidden">
+          <div
+            ref={figContainerRef}
+            className={cn(
+              "flex-1 min-h-0 flex items-center justify-center px-3 pb-3 overflow-hidden relative",
+              zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
+            )}
+            onWheel={handleWheel}
+            onPointerDown={handlePanStart}
+            onPointerMove={handlePanMove}
+            onPointerUp={handlePanEnd}
+            onPointerCancel={handlePanEnd}
+            onDoubleClick={handleDoubleClick}
+          >
             <div
-              className="relative transition-transform duration-200"
+              className={cn("relative", zoom === 1 && "transition-transform duration-200")}
               style={{
                 width: fittedSize?.w,
                 height: fittedSize?.h,
-                transform: `rotate(${rotation}deg) scale(${sideScale})`,
+                transform: `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scale(${sideScale * zoom})`,
               }}
             >
               <img
@@ -401,6 +464,16 @@ function FiguresTab({
                 );
               })()}
             </div>
+            {/* Zoom indicator */}
+            {zoom > 1 && (
+              <button
+                onClick={handleDoubleClick}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded-full backdrop-blur-sm hover:bg-black/85 transition-colors"
+                title="Double-click or click to reset zoom"
+              >
+                {Math.round(zoom * 100)}%
+              </button>
+            )}
           </div>
           {/* Element numbers list */}
           {elementsOnSheet.length > 0 && (
