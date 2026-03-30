@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo } from "react";
-import { fetchPatent, fetchReferenceNumerals, fetchFigureMap, fetchClaimElements } from "@/lib/api";
+import { fetchPatent, fetchReferenceNumerals, fetchFigureMap, fetchClaimElements, fetchColLines } from "@/lib/api";
 import type {
   ReferenceNumeral,
   ReferenceNumeralHighlights,
@@ -66,6 +66,8 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
   const [numeralsLoading, setNumeralsLoading] = useState(false);
   const [figureMapLoading, setFigureMapLoading] = useState(false);
   const [claimElementsLoading, setClaimElementsLoading] = useState(false);
+  const [colLinesLoading, setColLinesLoading] = useState(false);
+  const [needsColLines, setNeedsColLines] = useState(false);
 
   const numeralClickCount = useRef<Record<string, number>>({});
   const searchIdRef = useRef(0);
@@ -101,6 +103,7 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     setClaimElements({ claim_elements: [], groups: [] });
     setActiveElementGroup(null);
     setSearchTerms([]);
+    setNeedsColLines(false);
     numeralClickCount.current = {};
     try {
       const data = await fetchPatent(pubNumber);
@@ -125,6 +128,16 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
           setClaimElements(data);
         }
       }).finally(() => { if (id === searchIdRef.current) setClaimElementsLoading(false); });
+      // Fetch col/line data async for patents without paragraph numbers
+      if (data.needs_col_lines) {
+        setNeedsColLines(true);
+        setColLinesLoading(true);
+        fetchColLines(pubNumber).then((result) => {
+          if (id !== searchIdRef.current || !result.description) return;
+          const desc = result.description as Patent["description"];
+          setPatent((prev) => prev ? { ...prev, description: desc } : prev);
+        }).finally(() => { if (id === searchIdRef.current) setColLinesLoading(false); });
+      }
     } catch (err) {
       if (id !== searchIdRef.current) return;
       setError(err instanceof Error ? err.message : "Failed to fetch patent");
@@ -390,6 +403,8 @@ export function usePatentPanel(options?: UsePatentPanelOptions) {
     numeralsLoading,
     figureMapLoading,
     claimElementsLoading,
+    colLinesLoading,
+    needsColLines,
     // Search
     searchTerms,
     searchHighlights,

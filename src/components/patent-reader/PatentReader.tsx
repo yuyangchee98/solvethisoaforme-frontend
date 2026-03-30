@@ -223,6 +223,7 @@ function AnalysisStatus({ panel }: { panel: PatentPanel }) {
     { key: "num", label: "Numerals", loading: panel.numeralsLoading },
     { key: "fig", label: "Figures", loading: panel.figureMapLoading },
     { key: "elem", label: "Elements", loading: panel.claimElementsLoading },
+    ...(panel.needsColLines ? [{ key: "col", label: "Col/Lines", loading: panel.colLinesLoading }] : []),
   ];
   const anyLoading = items.some((i) => i.loading);
   const allDone = !anyLoading && panel.patent;

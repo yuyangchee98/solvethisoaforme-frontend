@@ -340,6 +340,17 @@ export interface ClaimElementsData {
 
 const EMPTY_CLAIM_ELEMENTS: ClaimElementsData = { claim_elements: [], groups: [] };
 
+export async function fetchColLines(
+  publicationNumber: string
+): Promise<{ description: any[] | null }> {
+  const response = await fetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/col-lines`
+  );
+
+  if (!response.ok) return { description: null };
+  return response.json();
+}
+
 export async function fetchClaimElements(
   publicationNumber: string
 ): Promise<ClaimElementsData> {
