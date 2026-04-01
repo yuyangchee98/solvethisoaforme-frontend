@@ -20,6 +20,8 @@ export interface UseSessionReturn {
   clearError: () => void;
 }
 
+let lastTrackedSessionUrl = window.location.href;
+
 function updateUrlSession(sessionId: string | null) {
   const url = new URL(window.location.href);
   if (sessionId) {
@@ -27,7 +29,15 @@ function updateUrlSession(sessionId: string | null) {
   } else {
     url.searchParams.delete('session');
   }
-  window.history.replaceState({}, '', url.toString());
+  const newUrl = url.toString();
+  window.history.replaceState({}, '', newUrl);
+
+  if (newUrl !== lastTrackedSessionUrl) {
+    lastTrackedSessionUrl = newUrl;
+    (window as any).gtag?.('event', 'page_view', {
+      page_location: newUrl,
+    });
+  }
 }
 
 function getUrlSessionId(): string | null {

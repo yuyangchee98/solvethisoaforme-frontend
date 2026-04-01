@@ -18,13 +18,23 @@ function getUrlParam(name: string): string | null {
   return new URLSearchParams(window.location.search).get(name);
 }
 
+let lastTrackedPatentUrl = window.location.href;
+
 function updateUrl(patent: string | null, compare: string | null) {
   const url = new URL(window.location.href);
   if (patent) url.searchParams.set('patent', patent);
   else url.searchParams.delete('patent');
   if (compare) url.searchParams.set('compare', compare);
   else url.searchParams.delete('compare');
-  window.history.replaceState({}, '', url.toString());
+  const newUrl = url.toString();
+  window.history.replaceState({}, '', newUrl);
+
+  if (newUrl !== lastTrackedPatentUrl) {
+    lastTrackedPatentUrl = newUrl;
+    (window as any).gtag?.('event', 'page_view', {
+      page_location: newUrl,
+    });
+  }
 }
 
 const EXAMPLE_PATENTS = [
