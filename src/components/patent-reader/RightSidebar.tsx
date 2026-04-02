@@ -36,6 +36,9 @@ import type { ReferenceNumeral, NumeralLocation } from "@/lib/api";
 import type { ColLineSelection } from "./usePatentPanel";
 import type { SearchTerm, SearchOccurrence } from "./search-utils";
 import { SEARCH_COLORS } from "./search-utils";
+import type { PatentAnnotation, AnnotationColor } from "./annotation-types";
+import { ANNOTATION_COLORS, ANNOTATION_DOT_CLASSES, ANNOTATION_BG_CLASSES } from "./annotation-types";
+import { Highlighter, MessageSquare, Trash2 } from "lucide-react";
 
 interface RightSidebarProps {
   patent: Patent;
@@ -74,6 +77,11 @@ interface RightSidebarProps {
   onToggleSearchCaseSensitive?: () => void;
   colLineSelection?: ColLineSelection | null;
   needsColLines?: boolean;
+  // Annotations
+  annotations?: PatentAnnotation[];
+  onAnnotationClick?: (id: string) => void;
+  onAnnotationUpdate?: (id: string, updates: { note?: string; color?: AnnotationColor }) => void;
+  onAnnotationDelete?: (id: string) => void;
   // Resize
   width?: number;
   isDragging?: boolean;
@@ -1400,6 +1408,159 @@ function SourceTab({
 }
 
 
+// ── Notes tab ─────────────────────────────────────────────────────────────
+
+function NotesTab({
+  annotations,
+  onAnnotationClick,
+  onAnnotationUpdate,
+  onAnnotationDelete,
+  patent,
+}: {
+  annotations: PatentAnnotation[];
+  onAnnotationClick?: (id: string) => void;
+  onAnnotationUpdate?: (id: string, updates: { note?: string; color?: AnnotationColor }) => void;
+  onAnnotationDelete?: (id: string) => void;
+  patent: Patent;
+}) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editNote, setEditNote] = useState("");
+
+  const sectionLabel = (a: PatentAnnotation) => {
+    if (a.section === "abstract") return "Abstract";
+    if (a.section === "claims") return `Claim ${patent.claims[a.sectionIndex]?.number ?? a.sectionIndex + 1}`;
+    // description
+    const section = patent.description[a.sectionIndex];
+    const para = section?.paragraphs[a.paragraphIndex];
+    const paraLabel = para?.number ?? (para?.col != null ? `col ${para.col}, L${para.line}` : `[${a.paragraphIndex}]`);
+    return paraLabel;
+  };
+
+  if (annotations.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center px-6 py-10">
+        <Highlighter className="size-8 text-stone-300 mb-3" />
+        <p className="text-sm font-medium text-stone-500 mb-1">No annotations yet</p>
+        <p className="text-xs text-stone-400 leading-relaxed">
+          Select text in the patent to highlight it and add notes.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-3 space-y-2">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-medium text-stone-500">
+          {annotations.length} annotation{annotations.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+      {annotations.map((a) => (
+        <div
+          key={a.id}
+          className="rounded-lg border border-stone-200 bg-white hover:border-stone-300 transition-colors cursor-pointer"
+          onClick={() => onAnnotationClick?.(a.id)}
+        >
+          <div className="px-3 py-2.5">
+            {/* Header: color dot + section label */}
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", ANNOTATION_DOT_CLASSES[a.color])} />
+              <span className="text-[11px] font-mono text-stone-400 truncate">{sectionLabel(a)}</span>
+              {/* Color picker */}
+              <div className="ml-auto flex items-center gap-0.5">
+                {ANNOTATION_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAnnotationUpdate?.(a.id, { color: c });
+                    }}
+                    className={cn(
+                      "w-3.5 h-3.5 rounded-full transition-all",
+                      ANNOTATION_DOT_CLASSES[c],
+                      a.color === c ? "ring-1 ring-offset-1 ring-stone-400 scale-110" : "opacity-40 hover:opacity-100",
+                    )}
+                  />
+                ))}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAnnotationDelete?.(a.id);
+                  }}
+                  className="ml-1.5 p-0.5 rounded text-stone-300 hover:text-red-500 transition-colors"
+                  title="Delete annotation"
+                >
+                  <Trash2 className="size-3" />
+                </button>
+              </div>
+            </div>
+            {/* Selected text */}
+            <p className={cn("text-xs text-stone-600 leading-relaxed rounded px-1.5 py-1 mb-1.5 line-clamp-3", ANNOTATION_BG_CLASSES[a.color])}>
+              &ldquo;{a.selectedText}&rdquo;
+            </p>
+            {/* Note */}
+            {editingId === a.id ? (
+              <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <textarea
+                  autoFocus
+                  value={editNote}
+                  onChange={(e) => setEditNote(e.target.value)}
+                  className="flex-1 text-xs border border-stone-200 rounded px-2 py-1 resize-none focus:outline-none focus:ring-1 focus:ring-amber-500/30"
+                  rows={2}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                      onAnnotationUpdate?.(a.id, { note: editNote });
+                      setEditingId(null);
+                    }
+                    if (e.key === "Escape") setEditingId(null);
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAnnotationUpdate?.(a.id, { note: editNote });
+                    setEditingId(null);
+                  }}
+                  className="self-end text-[11px] font-medium text-amber-600 hover:text-amber-700 px-2 py-1"
+                >
+                  Save
+                </button>
+              </div>
+            ) : a.note ? (
+              <p
+                className="text-xs text-stone-500 leading-relaxed cursor-text"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingId(a.id);
+                  setEditNote(a.note);
+                }}
+              >
+                <MessageSquare className="size-3 inline-block mr-1 -mt-0.5 text-stone-400" />
+                {a.note}
+              </p>
+            ) : (
+              <button
+                type="button"
+                className="text-[11px] text-stone-400 hover:text-stone-600 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingId(a.id);
+                  setEditNote("");
+                }}
+              >
+                + Add note
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
 // ── Main component ───────────────────────────────────────────────────────
 
 export function RightSidebar({
@@ -1436,6 +1597,10 @@ export function RightSidebar({
   onToggleSearchCaseSensitive,
   colLineSelection,
   needsColLines,
+  annotations,
+  onAnnotationClick,
+  onAnnotationUpdate,
+  onAnnotationDelete,
   width,
   isDragging,
   dragHandleProps,
@@ -1450,6 +1615,7 @@ export function RightSidebar({
           { value: "details", icon: Info, label: "Details" },
           { value: "outline", icon: List, label: "Outline" },
           { value: "search", icon: Search, label: "Search" },
+          { value: "notes", icon: Highlighter, label: "Notes" },
         ].map(({ value, icon: Icon, label }) => (
           <button
             key={value}
@@ -1512,7 +1678,7 @@ export function RightSidebar({
       {/* Tab bar + collapse */}
       <div className="flex items-center border-b border-stone-200">
         <TabsList className="flex flex-1 h-auto bg-transparent p-0 rounded-none -mb-px">
-          {(["figures", ...(needsColLines ? ["source"] : []), "details", "outline", "search"] as const).map((tab) => (
+          {(["figures", ...(needsColLines ? ["source"] : []), "details", "outline", "search", "notes"] as const).map((tab) => (
             <TabsTrigger
               key={tab}
               value={tab}
@@ -1581,6 +1747,15 @@ export function RightSidebar({
           caseSensitive={searchCaseSensitive ?? false}
           onToggleWholeWord={onToggleSearchWholeWord ?? (() => {})}
           onToggleCaseSensitive={onToggleSearchCaseSensitive ?? (() => {})}
+        />
+      </TabsContent>
+      <TabsContent value="notes" className="mt-0 flex-1 overflow-y-auto">
+        <NotesTab
+          annotations={annotations ?? []}
+          onAnnotationClick={onAnnotationClick}
+          onAnnotationUpdate={onAnnotationUpdate}
+          onAnnotationDelete={onAnnotationDelete}
+          patent={patent}
         />
       </TabsContent>
     </Tabs>

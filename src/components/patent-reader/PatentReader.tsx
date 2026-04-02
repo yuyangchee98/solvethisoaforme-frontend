@@ -12,6 +12,8 @@ import { usePatentPanel } from "./usePatentPanel";
 import { usePatentRegistry } from "./usePatentRegistry";
 import { useResizableWidth } from "@/lib/useResizableWidth";
 import type { PatentPanel } from "./usePatentPanel";
+import { useAnnotations } from "./useAnnotations";
+import type { UseAnnotationsReturn } from "./useAnnotations";
 
 // ── URL state helpers ────────────────────────────────────────────────
 function getUrlParam(name: string): string | null {
@@ -158,6 +160,7 @@ function PanelSidebar({
   onScrollTo,
   containerRef,
   resizable = true,
+  annotationState,
 }: {
   panel: PatentPanel;
   collapsed: boolean;
@@ -165,6 +168,7 @@ function PanelSidebar({
   onScrollTo: (id: string) => void;
   containerRef?: React.RefObject<HTMLElement | null>;
   resizable?: boolean;
+  annotationState?: UseAnnotationsReturn;
 }) {
   const [sidebarWidth, setSidebarWidth] = useState(384);
 
@@ -222,6 +226,15 @@ function PanelSidebar({
       searchCaseSensitive={panel.searchCaseSensitive}
       onToggleSearchWholeWord={panel.toggleSearchWholeWord}
       onToggleSearchCaseSensitive={panel.toggleSearchCaseSensitive}
+      annotations={annotationState?.annotations}
+      onAnnotationClick={(id) => {
+        // Scroll to the annotation in the center panel
+        const root = containerRef?.current ?? document;
+        const el = root.querySelector?.(`[data-annotation-id="${id}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }}
+      onAnnotationUpdate={annotationState?.updateAnnotation}
+      onAnnotationDelete={annotationState?.deleteAnnotation}
       width={resizable ? sidebarWidth : undefined}
       isDragging={resizable ? isDragging : undefined}
       dragHandleProps={resizable ? handleProps : undefined}
@@ -300,6 +313,8 @@ export function PatentReader() {
   const rightPanelRef = useRef<HTMLDivElement>(null);
   const left = usePatentPanel({ containerRef: leftPanelRef, onRequestSidebarOpen: openLeftSidebar });
   const right = usePatentPanel({ containerRef: rightPanelRef, onRequestSidebarOpen: openRightSidebar });
+  const leftAnnotations = useAnnotations(left.patent?.patent_number ?? null);
+  const rightAnnotations = useAnnotations(right.patent?.patent_number ?? null);
 
   // Cross-window registry
   const registry = usePatentRegistry();
@@ -683,6 +698,15 @@ export function PatentReader() {
                 onElementHover={left.setActiveElementGroup}
                 onElementClick={left.handleElementClick}
                 onColLineSelect={left.handleColLineSelect}
+                annotations={leftAnnotations.annotations}
+                pendingAnnotation={leftAnnotations.pendingAnnotation}
+                onAnnotationSelect={leftAnnotations.setPendingAnnotation}
+                onAnnotationCreate={leftAnnotations.createAnnotation}
+                onAnnotationCancel={() => leftAnnotations.setPendingAnnotation(null)}
+                showAnnotationHardGate={leftAnnotations.showHardGate}
+                showAnnotationSoftPrompt={leftAnnotations.showSoftPrompt}
+                onDismissSoftPrompt={leftAnnotations.dismissSoftPrompt}
+                annotationCount={leftAnnotations.totalCount}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -705,6 +729,7 @@ export function PatentReader() {
                 onToggle={() => setLeftSidebarCollapsed((c) => !c)}
                 onScrollTo={left.handleScrollTo}
                 containerRef={leftPanelRef}
+                annotationState={leftAnnotations}
               />
             )}
           </div>
@@ -729,6 +754,15 @@ export function PatentReader() {
                 onElementHover={right.setActiveElementGroup}
                 onElementClick={right.handleElementClick}
                 onColLineSelect={right.handleColLineSelect}
+                annotations={rightAnnotations.annotations}
+                pendingAnnotation={rightAnnotations.pendingAnnotation}
+                onAnnotationSelect={rightAnnotations.setPendingAnnotation}
+                onAnnotationCreate={rightAnnotations.createAnnotation}
+                onAnnotationCancel={() => rightAnnotations.setPendingAnnotation(null)}
+                showAnnotationHardGate={rightAnnotations.showHardGate}
+                showAnnotationSoftPrompt={rightAnnotations.showSoftPrompt}
+                onDismissSoftPrompt={rightAnnotations.dismissSoftPrompt}
+                annotationCount={rightAnnotations.totalCount}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -751,6 +785,7 @@ export function PatentReader() {
                 onToggle={() => setRightSidebarCollapsed((c) => !c)}
                 onScrollTo={right.handleScrollTo}
                 containerRef={rightPanelRef}
+                annotationState={rightAnnotations}
               />
             )}
           </div>
@@ -801,6 +836,12 @@ export function PatentReader() {
           onElementHover={left.setActiveElementGroup}
           onElementClick={left.handleElementClick}
           onColLineSelect={left.handleColLineSelect}
+          annotations={leftAnnotations.annotations}
+          pendingAnnotation={leftAnnotations.pendingAnnotation}
+          onAnnotationSelect={leftAnnotations.setPendingAnnotation}
+          onAnnotationCreate={leftAnnotations.createAnnotation}
+          onAnnotationCancel={() => leftAnnotations.setPendingAnnotation(null)}
+          showAnnotationHardGate={leftAnnotations.showHardGate}
         />
 
         {/* Desktop: inline sidebar */}
@@ -810,6 +851,7 @@ export function PatentReader() {
             collapsed={rightCollapsed}
             onToggle={() => setRightCollapsed((c) => !c)}
             onScrollTo={left.handleScrollTo}
+            annotationState={leftAnnotations}
           />
         )}
 
@@ -839,6 +881,7 @@ export function PatentReader() {
                     setTimeout(() => left.handleScrollTo(id), 300);
                   }}
                   resizable={false}
+                  annotationState={leftAnnotations}
                 />
               </SheetContent>
             </Sheet>

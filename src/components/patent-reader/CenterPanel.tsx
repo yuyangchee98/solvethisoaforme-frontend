@@ -6,6 +6,9 @@ import type { ColLineSelection } from "./usePatentPanel";
 import type { ReferenceNumeralHighlights, HighlightSpan, ClaimElementSpan, ClaimElementsData } from "@/lib/api";
 import type { SearchHighlightSpan, SearchHighlights } from "./search-utils";
 import { SEARCH_COLORS } from "./search-utils";
+import type { PatentAnnotation, PendingAnnotation, AnnotationSpan } from "./annotation-types";
+import { ANNOTATION_BG_CLASSES } from "./annotation-types";
+import { AnnotationToolbar } from "./AnnotationToolbar";
 
 // Color palette for claim element groups (12 visually distinct pastels)
 const ELEMENT_COLORS = [
@@ -99,6 +102,17 @@ interface CenterPanelProps {
   onElementHover: (groupId: number | null) => void;
   onElementClick: (groupId: number) => void;
   onColLineSelect?: (selection: ColLineSelection | null) => void;
+  // Annotations
+  annotations?: PatentAnnotation[];
+  pendingAnnotation?: PendingAnnotation | null;
+  onAnnotationSelect?: (pending: PendingAnnotation) => void;
+  onAnnotationCreate?: (color: import("./annotation-types").AnnotationColor, note: string) => void;
+  onAnnotationCancel?: () => void;
+  onAnnotationClick?: (id: string) => void;
+  showAnnotationHardGate?: boolean;
+  showAnnotationSoftPrompt?: boolean;
+  onDismissSoftPrompt?: () => void;
+  annotationCount?: number;
 }
 
 /** Find the claim element span that covers a given character position. */
@@ -113,12 +127,14 @@ function RichText({
   elementSpans,
   activeElementGroup,
   searchSpans,
+  annotationSpans,
   onNumeralHover,
   onNumeralClick,
   onFigureClick,
   onClaimClick,
   onElementHover,
   onElementClick,
+  onAnnotationClick,
   currentClaimNumber,
 }: {
   text: string;
@@ -127,12 +143,14 @@ function RichText({
   elementSpans?: ClaimElementSpan[];
   activeElementGroup?: number | null;
   searchSpans?: SearchHighlightSpan[];
+  annotationSpans?: AnnotationSpan[];
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
   onClaimClick?: (claimNumber: number) => void;
   onElementHover?: (groupId: number | null) => void;
   onElementClick?: (groupId: number) => void;
+  onAnnotationClick?: (id: string) => void;
   currentClaimNumber?: number;
 }) {
   // Pass 1: find all FIG enumerations
@@ -207,6 +225,50 @@ function RichText({
 
   const elSpans = elementSpans ?? [];
   const sSpans = searchSpans ?? [];
+  const aSpans = annotationSpans ?? [];
+
+  /** Wrap a text fragment in annotation <mark> tags, then apply search marks on top. */
+  const applyAnnotationMarks = (
+    content: string,
+    absStart: number,
+    keyPrefix: string | number,
+  ): React.ReactNode => {
+    if (aSpans.length === 0) return applySearchMarks(content, absStart, keyPrefix);
+    const absEnd = absStart + content.length;
+    const overlapping = aSpans.filter((s) => s.start < absEnd && s.end > absStart);
+    if (overlapping.length === 0) return applySearchMarks(content, absStart, keyPrefix);
+
+    const fragments: React.ReactNode[] = [];
+    let pos = 0;
+    for (const span of overlapping) {
+      const relStart = Math.max(0, span.start - absStart);
+      const relEnd = Math.min(content.length, span.end - absStart);
+      if (relStart > pos) {
+        fragments.push(applySearchMarks(content.slice(pos, relStart), absStart + pos, `${keyPrefix}-ag${pos}`));
+      }
+      fragments.push(
+        <mark
+          key={`${keyPrefix}-a${relStart}`}
+          data-annotation-id={span.id}
+          className={cn(
+            "rounded-sm px-0 cursor-pointer",
+            ANNOTATION_BG_CLASSES[span.color],
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAnnotationClick?.(span.id);
+          }}
+        >
+          {applySearchMarks(content.slice(relStart, relEnd), absStart + relStart, `${keyPrefix}-as${relStart}`)}
+        </mark>
+      );
+      pos = relEnd;
+    }
+    if (pos < content.length) {
+      fragments.push(applySearchMarks(content.slice(pos), absStart + pos, `${keyPrefix}-ag${pos}`));
+    }
+    return <>{fragments}</>;
+  };
 
   /** Wrap a text fragment in <mark> tags where search spans overlap [absStart, absEnd). */
   const applySearchMarks = (
@@ -248,7 +310,7 @@ function RichText({
     return <>{fragments}</>;
   };
 
-  if (parts.length === 1 && typeof parts[0].part === "string" && elSpans.length === 0 && sSpans.length === 0) {
+  if (parts.length === 1 && typeof parts[0].part === "string" && elSpans.length === 0 && sSpans.length === 0 && aSpans.length === 0) {
     return <>{text}</>;
   }
 
@@ -290,7 +352,7 @@ function RichText({
         if (typeof part === "string") {
           // Split plain text at element span boundaries for accurate background coloring
           if (elSpans.length === 0) {
-            return <span key={i}>{applySearchMarks(part, charStart, i)}</span>;
+            return <span key={i}>{applyAnnotationMarks(part, charStart, i)}</span>;
           }
           // Find all element boundaries within this text range
           const end = charStart + part.length;
@@ -303,8 +365,8 @@ function RichText({
           if (sorted.length <= 2) {
             // No element boundaries inside — wrap whole fragment
             const el = elementSpanAt(charStart, elSpans);
-            if (!el) return <span key={i}>{applySearchMarks(part, charStart, i)}</span>;
-            return renderElementSpan(applySearchMarks(part, charStart, i), el, i);
+            if (!el) return <span key={i}>{applyAnnotationMarks(part, charStart, i)}</span>;
+            return renderElementSpan(applyAnnotationMarks(part, charStart, i), el, i);
           }
           // Multiple segments — split at boundaries
           return (
@@ -314,8 +376,8 @@ function RichText({
                 const segment = part.slice(bStart, bEnd);
                 const absPos = charStart + bStart;
                 const el = elementSpanAt(absPos, elSpans);
-                if (!el) return <span key={bi}>{applySearchMarks(segment, absPos, `${i}-${bi}`)}</span>;
-                return renderElementSpan(applySearchMarks(segment, absPos, `${i}-${bi}`), el, bi);
+                if (!el) return <span key={bi}>{applyAnnotationMarks(segment, absPos, `${i}-${bi}`)}</span>;
+                return renderElementSpan(applyAnnotationMarks(segment, absPos, `${i}-${bi}`), el, bi);
               })}
             </span>
           );
@@ -514,6 +576,7 @@ function ClaimLimitationsRenderer({
   onElementHover,
   onElementClick,
   searchSpans,
+  annotationSpans,
   ...richTextProps
 }: {
   limitations: ClaimLimitation[];
@@ -524,11 +587,13 @@ function ClaimLimitationsRenderer({
   onElementHover?: (groupId: number | null) => void;
   onElementClick?: (groupId: number) => void;
   searchSpans?: SearchHighlightSpan[];
+  annotationSpans?: AnnotationSpan[];
   activeNumeral: string | null;
   onNumeralHover: (numeral: string | null) => void;
   onNumeralClick: (numeral: string | null) => void;
   onFigureClick: (figIndex: number) => void;
   onClaimClick?: (claimNumber: number) => void;
+  onAnnotationClick?: (id: string) => void;
   currentClaimNumber?: number;
 }) {
   // Build a flat list of (limitation, depth) with offsets into claimText
@@ -564,6 +629,9 @@ function ClaimLimitationsRenderer({
         const limSearchSpans = offset >= 0 && searchSpans
           ? sliceSpans(searchSpans, offset, offset + lim.text.length)
           : undefined;
+        const limAnnotationSpans = offset >= 0 && annotationSpans
+          ? sliceSpans(annotationSpans, offset, offset + lim.text.length)
+          : undefined;
 
         return (
           <div
@@ -578,6 +646,7 @@ function ClaimLimitationsRenderer({
               onElementHover={onElementHover}
               onElementClick={onElementClick}
               searchSpans={limSearchSpans}
+              annotationSpans={limAnnotationSpans}
               {...richTextProps}
             />
           </div>
@@ -651,6 +720,16 @@ export function CenterPanel({
   onElementHover,
   onElementClick,
   onColLineSelect,
+  annotations,
+  pendingAnnotation,
+  onAnnotationSelect,
+  onAnnotationCreate,
+  onAnnotationCancel,
+  onAnnotationClick,
+  showAnnotationHardGate,
+  showAnnotationSoftPrompt,
+  onDismissSoftPrompt,
+  annotationCount,
 }: CenterPanelProps) {
   const [showJumpTo, setShowJumpTo] = useState(false);
   const [jumpInput, setJumpInput] = useState("");
@@ -720,7 +799,7 @@ export function CenterPanel({
     setShowJumpTo(false);
   }, [jumpInput, jumpColInput, isColLinePatent]);
 
-  // Selection → col/line tooltip
+  // Selection → col/line tooltip + annotation
   const handleTextSelect = useCallback(() => {
     const sel = window.getSelection();
     console.log("[ColLine] mouseUp, selection:", sel?.toString().slice(0, 50), "collapsed:", sel?.isCollapsed);
@@ -729,23 +808,16 @@ export function CenterPanel({
       return;
     }
 
-    // Walk up from the selection anchor to find the paragraph container with data-line-breaks
-    const findParaContainer = (node: Node | null): HTMLElement | null => {
+    // Walk up from a node to find a paragraph container
+    const findParaContainer = (node: Node | null, attr: string): HTMLElement | null => {
       let el = node instanceof HTMLElement ? node : node?.parentElement;
       while (el) {
-        if (el.dataset.lineBreaks) return el;
+        if (el.dataset[attr] !== undefined) return el;
+        if (el === scrollContainerRef.current) return null;
         el = el.parentElement;
       }
       return null;
     };
-
-    const anchorPara = findParaContainer(sel.anchorNode);
-    const focusPara = findParaContainer(sel.focusNode);
-    console.log("[ColLine] anchorPara:", !!anchorPara, "hasLineBreaks:", !!anchorPara?.dataset.lineBreaks);
-    if (!anchorPara) {
-      setSelectionIndicator(null);
-      return;
-    }
 
     // Get the full text content and compute offsets within it
     const getOffsetInPara = (container: HTMLElement, node: Node, offset: number): number => {
@@ -754,6 +826,54 @@ export function CenterPanel({
       range.setEnd(node, offset);
       return range.toString().length;
     };
+
+    // ── Annotation selection ───────────────────────────────────────
+    const annotPara = findParaContainer(sel.anchorNode, "annotationSection");
+    const annotFocusPara = findParaContainer(sel.focusNode, "annotationSection");
+    if (annotPara && onAnnotationSelect) {
+      // Only support single-paragraph annotation selections
+      const effectivePara = (annotFocusPara && annotFocusPara !== annotPara) ? annotPara : annotPara;
+      try {
+        const startOff = getOffsetInPara(effectivePara, sel.anchorNode!, sel.anchorOffset);
+        const endOff = (annotFocusPara === annotPara)
+          ? getOffsetInPara(effectivePara, sel.focusNode!, sel.focusOffset)
+          : getOffsetInPara(effectivePara, sel.anchorNode!, sel.anchorOffset) + sel.toString().length;
+        const actualStart = Math.min(startOff, endOff);
+        const actualEnd = Math.max(startOff, endOff);
+        const selectedText = sel.toString().trim();
+        if (selectedText.length > 0 && actualEnd > actualStart) {
+          const range = sel.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          const container = scrollContainerRef.current;
+          const containerRect = container?.getBoundingClientRect();
+          const scrollTop = container?.scrollTop ?? 0;
+          onAnnotationSelect({
+            section: effectivePara.dataset.annotationSection as any,
+            sectionIndex: parseInt(effectivePara.dataset.annotationSectionIndex ?? "0", 10),
+            paragraphIndex: parseInt(effectivePara.dataset.annotationParagraphIndex ?? "0", 10),
+            startOffset: actualStart,
+            endOffset: actualEnd,
+            selectedText,
+            rect: {
+              top: rect.top - (containerRect?.top ?? 0) + scrollTop,
+              left: rect.left - (containerRect?.left ?? 0),
+              width: rect.width,
+            },
+          });
+        }
+      } catch {
+        // Ignore annotation selection errors
+      }
+    }
+
+    // ── Col/line tooltip ───────────────────────────────────────────
+    const anchorPara = findParaContainer(sel.anchorNode, "lineBreaks");
+    const focusPara = findParaContainer(sel.focusNode, "lineBreaks");
+    console.log("[ColLine] anchorPara:", !!anchorPara, "hasLineBreaks:", !!anchorPara?.dataset.lineBreaks);
+    if (!anchorPara) {
+      setSelectionIndicator(null);
+      return;
+    }
 
     try {
       const lineBreaks: LineBreak[] = JSON.parse(anchorPara.dataset.lineBreaks!);
@@ -767,14 +887,12 @@ export function CenterPanel({
       let endLineBreaks = lineBreaks;
       let endOffset: number;
       if (focusPara && focusPara !== anchorPara && focusPara.dataset.lineBreaks) {
-        // Selection spans multiple paragraphs — use the focus paragraph's line_breaks for end
         endLineBreaks = JSON.parse(focusPara.dataset.lineBreaks!);
         endOffset = getOffsetInPara(focusPara, sel.focusNode!, sel.focusOffset);
       } else {
         endOffset = getOffsetInPara(anchorPara, sel.focusNode!, sel.focusOffset);
       }
 
-      // Normalize: ensure start < end within same paragraph
       const actualStart = Math.min(startOffset, endOffset);
       const actualEnd = Math.max(startOffset, endOffset);
 
@@ -789,8 +907,6 @@ export function CenterPanel({
 
       const text = formatSelectionRange(startLoc, endLoc);
 
-      // Collect all line_breaks between start and end for PDF highlighting
-      // Combine both paragraphs' line_breaks, filter to the selected col/line range
       const allBreaks = focusPara !== anchorPara
         ? [...lineBreaks, ...endLineBreaks]
         : lineBreaks;
@@ -801,7 +917,6 @@ export function CenterPanel({
         return key >= startKey && key <= endKey;
       });
 
-      // Find the paragraph div id and its label position
       const paraDiv = anchorPara.parentElement;
       const pid = paraDiv?.id ?? null;
 
@@ -812,17 +927,15 @@ export function CenterPanel({
       const scrollTop = container?.scrollTop ?? 0;
       const y = rect.top - (containerRect?.top ?? 0) + scrollTop;
 
-      // Get the label span's position so the indicator matches exactly
       const labelSpan = pid ? document.getElementById(pid)?.querySelector("[data-para-label]") as HTMLElement | null : null;
       const labelRect = labelSpan?.getBoundingClientRect();
       const labelX = labelRect ? labelRect.left - (containerRect?.left ?? 0) : 0;
-      const labelW = labelRect ? labelRect.width : 56; // fallback w-14 = 56px
+      const labelW = labelRect ? labelRect.width : 56;
 
       console.log("[ColLine] resolved:", text, "paraId:", pid, "y:", y);
       setSelectionIndicator({ text, paraId: pid, labelX, labelW, y });
       setCopied(false);
 
-      // Notify parent for sidebar Source tab
       onColLineSelect?.({
         label: text,
         startBreak: startLoc,
@@ -834,7 +947,7 @@ export function CenterPanel({
       setSelectionIndicator(null);
       onColLineSelect?.(null);
     }
-  }, [onColLineSelect]);
+  }, [onColLineSelect, onAnnotationSelect]);
 
   // Dismiss tooltip when selection is cleared
   useEffect(() => {
@@ -865,10 +978,56 @@ export function CenterPanel({
     onNumeralHover,
     onNumeralClick,
     onFigureClick,
+    onAnnotationClick,
+  };
+
+  /** Build annotation spans for a given paragraph location. */
+  const getAnnotationSpans = (
+    section: 'abstract' | 'description' | 'claims',
+    sectionIndex: number,
+    paragraphIndex: number,
+  ): AnnotationSpan[] | undefined => {
+    if (!annotations?.length) return undefined;
+    const matching = annotations.filter(
+      (a) => a.section === section && a.sectionIndex === sectionIndex && a.paragraphIndex === paragraphIndex
+    );
+    if (matching.length === 0) return undefined;
+    return matching.map((a) => ({ start: a.startOffset, end: a.endOffset, id: a.id, color: a.color }));
   };
 
   return (
     <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-stone-50 relative" onMouseUp={handleTextSelect}>
+      {/* Annotation soft prompt */}
+      {showAnnotationSoftPrompt && (
+        <div className="sticky top-0 z-30 bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center gap-3 text-sm">
+          <span className="text-amber-800 flex-1">
+            You have {annotationCount} annotation{annotationCount !== 1 ? "s" : ""}. Create a free account to save them across devices.
+          </span>
+          <a
+            href="/login?tab=register"
+            className="text-xs font-medium text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-md transition-colors shrink-0"
+          >
+            Create Account
+          </a>
+          <button
+            type="button"
+            onClick={onDismissSoftPrompt}
+            className="text-xs text-amber-600 hover:text-amber-800 shrink-0"
+          >
+            Maybe Later
+          </button>
+        </div>
+      )}
+      {/* Annotation toolbar */}
+      {pendingAnnotation && onAnnotationCreate && onAnnotationCancel && (
+        <AnnotationToolbar
+          pending={pendingAnnotation}
+          onSave={onAnnotationCreate}
+          onCancel={onAnnotationCancel}
+          hardGate={showAnnotationHardGate}
+          scrollContainerRef={scrollContainerRef}
+        />
+      )}
       {/* Selection col/line indicator — same column as paragraph labels, at selection y */}
       {selectionIndicator && (
         <div
@@ -983,11 +1142,17 @@ export function CenterPanel({
           <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-400 mb-2">
             Abstract
           </h2>
-          <div className="text-sm lg:text-base leading-relaxed text-stone-700">
+          <div
+            className="text-sm lg:text-base leading-relaxed text-stone-700"
+            data-annotation-section="abstract"
+            data-annotation-section-index="0"
+            data-annotation-paragraph-index="0"
+          >
             <RichText
               text={patent.abstract}
               spans={highlights.abstract}
               searchSpans={searchHighlights?.abstract}
+              annotationSpans={getAnnotationSpans('abstract', 0, 0)}
               {...commonProps}
             />
           </div>
@@ -1034,11 +1199,15 @@ export function CenterPanel({
                   <p
                     className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1"
                     {...(para.line_breaks?.length ? { "data-line-breaks": JSON.stringify(para.line_breaks) } : {})}
+                    data-annotation-section="description"
+                    data-annotation-section-index={si}
+                    data-annotation-paragraph-index={pi}
                   >
                     <RichText
                       text={para.text}
                       spans={highlights.description[si]?.[pi] ?? []}
                       searchSpans={searchHighlights?.description[si]?.[pi]}
+                      annotationSpans={getAnnotationSpans('description', si, pi)}
                       {...commonProps}
                     />
                   </p>
@@ -1068,7 +1237,12 @@ export function CenterPanel({
                       {claim.number}.
                     </span>
                     {hasLimitations ? (
-                      <div className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1">
+                      <div
+                        className="text-sm lg:text-base leading-relaxed text-stone-700 flex-1"
+                        data-annotation-section="claims"
+                        data-annotation-section-index={ci}
+                        data-annotation-paragraph-index="0"
+                      >
                         <ClaimLimitationsRenderer
                           limitations={claim.limitations}
                           claimText={claim.text}
@@ -1078,13 +1252,19 @@ export function CenterPanel({
                           onElementHover={onElementHover}
                           onElementClick={onElementClick}
                           searchSpans={searchHighlights?.claims[ci]}
+                          annotationSpans={getAnnotationSpans('claims', ci, 0)}
                           {...commonProps}
                           onClaimClick={onClaimClick}
                           currentClaimNumber={claim.number}
                         />
                       </div>
                     ) : (
-                      <p className="text-sm lg:text-base leading-relaxed text-stone-700">
+                      <p
+                        className="text-sm lg:text-base leading-relaxed text-stone-700"
+                        data-annotation-section="claims"
+                        data-annotation-section-index={ci}
+                        data-annotation-paragraph-index="0"
+                      >
                         <RichText
                           text={claim.text}
                           spans={highlights.claims[ci] ?? []}
@@ -1093,6 +1273,7 @@ export function CenterPanel({
                           onElementHover={onElementHover}
                           onElementClick={onElementClick}
                           searchSpans={searchHighlights?.claims[ci]}
+                          annotationSpans={getAnnotationSpans('claims', ci, 0)}
                           {...commonProps}
                           onClaimClick={onClaimClick}
                           currentClaimNumber={claim.number}

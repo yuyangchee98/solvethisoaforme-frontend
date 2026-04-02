@@ -361,3 +361,120 @@ export async function fetchClaimElements(
   if (!response.ok) return EMPTY_CLAIM_ELEMENTS;
   return response.json();
 }
+
+// ── Annotations ────────────────────────────────────────────────────
+
+import type { PatentAnnotation, AnnotationColor } from '@/components/patent-reader/annotation-types';
+
+export async function fetchAnnotations(publicationNumber: string): Promise<PatentAnnotation[]> {
+  const res = await authFetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/annotations`
+  );
+  if (!res.ok) return [];
+  const rows = await res.json();
+  return rows.map((r: any) => ({
+    id: r.id,
+    patentNumber: r.patent_number,
+    section: r.section,
+    sectionIndex: r.section_index,
+    paragraphIndex: r.paragraph_index,
+    startOffset: r.start_offset,
+    endOffset: r.end_offset,
+    selectedText: r.selected_text,
+    note: r.note,
+    color: r.color,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  }));
+}
+
+export async function createAnnotationApi(
+  publicationNumber: string,
+  annotation: PatentAnnotation,
+): Promise<PatentAnnotation> {
+  const res = await authFetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/annotations`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: annotation.id,
+        section: annotation.section,
+        section_index: annotation.sectionIndex,
+        paragraph_index: annotation.paragraphIndex,
+        start_offset: annotation.startOffset,
+        end_offset: annotation.endOffset,
+        selected_text: annotation.selectedText,
+        note: annotation.note,
+        color: annotation.color,
+        created_at: annotation.createdAt,
+        updated_at: annotation.updatedAt,
+      }),
+    }
+  );
+  const r = await res.json();
+  return {
+    id: r.id,
+    patentNumber: r.patent_number,
+    section: r.section,
+    sectionIndex: r.section_index,
+    paragraphIndex: r.paragraph_index,
+    startOffset: r.start_offset,
+    endOffset: r.end_offset,
+    selectedText: r.selected_text,
+    note: r.note,
+    color: r.color,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+export async function updateAnnotationApi(
+  publicationNumber: string,
+  annotationId: string,
+  updates: { note?: string; color?: AnnotationColor },
+): Promise<void> {
+  await authFetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/annotations/${annotationId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    }
+  );
+}
+
+export async function deleteAnnotationApi(
+  publicationNumber: string,
+  annotationId: string,
+): Promise<void> {
+  await authFetch(
+    `${API_BASE}/patents/${encodeURIComponent(publicationNumber)}/annotations/${annotationId}`,
+    { method: "DELETE" }
+  );
+}
+
+export async function bulkImportAnnotations(
+  annotations: PatentAnnotation[],
+): Promise<void> {
+  await authFetch(`${API_BASE}/patents/annotations/import`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      annotations: annotations.map((a) => ({
+        id: a.id,
+        patent_number: a.patentNumber,
+        section: a.section,
+        section_index: a.sectionIndex,
+        paragraph_index: a.paragraphIndex,
+        start_offset: a.startOffset,
+        end_offset: a.endOffset,
+        selected_text: a.selectedText,
+        note: a.note,
+        color: a.color,
+        created_at: a.createdAt,
+        updated_at: a.updatedAt,
+      })),
+    }),
+  });
+}
