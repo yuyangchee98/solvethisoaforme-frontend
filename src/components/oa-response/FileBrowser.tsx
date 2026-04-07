@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Loader2,
   FolderOpen,
+  ExternalLink,
 } from "lucide-react";
 import {
   listWorkspaceFiles,
@@ -135,23 +136,47 @@ function FileEntry({
     }
   };
 
+  const isMd = /\.mdx?$/i.test(file.name);
+  const reviewerUrl = isMd
+    ? `/reviewer?${new URLSearchParams({
+        session: sessionId,
+        strategy: file.path,
+      }).toString()}`
+    : null;
+
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent transition-colors"
+    <div
+      className="group flex w-full items-center gap-2 rounded-md pr-2 text-sm hover:bg-accent transition-colors"
       style={{ paddingLeft: `${depth * 16 + 8 + 14}px` }}
     >
-      {loading ? (
-        <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
-      ) : (
-        <FileText className="size-4 shrink-0 text-muted-foreground" />
+      <button
+        onClick={handleClick}
+        disabled={loading}
+        className="flex flex-1 items-center gap-2 py-1.5 min-w-0"
+      >
+        {loading ? (
+          <Loader2 className="size-4 shrink-0 animate-spin text-muted-foreground" />
+        ) : (
+          <FileText className="size-4 shrink-0 text-muted-foreground" />
+        )}
+        <span className="truncate flex-1 text-left">{file.name}</span>
+        <span className="shrink-0 text-xs text-muted-foreground">
+          {formatSize(file.size)}
+        </span>
+      </button>
+      {reviewerUrl && (
+        <a
+          href={reviewerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 rounded p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-background hover:text-foreground transition-opacity"
+          title="Open in Reviewer (side-by-side with source documents)"
+        >
+          <ExternalLink className="size-3.5" />
+        </a>
       )}
-      <span className="truncate flex-1 text-left">{file.name}</span>
-      <span className="shrink-0 text-xs text-muted-foreground">
-        {formatSize(file.size)}
-      </span>
-    </button>
+    </div>
   );
 }
 

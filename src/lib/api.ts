@@ -240,6 +240,149 @@ export async function getWorkspaceFileContent(
   return response.text();
 }
 
+// ── Reviewer API ─────────────────────────────────────────────────────
+//
+// The Reviewer is a standalone side-by-side reader at `/reviewer`. It
+// supports two flows:
+//   1. Standalone — users upload a strategy doc + source PDFs to a new
+//      reviewer-kind session via the endpoints below.
+//   2. OA handoff — the reviewer reads files straight from an existing
+//      oa_response session via the same `listReviewerFiles` /
+//      `getReviewerFileContent` / `getReviewerFileUrl` helpers. The
+//      backend GET endpoints accept any session the user owns.
+
+export interface ReviewerSessionResponse {
+  id: string;
+  workspace_path: string;
+  created_at: string;
+}
+
+export interface ReviewerStrategyUploadResponse {
+  filename: string;
+  path: string;
+}
+
+export interface ReviewerSourceUploadResponse {
+  filename: string;
+  path: string;
+  extracted: boolean;
+  extracted_path: string | null;
+  pages: number | null;
+  error: string | null;
+}
+
+export async function createReviewerSession(): Promise<ReviewerSessionResponse> {
+  const response = await authFetch(`${API_BASE}/reviewer/sessions`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to create reviewer session: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function uploadReviewerStrategy(
+  sessionId: string,
+  file: File,
+): Promise<ReviewerStrategyUploadResponse> {
+  const form = new FormData();
+  form.append('file', file);
+  const response = await authFetch(
+    `${API_BASE}/reviewer/sessions/${sessionId}/strategy`,
+    { method: 'POST', body: form },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to upload strategy: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function uploadReviewerStrategyText(
+  sessionId: string,
+  filename: string,
+  content: string,
+): Promise<ReviewerStrategyUploadResponse> {
+  const response = await authFetch(
+    `${API_BASE}/reviewer/sessions/${sessionId}/strategy-text`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename, content }),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to upload strategy text: ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function uploadReviewerSource(
+  sessionId: string,
+  file: File,
+): Promise<ReviewerSourceUploadResponse> {
+  const form = new FormData();
+  form.append('file', file);
+  const response = await authFetch(
+    `${API_BASE}/reviewer/sessions/${sessionId}/sources`,
+    { method: 'POST', body: form },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to upload source: ${response.status}`);
+  }
+  return response.json();
+}
+
+/**
+ * Recursively list all files in a session's workspace. Works on both
+ * reviewer-kind sessions and oa_response-kind sessions (as long as the
+ * current user owns the session), so this single function backs both
+ * the standalone and OA-handoff entry points of the Reviewer.
+ */
+export async function listReviewerFiles(
+  sessionId: string,
+): Promise<WorkspaceFile[]> {
+  const response = await authFetch(
+    `${API_BASE}/reviewer/sessions/${sessionId}/files`,
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to list reviewer files: ${response.status}`);
+  }
+  const data = await response.json();
+  return data.files;
+}
+
+export async function getReviewerFileContent(
+  sessionId: string,
+  filePath: string,
+): Promise<string> {
+  const normalized = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+  const response = await authFetch(
+    `${API_BASE}/reviewer/sessions/${sessionId}/files/${normalized}`,
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to get reviewer file: ${response.status}`);
+  }
+  return response.text();
+}
+
+export function getReviewerFileUrl(
+  sessionId: string,
+  filePath: string,
+): string {
+  const normalized = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+  return `${API_BASE}/reviewer/sessions/${sessionId}/files/${normalized}`;
+}
+
+export async function deleteReviewerSession(sessionId: string): Promise<void> {
+  const response = await authFetch(
+    `${API_BASE}/reviewer/sessions/${sessionId}`,
+    { method: 'DELETE' },
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to delete reviewer session: ${response.status}`);
+  }
+}
+
 // Patent Reader API (public, no auth)
 
 export async function fetchPatent(publicationNumber: string) {
