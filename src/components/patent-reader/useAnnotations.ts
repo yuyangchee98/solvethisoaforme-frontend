@@ -54,7 +54,28 @@ export interface UseAnnotationsReturn {
   totalCount: number;
 }
 
-export function useAnnotations(patentNumber: string | null): UseAnnotationsReturn {
+// Annotations are hidden in prod until the backend endpoints
+// (POST/PATCH/DELETE /patents/{pub}/annotations) ship. The exported hook
+// returns a no-op so the toolbar never appears and no highlights render.
+// To restore: swap the body of `useAnnotations` for a call to
+// `useAnnotationsImpl(patentNumber)`.
+export function useAnnotations(_patentNumber: string | null): UseAnnotationsReturn {
+  return {
+    annotations: [],
+    pendingAnnotation: null,
+    setPendingAnnotation: () => {},
+    createAnnotation: () => {},
+    updateAnnotation: () => {},
+    deleteAnnotation: () => {},
+    showSoftPrompt: false,
+    showHardGate: false,
+    dismissSoftPrompt: () => {},
+    totalCount: 0,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function useAnnotationsImpl(patentNumber: string | null): UseAnnotationsReturn {
   const [annotations, setAnnotations] = useState<PatentAnnotation[]>([]);
   const [pendingAnnotation, setPendingAnnotation] = useState<PendingAnnotation | null>(null);
   const [totalCount, setTotalCount] = useState(0);

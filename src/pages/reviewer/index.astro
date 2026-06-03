@@ -1,9 +1,13 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import TopNav from '../../components/layout/TopNav.astro';
-import { Reviewer } from '../../components/reviewer/Reviewer';
+// Reviewer page hidden in prod — feature not ready. Uncomment below to restore.
+return Astro.redirect('/');
+
+// import Layout from '../../layouts/Layout.astro';
+// import TopNav from '../../components/layout/TopNav.astro';
+// import { Reviewer } from '../../components/reviewer/Reviewer';
 ---
 
+{/*
 <Layout title="Reviewer" noindex>
   <TopNav />
   <main class="h-[calc(100vh-64px)] overflow-hidden bg-stone-50">
@@ -12,11 +16,9 @@ import { Reviewer } from '../../components/reviewer/Reviewer';
 </Layout>
 
 <style is:global>
-  /* Citation flash highlight — applied briefly when scroll-to-anchor
-     lands on a target in the Source pane. */
   @keyframes reviewer-flash-kf {
     0% {
-      background-color: rgb(254 243 199); /* amber-100 */
+      background-color: rgb(254 243 199);
       box-shadow: 0 0 0 4px rgb(254 243 199);
     }
     100% {
@@ -29,3 +31,4 @@ import { Reviewer } from '../../components/reviewer/Reviewer';
     border-radius: 4px;
   }
 </style>
+*/}

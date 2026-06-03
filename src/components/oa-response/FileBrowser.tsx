@@ -136,13 +136,16 @@ function FileEntry({
     }
   };
 
-  const isMd = /\.mdx?$/i.test(file.name);
-  const reviewerUrl = isMd
-    ? `/reviewer?${new URLSearchParams({
-        session: sessionId,
-        strategy: file.path,
-      }).toString()}`
-    : null;
+  // Reviewer page is hidden in prod — disable the "Open in Reviewer" link.
+  // To restore, uncomment the block below and re-render the button below.
+  const reviewerUrl: string | null = null;
+  // const isMd = /\.mdx?$/i.test(file.name);
+  // const reviewerUrl = isMd
+  //   ? `/reviewer?${new URLSearchParams({
+  //       session: sessionId,
+  //       strategy: file.path,
+  //     }).toString()}`
+  //   : null;
 
   return (
     <div

@@ -45,30 +45,33 @@ const teamFeatures = [
         <>
           <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Pricing</p>
           <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-            Pricing
+            Contact me
           </h2>
           <p class="text-lg text-stone-500 leading-relaxed">
-            One Office Action response typically takes 4-8 hours. At attorney billing rates, the tool pays for itself after a single use.
+            Get in touch to discuss pricing and access for your practice.
           </p>
         </>
       )}
     </div>
 
-    {variant === 'landing' && (
-      <div class="flex items-center gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200 max-w-5xl mx-auto mb-8">
-        <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-amber-600"><polyline points="20 6 9 17 4 12"/></svg>
+    {variant === 'landing' ? (
+      <div class="max-w-xl mx-auto">
+        <div class="flex flex-col items-center text-center rounded-xl p-8 bg-white border border-stone-200">
+          <p class="text-sm text-stone-500 mb-6">
+            Patent Reader is free and requires no account. For the OA Response Agent, reach out and I'll set you up.
+          </p>
+          <a
+            href="mailto:mail@chyuang.com"
+            class="inline-block py-2.5 px-6 text-sm font-medium rounded-lg transition-colors text-white bg-amber-600 hover:bg-amber-700"
+          >
+            mail@chyuang.com
+          </a>
+          <a href="/patent-reader?patent=US11423567B2" class="mt-4 text-sm font-medium text-amber-700 hover:text-amber-800 transition-colors">
+            Or try Patent Reader now &rarr;
+          </a>
         </div>
-        <div>
-          <p class="text-sm font-medium text-stone-800">Patent Reader is free. No account required.</p>
-          <p class="text-xs text-stone-500">The pricing below applies to the OA Response Agent.</p>
-        </div>
-        <a href="/patent-reader?patent=US11423567B2" class="ml-auto shrink-0 text-sm font-medium text-amber-700 hover:text-amber-800 transition-colors">
-          Try it now &rarr;
-        </a>
       </div>
-    )}
-
+    ) : (
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
       <!-- Day Pass -->
       <div class="flex flex-col rounded-xl p-6 bg-white border border-stone-200">
@@ -171,5 +174,6 @@ const teamFeatures = [
         </a>
       </div>
     </div>
+    )}
   </div>
 </section>
