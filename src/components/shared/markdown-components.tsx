@@ -15,10 +15,9 @@ export function preprocessMarkdown(md: string): string {
 }
 
 /**
- * Shared markdown component map used by both the OA PreviewPanel and
- * the Reviewer PrimaryPane. Defines typography, lists, tables, code
- * blocks, etc. consistently across surfaces that render user-facing
- * markdown.
+ * Shared markdown component map used by the OA Agent's
+ * PreviewPanel. Defines typography, lists, tables, code blocks, etc.
+ * consistently across surfaces that render user-facing markdown.
  */
 export const markdownComponents = {
   h1: ({ className, ...props }: React.ComponentProps<"h1">) => (

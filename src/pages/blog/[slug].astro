@@ -3,6 +3,7 @@ import LandingLayout from '../../layouts/LandingLayout.astro';
 import LandingNav from '../../components/landing/LandingNav.astro';
 import Footer from '../../components/landing/Footer.astro';
 import { getCollection, render } from 'astro:content';
+import { GITHUB_URL } from '../../siteConfig';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -97,12 +98,12 @@ const blogPostingSchema = {
 
       <!-- CTA -->
       <div class="mt-16 pt-10 border-t border-stone-200">
-        <p class="text-stone-500 text-sm mb-4">Ready to try AI-assisted patent prosecution?</p>
+        <p class="text-stone-500 text-sm mb-4">This project is open source.</p>
         <a
-          href="/login?plan=individual"
+          href={GITHUB_URL}
           class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
         >
-          Analyze Your First OA
+          Self-host it
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
       </div>

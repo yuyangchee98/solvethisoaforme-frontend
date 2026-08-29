@@ -6,6 +6,7 @@ import PatentReaderFeatures from '../../components/landing/PatentReaderFeatures.
 import PatentReaderHowItWorks from '../../components/landing/PatentReaderHowItWorks.astro';
 import PatentReaderFAQ from '../../components/landing/PatentReaderFAQ.astro';
 import Footer from '../../components/landing/Footer.astro';
+import ToolCta from '../../components/landing/ToolCta.astro';
 
 const faqSchema = {
   "@context": "https://schema.org",
@@ -13,10 +14,10 @@ const faqSchema = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "Is Patent Reader really free?",
+      name: "What does Patent Reader cost to run?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and multi-term search. No hidden paywalls.",
+        text: "Nothing beyond your own machine — it uses no AI models. One optional feature, placing reference numerals onto the figures, needs a separate key; everything else works without it. The setup guide covers it.",
       },
     },
     {
@@ -48,7 +49,7 @@ const faqSchema = {
       name: "Can I use Patent Reader during prosecution?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Absolutely. Patent Reader is designed for patent professionals. Use it to quickly understand a cited reference or check how claim elements map to figures. It pairs naturally with the OA Response Agent — read the prior art in Patent Reader, then analyze the rejection with the agent.",
+        text: "Absolutely. Patent Reader is designed for patent professionals. Use it to quickly understand a cited reference or check how claim elements map to figures. Read the prior art here, then take the rejection to the OA Agent.",
       },
     },
   ],
@@ -71,8 +72,8 @@ const supportedOffices = [
 ---
 
 <LandingLayout
-  title="Patent Reader - Free Structured Patent Viewer"
-  description="Free patent viewer with claim dependency trees, reference numeral mapping, figure bounding boxes, and multi-term search. No account required."
+  title="Patent Reader - Structured Patent Viewer"
+  description="Open source, self-hosted patent viewer with claim dependency trees, reference numeral mapping, figure bounding boxes, and multi-term search."
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <LandingNav />
@@ -81,9 +82,6 @@ const supportedOffices = [
     <section class="relative overflow-hidden">
       <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
       <div class="relative max-w-4xl mx-auto px-6 pt-20 pb-20 md:pt-28 md:pb-28 text-center">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 mb-6">
-          Free — no account required
-        </span>
         <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
           A better way to
           <span class="text-amber-600"> read patents</span>
@@ -91,18 +89,8 @@ const supportedOffices = [
         <p class="text-lg text-stone-500 leading-relaxed mb-10 max-w-2xl mx-auto">
           Enter a patent number like you would on Google Patents — but get claim dependency trees, reference numeral mapping, figure bounding boxes, and multi-term search.
         </p>
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a
-            href="/patent-reader"
-            class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
-          >
-            Try on a real patent
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          </a>
-          <span class="inline-flex items-center gap-1.5 text-sm text-stone-400">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
-            Scroll to learn more
-          </span>
+        <div class="flex justify-center">
+          <ToolCta appHref="/patent-reader" label="Patent Reader" size="lg" />
         </div>
       </div>
     </section>
@@ -148,16 +136,18 @@ const supportedOffices = [
     <section class="py-16 md:py-20 bg-stone-50/70">
       <div class="max-w-3xl mx-auto px-6 text-center">
         <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
-          Pairs naturally with the OA Response Agent
+          Next: decide argue or amend
         </h2>
         <p class="text-base text-stone-500 leading-relaxed mb-6 max-w-2xl mx-auto">
-          Read the cited prior art in Patent Reader, then analyze the rejection with the AI agent. The reader helps you understand the references; the agent helps you respond.
+          Read the cited prior art here, then take the rejection to the OA Agent.
+          The reader helps you understand the references; the agent works through
+          the examiner's mapping limitation by limitation.
         </p>
         <a
-          href="/oa-response/about"
+          href="/tools/oa-agent"
           class="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
         >
-          Learn about the OA Response Agent
+          About the OA Agent
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
       </div>

@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Loader2,
   FolderOpen,
-  ExternalLink,
 } from "lucide-react";
 import {
   listWorkspaceFiles,
@@ -136,17 +135,6 @@ function FileEntry({
     }
   };
 
-  // Reviewer page is hidden in prod — disable the "Open in Reviewer" link.
-  // To restore, uncomment the block below and re-render the button below.
-  const reviewerUrl: string | null = null;
-  // const isMd = /\.mdx?$/i.test(file.name);
-  // const reviewerUrl = isMd
-  //   ? `/reviewer?${new URLSearchParams({
-  //       session: sessionId,
-  //       strategy: file.path,
-  //     }).toString()}`
-  //   : null;
-
   return (
     <div
       className="group flex w-full items-center gap-2 rounded-md pr-2 text-sm hover:bg-accent transition-colors"
@@ -167,18 +155,6 @@ function FileEntry({
           {formatSize(file.size)}
         </span>
       </button>
-      {reviewerUrl && (
-        <a
-          href={reviewerUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="shrink-0 rounded p-1 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-background hover:text-foreground transition-opacity"
-          title="Open in Reviewer (side-by-side with source documents)"
-        >
-          <ExternalLink className="size-3.5" />
-        </a>
-      )}
     </div>
   );
 }

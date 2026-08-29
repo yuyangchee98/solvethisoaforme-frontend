@@ -1,0 +1,50 @@
+---
+// CTA for a tool description page.
+//
+// In the local build the running app exists, so the primary action opens it.
+// In the public build there is no backend, so the primary action is the repo.
+import { GITHUB_URL, APP_ROUTES_ENABLED } from '../../siteConfig';
+
+interface Props {
+  /** Route of the running app, e.g. /patent-reader */
+  appHref: string;
+  /** Tool name, used in the "Open X" label */
+  label: string;
+  /** Optional size bump for hero placement */
+  size?: 'md' | 'lg';
+}
+
+const { appHref, label, size = 'md' } = Astro.props;
+
+const primary =
+  size === 'lg'
+    ? 'inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm'
+    : 'inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm';
+
+const secondary =
+  size === 'lg'
+    ? 'inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-stone-600 hover:text-stone-900 border border-stone-200 hover:border-stone-300 rounded-lg transition-colors'
+    : 'inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-stone-600 hover:text-stone-900 border border-stone-200 hover:border-stone-300 rounded-lg transition-colors';
+
+const arrow = size === 'lg' ? 16 : 14;
+---
+
+<div class="flex flex-col sm:flex-row items-center gap-3">
+  {APP_ROUTES_ENABLED ? (
+    <>
+      <a href={appHref} class={primary}>
+        Open {label}
+        <svg width={arrow} height={arrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <a href={GITHUB_URL} class={secondary}>Source on GitHub</a>
+    </>
+  ) : (
+    <>
+      <a href={GITHUB_URL} class={primary}>
+        Self-host it
+        <svg width={arrow} height={arrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <span class="text-sm text-stone-400">Runs on your machine — there's no hosted instance.</span>
+    </>
+  )}
+</div>

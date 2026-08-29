@@ -2,14 +2,11 @@
 import LandingLayout from '../../layouts/LandingLayout.astro';
 import LandingNav from '../../components/landing/LandingNav.astro';
 import OAAgentMock from '../../components/landing/OAAgentMock.astro';
-import Stats from '../../components/landing/Stats.astro';
 import Features from '../../components/landing/Features.astro';
 import Jurisdictions from '../../components/landing/Jurisdictions.astro';
-import BeforeAfter from '../../components/landing/BeforeAfter.astro';
-import Testimonials from '../../components/landing/Testimonials.astro';
 import OAAgentFAQ from '../../components/landing/OAAgentFAQ.astro';
-import Pricing from '../../components/landing/Pricing.astro';
 import Footer from '../../components/landing/Footer.astro';
+import ToolCta from '../../components/landing/ToolCta.astro';
 
 const faqSchema = {
   "@context": "https://schema.org",
@@ -60,8 +57,8 @@ const faqSchema = {
 ---
 
 <LandingLayout
-  title="OA Response AI Agent - Solve This OA For Me"
-  description="AI-powered Office Action analysis. Upload your OA, cited prior art, and application — get argue/amend recommendations with draft language in minutes."
+  title="OA Agent - AI Office Action Analysis"
+  description="Open source, self-hosted AI agent for Office Action responses. Upload your OA, cited prior art, and application — get argue/amend recommendations with draft language."
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <LandingNav />
@@ -71,26 +68,17 @@ const faqSchema = {
       <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
       <div class="relative max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28">
         <div class="max-w-4xl mx-auto text-center">
-          <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
-            Respond to Office Actions
-            <span class="text-amber-600"> in minutes,</span>
-            not days
+            <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
+            OA
+            <span class="text-amber-600"> Agent</span>
           </h1>
           <p class="text-lg text-stone-500 leading-relaxed mb-10 max-w-2xl mx-auto">
-            Upload your Office Action and let AI analyze every rejection, read the cited prior art, and recommend argue-or-amend strategies so you can focus on the prosecution decisions that matter.
+            An AI agent that reads the cited prior art, maps each claim limitation to
+            the examiner's evidence, and recommends argue or amend — rejection by
+            rejection, with a citation you can check for every conclusion.
           </p>
-          <div class="flex flex-col sm:flex-row items-center justify-center gap-5">
-            <a
-              href="/login?plan=individual"
-              class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
-            >
-              Analyze Your First OA
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </a>
-            <span class="inline-flex items-center gap-1.5 text-sm text-stone-400">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="animate-bounce"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
-              Scroll to learn more
-            </span>
+          <div class="flex justify-center">
+            <ToolCta appHref="/oa-agent" label="OA Agent" size="lg" />
           </div>
         </div>
       </div>
@@ -115,32 +103,27 @@ const faqSchema = {
       </div>
     </section>
 
-    <Stats />
     <Features />
     <Jurisdictions />
-    <BeforeAfter />
-    <Testimonials />
-    <Pricing />
     <OAAgentFAQ />
 
-    <!-- Final CTA -->
-    <section class="py-20 md:py-28 bg-white">
-      <div class="max-w-2xl mx-auto px-6 text-center">
-        <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-          Your next Office Action doesn't have to take all day
+    <!-- Cross-link to the next tool -->
+    <section class="py-16 md:py-20 bg-white">
+      <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+          Next: check your amendments
         </h2>
-        <p class="text-lg text-stone-500 leading-relaxed mb-4">
-          Upload it, get a complete analysis with argue/amend recommendations, and start drafting your response from a position of strength.
-        </p>
-        <p class="text-sm text-stone-400 mb-8">
-          The AI does the reading and mapping. You make the prosecution decisions.
+        <p class="text-base text-stone-500 leading-relaxed mb-6 max-w-2xl mx-auto">
+          Once you've decided what to amend, the Antecedent Basis checker reads the
+          amended claim set and flags the §112 problems that get introduced when
+          claims are edited under time pressure.
         </p>
         <a
-          href="/login?plan=individual"
-          class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
+          href="/tools/antecedent-basis"
+          class="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
         >
-          Analyze Your First OA
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          About Antecedent Basis
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
       </div>
     </section>

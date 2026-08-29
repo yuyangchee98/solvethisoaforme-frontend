@@ -1,4 +1,6 @@
 ---
+import { GITHUB_URL } from '../../siteConfig';
+
 const faqs = [
   {
     question: "Does the AI hallucinate? How can I trust the analysis?",
@@ -28,7 +30,7 @@ const faqs = [
     <div class="text-center mb-14">
       <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">FAQ</p>
       <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
-        OA Response Agent FAQ
+        OA Agent FAQ
       </h2>
     </div>
 
@@ -44,10 +46,10 @@ const faqs = [
     <!-- CTA -->
     <div class="text-center mt-12">
       <a
-        href="/login?plan=individual"
+        href={GITHUB_URL}
         class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
       >
-        Analyze Your First OA
+        Self-host it
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
     </div>

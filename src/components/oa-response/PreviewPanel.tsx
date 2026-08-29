@@ -4,7 +4,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-// ExternalLink import removed — only used by the disabled "Open in Reviewer" button.
 import { X, ArrowLeft, FolderOpen } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
 import { useIsMobile } from "@/lib/useIsMobile";
@@ -36,15 +35,6 @@ function handleDownload(filename: string, content: string) {
   a.click();
   URL.revokeObjectURL(url);
 }
-
-// Reviewer page is hidden in prod — helper unused. To restore:
-// function getReviewerOpenUrl(sessionId: string, relativePath: string): string {
-//   const params = new URLSearchParams({
-//     session: sessionId,
-//     strategy: relativePath,
-//   });
-//   return `/reviewer?${params.toString()}`;
-// }
 
 function BrowserContent({ sessionId, close }: { sessionId: string; close: () => void }) {
   return (
@@ -118,20 +108,6 @@ function FilePreviewContent({
         <span className="flex-1 truncate text-sm font-medium">
           {file.filename}
         </span>
-        {/* Reviewer page is hidden in prod — disable the "Open in Reviewer" link.
-            To restore, uncomment the block below.
-        {isMd && sessionId && (
-          <a
-            href={getReviewerOpenUrl(sessionId, relativeFilePath)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-            title="Open in Reviewer (side-by-side with source documents)"
-          >
-            Open in Reviewer <ExternalLink className="size-3" />
-          </a>
-        )}
-        */}
         {isMd && sessionId && (
           <button
             onClick={handleDocxDownload}

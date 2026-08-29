@@ -1,13 +1,12 @@
 ---
 import { UserMenu } from '../auth/UserMenu';
 import { MobileNavDropdown } from './MobileNavDropdown';
+import { TOOLS, BLOG_POSTS } from '../../navigation';
 const currentPath = Astro.url.pathname;
 
 const pageLabels: Record<string, string> = {
-  '/oa-response': 'OA Response',
-  '/patent-reader': 'Patent Reader',
+  ...Object.fromEntries(TOOLS.map((t) => [t.appHref, t.label])),
   '/settings': 'Settings',
-  '/check-antecedent-basis': 'Antecedent Basis',
 };
 const currentPageLabel = pageLabels[currentPath];
 ---
@@ -38,26 +37,18 @@ const currentPageLabel = pageLabels[currentPath];
         <!-- Mega dropdown -->
         <div class="invisible opacity-0 group-hover/nav:visible group-hover/nav:opacity-100 transition-all duration-150 absolute top-full left-0 mt-1 w-[540px] bg-white rounded-xl border border-stone-200 shadow-xl p-5">
           <div class="grid grid-cols-2 gap-6">
-            <!-- Left column: Products + Learn -->
+            <!-- Left column: Tools -->
             <div>
               <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Tools</p>
-              <div class="space-y-1 mb-5">
-                <a href="/patent-reader" class={`block px-3 py-2 rounded-lg transition-colors ${currentPath === '/patent-reader' ? 'bg-stone-50' : 'hover:bg-stone-50'}`}>
-                  <p class={`text-sm font-medium ${currentPath === '/patent-reader' ? 'text-amber-600' : 'text-stone-900'}`}>Patent Reader</p>
-                  <p class="text-xs text-stone-400">Structured patent viewer</p>
-                </a>
-                <a href="/oa-response" class={`block px-3 py-2 rounded-lg transition-colors ${currentPath === '/oa-response' ? 'bg-stone-50' : 'hover:bg-stone-50'}`}>
-                  <p class={`text-sm font-medium ${currentPath === '/oa-response' ? 'text-amber-600' : 'text-stone-900'}`}>OA Response Agent</p>
-                  <p class="text-xs text-stone-400">AI Office Action analysis</p>
-                </a>
-              </div>
-
-              <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Learn</p>
-              <div class="space-y-0.5">
-                <a href="/" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">Overview</a>
-                <a href="/patent-reader/about" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">About Patent Reader</a>
-                <a href="/oa-response/about" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">About OA Agent</a>
-                <a href="/oa-response/about#pricing" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">Pricing</a>
+              <div class="space-y-1">
+                {TOOLS.map(({ appHref, href, label, description }) => (
+                  <a href={appHref} class={`block px-3 py-2 rounded-lg transition-colors ${currentPath === appHref ? 'bg-stone-50' : 'hover:bg-stone-50'}`}>
+                    <p class={`text-sm font-medium ${currentPath === appHref ? 'text-amber-600' : 'text-stone-900'}`}>{label}</p>
+                    <p class="text-xs text-stone-400">
+                      {description} · <a href={href} class="hover:text-stone-600 underline underline-offset-2">about</a>
+                    </p>
+                  </a>
+                ))}
               </div>
             </div>
 
@@ -68,11 +59,11 @@ const currentPageLabel = pageLabels[currentPath];
                 <a href="/blog" class="text-[11px] font-medium text-amber-600 hover:text-amber-700 transition-colors">All posts →</a>
               </div>
               <div class="space-y-0.5">
-                <a href="/blog/best-ai-tools-for-responding-to-patent-office-actions" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">Best AI Tools for Patent OA Response</a>
-                <a href="/blog/how-agentic-ai-reads-prior-art-differently-than-chatgpt" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">How Agentic AI Reads Prior Art</a>
-                <a href="/blog/ai-for-patent-prosecution-what-works-and-what-doesnt" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">AI for Patent Prosecution: What Works</a>
-                <a href="/blog/why-patent-attorneys-still-spend-hours-on-every-office-action" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">Why OAs Still Take 6 Hours</a>
-                <a href="/blog/antecedent-basis-mistakes-examiners-catch-that-ai-catches-first" class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">Antecedent Basis Mistakes AI Catches</a>
+                {BLOG_POSTS.map(({ href, label }) => (
+                  <a href={href} class="block px-3 py-1.5 rounded-lg text-sm text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors leading-snug">
+                    {label}
+                  </a>
+                ))}
               </div>
             </div>
           </div>

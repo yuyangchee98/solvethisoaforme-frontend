@@ -1,0 +1,18 @@
+# Cloudflare static-asset redirects.
+#
+# The site was restructured when the project became open source and self-hosted:
+# the two /*/about marketing pages moved under /tools/, the OA Response Agent was
+# shortened to OA Agent, Reviewer was removed, and the billing pages are gone.
+# These URLs are in the sitemap and may be indexed, so they redirect rather than 404.
+
+/oa-response/about       /tools/oa-agent           301
+/patent-reader/about     /tools/patent-reader      301
+/reviewer                /                         301
+/subscribe               /                         301
+
+# The running apps need a local backend and are excluded from the public build.
+# Send visitors to the page that explains the tool instead of a dead route.
+/oa-response             /tools/oa-agent           301
+/oa-agent                /tools/oa-agent           302
+/patent-reader           /tools/patent-reader      302
+/check-antecedent-basis  /tools/antecedent-basis   302

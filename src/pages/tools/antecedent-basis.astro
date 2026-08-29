@@ -1,0 +1,218 @@
+---
+import LandingLayout from '../../layouts/LandingLayout.astro';
+import LandingNav from '../../components/landing/LandingNav.astro';
+import Footer from '../../components/landing/Footer.astro';
+import ToolCta from '../../components/landing/ToolCta.astro';
+
+// One card per check. Descriptions follow what each check actually does —
+// keep these in sync with api/validators/ if the set changes.
+const validators = [
+  {
+    name: 'Antecedent basis',
+    summary: 'Checks that every "the" or "said" reference has an antecedent introduced earlier in the claim set.',
+    example: {
+      bad: '…wherein <mark>the housing</mark> surrounds the motor',
+      note: 'No "a housing" was ever introduced.',
+    },
+  },
+  {
+    name: 'Pronouns',
+    summary: 'Flags pronouns — it, its, they, their — which have no place in claim language because their referent is never unambiguous.',
+    example: {
+      bad: '…a controller that adjusts <mark>its</mark> output',
+      note: 'Whose output? The controller\'s, or the motor\'s?',
+    },
+  },
+  {
+    name: '"Such" phrases',
+    summary: 'Detects "such X" constructions, which read as references but never actually establish or point to an antecedent.',
+    example: {
+      bad: '…configured to receive <mark>such signal</mark>',
+      note: '"Such signal" refers to nothing definite.',
+    },
+  },
+  {
+    name: 'Prepositional scope',
+    summary: 'Catches terms later referenced with "the" that only ever appeared as the object of a preposition — a real antecedent, but not a properly introduced element.',
+    example: {
+      bad: 'a valve <mark>for a conduit</mark> … wherein <mark>the conduit</mark> is rigid',
+      note: 'The conduit was never positively recited.',
+    },
+  },
+  {
+    name: 'Reintroduction',
+    summary: 'Finds terms re-introduced with "a" in a dependent claim when the parent claim already defined them — the classic double-inclusion problem.',
+    example: {
+      bad: 'Claim 1: a sensor … Claim 3: <mark>a sensor</mark> mounted to the frame',
+      note: 'Claim 3 should say "the sensor".',
+    },
+  },
+];
+
+const faqs = [
+  {
+    question: 'Why not just ask an LLM to check antecedent basis?',
+    answer:
+      "Because this is a problem with a correct answer, and a language model will give you a plausible one. Antecedent basis is a structural property of the claim set — which noun phrases were introduced, where, and in what scope. Reading the grammar resolves that directly: the same claims produce the same findings every time, there is nothing to hallucinate, and you can see exactly which rule fired. It also returns instantly.",
+  },
+  {
+    question: 'How accurate is it?',
+    answer:
+      'It is a linter, not an examiner. It surfaces candidates for a human to judge, and it will produce false positives — claim language is genuinely ambiguous, and some constructions are deliberate. Treat a finding as "look at this line", not as "this claim is defective".',
+  },
+  {
+    question: 'What does it cost to run?',
+    answer:
+      'Nothing beyond your own machine. It uses no AI models, so there is nothing to pay for per run.',
+  },
+  {
+    question: 'Does it handle multiple dependent claims?',
+    answer:
+      'It walks the dependency chain, so a term introduced in claim 1 counts as an antecedent in any claim that depends from it. That is what makes the reintroduction check possible — it can tell that a dependent claim is re-reciting something its parent already established.',
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.question,
+    acceptedAnswer: { "@type": "Answer", text: f.answer },
+  })),
+};
+---
+
+<LandingLayout
+  title="Antecedent Basis Checker for Patent Claims"
+  description="Open source, self-hosted antecedent basis checker for patent claims. Catches missing antecedents, pronouns, 'such' phrases, prepositional scope, and reintroduction in patent claims."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <LandingNav />
+  <main>
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
+      <div class="relative max-w-4xl mx-auto px-6 pt-16 pb-16 md:pt-24 md:pb-20 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
+          The §112 problems
+          <span class="text-amber-600"> amendments introduce</span>
+        </h1>
+        <p class="text-lg text-stone-500 leading-relaxed mb-10 max-w-2xl mx-auto">
+          Paste a claim set and get a structural read of its references. It finds the
+          antecedent basis errors that appear when claims get edited under deadline —
+          the ones an examiner will find for you in the next Office Action.
+        </p>
+        <div class="flex justify-center">
+          <ToolCta appHref="/check-antecedent-basis" label="Antecedent Basis" size="lg" />
+        </div>
+      </div>
+    </section>
+
+    <!-- What it catches -->
+    <section class="py-16 md:py-24 bg-stone-50/70">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="max-w-2xl mb-12">
+          <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Five checks</p>
+          <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+            What it catches
+          </h2>
+          <p class="text-base text-stone-500 leading-relaxed">
+            Each check is a separate validator with its own rule. They run
+            independently, so a finding always traces back to one specific reason.
+          </p>
+        </div>
+
+        <div class="space-y-4">
+          {validators.map(({ name, summary, example }) => (
+            <div class="p-6 md:p-7 rounded-2xl border border-stone-200 bg-white">
+              <h3 class="text-lg font-bold text-stone-900 mb-3">{name}</h3>
+              <p class="text-sm text-stone-500 leading-relaxed mb-4">{summary}</p>
+              <div class="rounded-lg bg-stone-50 border border-stone-100 p-4">
+                <p class="text-sm text-stone-600 font-mono leading-relaxed mb-1.5" set:html={example.bad} />
+                <p class="text-xs text-stone-400">{example.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="py-16 md:py-24">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="max-w-2xl mb-10">
+          <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">How it works</p>
+          <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+            The same answer every time
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <h3 class="text-sm font-semibold text-stone-900 mb-2">It reads the grammar</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">
+              Claims are parsed for their actual sentence structure, so it knows
+              where each element begins and ends. That matters — claim language
+              nests far deeper than ordinary prose.
+            </p>
+          </div>
+          <div class="p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <h3 class="text-sm font-semibold text-stone-900 mb-2">It tracks every term</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">
+              Elements are followed across the whole claim set, down the dependency
+              chain, so anything introduced in an independent claim counts as
+              introduced for every claim beneath it.
+            </p>
+          </div>
+          <div class="p-6 rounded-2xl border border-stone-150 bg-stone-50/80">
+            <h3 class="text-sm font-semibold text-stone-900 mb-2">Each rule stands alone</h3>
+            <p class="text-sm text-stone-500 leading-relaxed">
+              The five checks run separately from one another, so a finding always
+              traces back to one specific reason — and adding a sixth doesn't
+              disturb the others.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="py-16 md:py-24 bg-stone-50/70">
+      <div class="max-w-3xl mx-auto px-6">
+        <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-10">
+          Antecedent Basis FAQ
+        </h2>
+        <div class="space-y-8">
+          {faqs.map(({ question, answer }) => (
+            <div>
+              <h3 class="text-base font-semibold text-stone-900 mb-3">{question}</h3>
+              <p class="text-sm text-stone-500 leading-relaxed">{answer}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Workflow callout -->
+    <section class="py-16 md:py-20">
+      <div class="max-w-3xl mx-auto px-6 text-center">
+        <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+          Comes after the OA Agent
+        </h2>
+        <p class="text-base text-stone-500 leading-relaxed mb-6 max-w-2xl mx-auto">
+          Work out what to amend first, then run the amended claim set through here
+          before the response goes out.
+        </p>
+        <a
+          href="/tools/oa-agent"
+          class="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+        >
+          About the OA Agent
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</LandingLayout>

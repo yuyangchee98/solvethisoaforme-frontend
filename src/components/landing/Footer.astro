@@ -1,4 +1,7 @@
 ---
+import { GITHUB_URL } from '../../siteConfig';
+import { TOOLS } from '../../navigation';
+
 const year = new Date().getFullYear();
 ---
 
@@ -9,18 +12,20 @@ const year = new Date().getFullYear();
       <div>
         <p class="text-base font-semibold text-white mb-3">Solve This OA For Me</p>
         <p class="text-sm leading-relaxed max-w-xs">
-          Patent tools for prosecution professionals. Free structured patent viewer and AI-powered Office Action analysis.
+          Open source, self-hosted patent prosecution tools. Run them on your own
+          machine with your own Anthropic API key.
         </p>
       </div>
 
-      <!-- Product links -->
+      <!-- Tools -->
       <div>
-        <p class="text-sm font-semibold text-stone-300 uppercase tracking-wider mb-4">Product</p>
+        <p class="text-sm font-semibold text-stone-300 uppercase tracking-wider mb-4">Tools</p>
         <ul class="space-y-2.5">
-          <li><a href="/patent-reader/about" class="text-sm hover:text-white transition-colors">Patent Reader</a></li>
-          <li><a href="/oa-response/about" class="text-sm hover:text-white transition-colors">OA Response Agent</a></li>
-          <li><a href="/oa-response/about#pricing" class="text-sm hover:text-white transition-colors">Pricing</a></li>
+          {TOOLS.map(({ href, label }) => (
+            <li><a href={href} class="text-sm hover:text-white transition-colors">{label}</a></li>
+          ))}
           <li><a href="/blog" class="text-sm hover:text-white transition-colors">Blog</a></li>
+          <li><a href={GITHUB_URL} class="text-sm hover:text-white transition-colors">Source on GitHub</a></li>
         </ul>
       </div>
 

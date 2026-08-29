@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { TOOLS } from '@/navigation';
 
 const links = [
-  { href: '/oa-response', label: 'OA Response AI Agent' },
-  { href: '/patent-reader', label: 'Patent Reader' },
+  ...TOOLS.map((t) => ({ href: t.appHref, label: t.label })),
   { href: '/settings', label: 'Settings' },
 ];
 
@@ -12,9 +12,7 @@ export function MobileNavDropdown({ currentPath }: { currentPath: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   // Derive current page label for the button text
-  const currentLabel = links.find(
-    (l) => l.href === currentPath || (l.href === '/oa-response' && currentPath === '/')
-  )?.label ?? 'Menu';
+  const currentLabel = links.find((l) => l.href === currentPath)?.label ?? 'Menu';
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -39,7 +37,7 @@ export function MobileNavDropdown({ currentPath }: { currentPath: string }) {
       {open && (
         <div className="absolute top-full left-0 mt-2 w-52 bg-white rounded-lg border border-black/10 shadow-lg py-1 z-50">
           {links.map(({ href, label }) => {
-            const isActive = href === currentPath || (href === '/oa-response' && currentPath === '/');
+            const isActive = href === currentPath;
             return (
               <a
                 key={href}

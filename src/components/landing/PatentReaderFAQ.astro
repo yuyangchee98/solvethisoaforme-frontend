@@ -1,8 +1,9 @@
 ---
+import ToolCta from './ToolCta.astro';
 const faqs = [
   {
-    question: "Is Patent Reader really free?",
-    answer: "Yes, completely free with no account required. Enter any patent number and get structured viewing, claim dependency trees, reference numeral mapping, figure bounding boxes, citation browsing, and multi-term search. No hidden paywalls.",
+    question: "What does Patent Reader cost to run?",
+    answer: "Nothing beyond your own machine — it uses no AI models. One optional feature, placing reference numerals onto the figures, needs a separate key; everything else works without it. The setup guide covers it.",
   },
   {
     question: "How is this different from Google Patents?",
@@ -43,14 +44,9 @@ const faqs = [
 
     <!-- CTA -->
     <div class="text-center mt-12">
-      <a
-        href="/patent-reader?patent=US11423567B2"
-        class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
-      >
-        Try Patent Reader
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-      </a>
-      <p class="text-sm text-stone-400 mt-3">Free, no account required</p>
+      <div class="flex justify-center">
+        <ToolCta appHref="/patent-reader?patent=US11423567B2" label="Patent Reader" size="lg" />
+      </div>
     </div>
   </div>
 </section>

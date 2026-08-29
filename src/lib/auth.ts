@@ -1,5 +1,5 @@
 /**
- * Auth utilities: token management, login, register, billing.
+ * Auth utilities: token management, login, register.
  */
 
 const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
@@ -26,8 +26,6 @@ export function authHeaders(): Record<string, string> {
 export interface AuthUser {
   id: string;
   email: string;
-  subscription_status: string | null;
-  plan_type: string | null;
   is_active: boolean;
 }
 
@@ -76,40 +74,6 @@ export async function getMe(): Promise<AuthUser> {
   }
 
   return res.json();
-}
-
-export async function createCheckoutSession(
-  plan: string
-): Promise<string> {
-  const res = await fetch(`${API_BASE}/billing/create-checkout-session`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...authHeaders(),
-    },
-    body: JSON.stringify({ plan }),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to create checkout session');
-  }
-
-  const data = await res.json();
-  return data.url as string;
-}
-
-export async function createPortalSession(): Promise<string> {
-  const res = await fetch(`${API_BASE}/billing/create-portal-session`, {
-    method: 'POST',
-    headers: authHeaders(),
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to create portal session');
-  }
-
-  const data = await res.json();
-  return data.url as string;
 }
 
 export function logout(): void {

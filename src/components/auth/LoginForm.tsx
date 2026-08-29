@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { login, register, getMe, getToken, createCheckoutSession } from '@/lib/auth';
+import { login, register, getMe, getToken } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
+
+// Where to land after a successful login/registration. Billing was removed when
+// the project became self-hosted, so there is no plan selection step any more.
+const AFTER_AUTH = '/oa-agent';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -12,7 +16,6 @@ export function LoginForm() {
   const [checking, setChecking] = useState(true);
 
   const params = new URLSearchParams(window.location.search);
-  const plan = params.get('plan');
   const defaultTab = params.get('tab') === 'register' ? 'register' : 'login';
 
   // If already logged in, skip the form
@@ -23,15 +26,8 @@ export function LoginForm() {
       return;
     }
     getMe()
-      .then(async (user) => {
-        if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
-          window.location.href = '/oa-response';
-        } else if (plan) {
-          const url = await createCheckoutSession(plan);
-          window.location.href = url;
-        } else {
-          window.location.href = '/subscribe';
-        }
+      .then(() => {
+        window.location.href = AFTER_AUTH;
       })
       .catch(() => {
         // Token invalid/expired, show the form
@@ -45,15 +41,7 @@ export function LoginForm() {
     setLoading(true);
     try {
       await login(email, password);
-      const user = await getMe();
-      if (user.subscription_status === 'active' || user.subscription_status === 'trialing') {
-        window.location.href = '/oa-response';
-      } else if (plan) {
-        const url = await createCheckoutSession(plan);
-        window.location.href = url;
-      } else {
-        window.location.href = '/subscribe';
-      }
+      window.location.href = AFTER_AUTH;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -68,12 +56,7 @@ export function LoginForm() {
     try {
       await register(email, password);
       await login(email, password);
-      if (plan) {
-        const url = await createCheckoutSession(plan);
-        window.location.href = url;
-      } else {
-        window.location.href = '/subscribe';
-      }
+      window.location.href = AFTER_AUTH;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -130,11 +113,6 @@ export function LoginForm() {
     <div className="w-full max-w-sm">
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-stone-900">Solve This OA For Me</h1>
-        {plan && (
-          <p className="text-sm text-stone-500 mt-1">
-            {plan === 'day_pass' ? 'Day Pass — $49/day' : 'Individual — $189/mo'}
-          </p>
-        )}
       </div>
 
       <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm">
