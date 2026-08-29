@@ -1,5 +1,5 @@
 ---
-import { GITHUB_URL } from '../../siteConfig';
+import { GITHUB_URL, GITHUB_URL_FRONTEND } from '../../siteConfig';
 import { TOOLS } from '../../navigation';
 
 const year = new Date().getFullYear();
@@ -25,7 +25,8 @@ const year = new Date().getFullYear();
             <li><a href={href} class="text-sm hover:text-white transition-colors">{label}</a></li>
           ))}
           <li><a href="/blog" class="text-sm hover:text-white transition-colors">Blog</a></li>
-          <li><a href={GITHUB_URL} class="text-sm hover:text-white transition-colors">Source on GitHub</a></li>
+          <li><a href={GITHUB_URL} class="text-sm hover:text-white transition-colors">Backend source</a></li>
+          <li><a href={GITHUB_URL_FRONTEND} class="text-sm hover:text-white transition-colors">Frontend source</a></li>
         </ul>
       </div>
 

@@ -1,19 +1,19 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { OAResponseSession, OAResponseMessage } from '@/lib/api';
+import type { OAAgentSession, OAAgentMessage } from '@/lib/api';
 import {
-  createOAResponseSession,
-  listOAResponseSessions,
-  deleteOAResponseSession,
-  getOAResponseMessages,
+  createOAAgentSession,
+  listOAAgentSessions,
+  deleteOAAgentSession,
+  getOAAgentMessages,
 } from '@/lib/api';
 
 export interface UseSessionReturn {
-  sessions: OAResponseSession[];
-  currentSession: OAResponseSession | null;
-  messages: OAResponseMessage[];
+  sessions: OAAgentSession[];
+  currentSession: OAAgentSession | null;
+  messages: OAAgentMessage[];
   isLoading: boolean;
   error: string | null;
-  createSession: () => Promise<OAResponseSession | null>;
+  createSession: () => Promise<OAAgentSession | null>;
   selectSession: (sessionId: string) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
   refreshSessions: () => Promise<void>;
@@ -46,9 +46,9 @@ function getUrlSessionId(): string | null {
 }
 
 export function useSession(): UseSessionReturn {
-  const [sessions, setSessions] = useState<OAResponseSession[]>([]);
-  const [currentSession, setCurrentSession] = useState<OAResponseSession | null>(null);
-  const [messages, setMessages] = useState<OAResponseMessage[]>([]);
+  const [sessions, setSessions] = useState<OAAgentSession[]>([]);
+  const [currentSession, setCurrentSession] = useState<OAAgentSession | null>(null);
+  const [messages, setMessages] = useState<OAAgentMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +57,7 @@ export function useSession(): UseSessionReturn {
   const refreshSessions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const result = await listOAResponseSessions();
+      const result = await listOAAgentSessions();
       // Sort by created_at descending (newest first)
       const sorted = result.sessions.sort(
         (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -70,12 +70,12 @@ export function useSession(): UseSessionReturn {
     }
   }, []);
 
-  const createSession = useCallback(async (): Promise<OAResponseSession | null> => {
+  const createSession = useCallback(async (): Promise<OAAgentSession | null> => {
     try {
       setIsLoading(true);
       setError(null);
-      const result = await createOAResponseSession();
-      const newSession: OAResponseSession = {
+      const result = await createOAAgentSession();
+      const newSession: OAAgentSession = {
         id: result.id,
         status: 'active',
         created_at: result.created_at,
@@ -107,7 +107,7 @@ export function useSession(): UseSessionReturn {
       }
 
       // Load messages for this session
-      const result = await getOAResponseMessages(sessionId);
+      const result = await getOAAgentMessages(sessionId);
       setMessages(result.messages);
       setCurrentSession(session);
       updateUrlSession(sessionId);
@@ -122,7 +122,7 @@ export function useSession(): UseSessionReturn {
     try {
       setIsLoading(true);
       setError(null);
-      await deleteOAResponseSession(sessionId);
+      await deleteOAAgentSession(sessionId);
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
 
       // If we deleted the current session, clear it
@@ -145,7 +145,7 @@ export function useSession(): UseSessionReturn {
       if (urlSessionId) {
         // selectSession depends on sessions state, so we need to
         // check directly via the API instead of waiting for state
-        getOAResponseMessages(urlSessionId)
+        getOAAgentMessages(urlSessionId)
           .then((result) => {
             setMessages(result.messages);
             // Find the session from the freshly-loaded list

@@ -8,9 +8,13 @@ const SITE = 'https://solvethisoaforme.chyuang.com';
 
 // Routes that only work with a local backend running. They live in src/app-routes/
 // rather than src/pages/ so they are NOT picked up by file-based routing, and are
-// injected only when PUBLIC_APP_ROUTES=1 (`npm run dev`, `npm run build:local`).
-// The public deploy is a static site with no API behind it, so it ships only the
-// marketing and docs pages.
+// injected only when PUBLIC_APP_ROUTES=1.
+//
+// `npm run dev` sets it, so self-hosting works out of the box.
+// `npm run build` does NOT — it produces the public marketing site, which is what
+// the Cloudflare deploy hook runs. Keep that default: if `build` included the app
+// routes, a push would silently publish tool pages with no backend behind them.
+// `npm run build:app` is the full local build if you want to preview it.
 const APP_ROUTES = [
   { pattern: '/patent-reader', entrypoint: './src/app-routes/patent-reader.astro' },
   { pattern: '/oa-agent', entrypoint: './src/app-routes/oa-agent.astro' },

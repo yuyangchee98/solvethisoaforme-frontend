@@ -43,8 +43,8 @@ import {
   SquareIcon,
 } from "lucide-react";
 import { usePreviewPanel } from "@/lib/previewPanelStore";
-import { CompactionContext } from "@/components/oa-response/OAResponseChat";
-import { DeliverablesBar } from "@/components/oa-response/DeliverablesBar";
+import { CompactionContext } from "@/components/oa-agent/OAAgentChat";
+import { DeliverablesBar } from "@/components/oa-agent/DeliverablesBar";
 import { SubagentContext } from "@/components/assistant-ui/tool-fallback";
 import { type ComponentType, type FC, useCallback, useContext, useEffect } from "react";
 

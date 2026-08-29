@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "PUBLIC_APP_ROUTES=1 astro dev",
     "build": "astro build",
-    "build:local": "PUBLIC_APP_ROUTES=1 astro build",
+    "build:app": "PUBLIC_APP_ROUTES=1 astro build",
     "preview": "astro preview",
     "astro": "astro"
   },

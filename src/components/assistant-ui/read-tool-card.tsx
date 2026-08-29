@@ -21,7 +21,7 @@ import { SubagentLabel } from "@/components/assistant-ui/tool-fallback";
 import { getCachedUrl } from "@/lib/fileCache";
 import { getFileUrl } from "@/lib/api";
 import { authHeaders } from "@/lib/auth";
-import { useSessionId } from "@/components/oa-response/contexts/SessionContext";
+import { useSessionId } from "@/components/oa-agent/contexts/SessionContext";
 import { PDFViewer } from "./pdf-viewer";
 
 function formatFileSize(bytes: number): string {
