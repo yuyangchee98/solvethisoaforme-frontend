@@ -23,8 +23,9 @@ import { PreviewPanel } from './PreviewPanel';
 import { usePreviewPanel } from '@/lib/previewPanelStore';
 import { useMobileSidebar } from '@/lib/mobileSidebarStore';
 import { useIsMobile } from '@/lib/useIsMobile';
-import { getOAAgentMessagesEndpoint, getFileUrl, type OAAgentMessage } from '@/lib/api';
+import { getOAAgentMessagesEndpoint, getFileUrl, getOAAgentConfig, type OAAgentMessage } from '@/lib/api';
 import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
+import { byokHeaders, getAnthropicKey } from '@/lib/byok';
 import { MessageSquarePlus, Loader2, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -226,7 +227,7 @@ function ChatThread({ sessionId, initialMessages }: { sessionId: string; initial
     messages: uiMessages,
     transport: new AssistantChatTransport({
       api: endpoint,
-      headers: authHeaders(),
+      headers: () => ({ ...authHeaders(), ...byokHeaders() }),
       fetch: compactionFetch,
     }),
     adapters: {
@@ -301,6 +302,16 @@ function AuthenticatedChat() {
   const sidebarOpen = useMobileSidebar((s) => s.isOpen);
   const closeSidebar = useMobileSidebar((s) => s.close);
 
+  // BYOK: warn when the deployment requires a user-supplied Anthropic key
+  // and none is stored in this browser.
+  const [showKeyBanner, setShowKeyBanner] = useState(false);
+  useEffect(() => {
+    if (getAnthropicKey()) return;
+    getOAAgentConfig()
+      .then((cfg) => setShowKeyBanner(cfg.byok_required))
+      .catch(() => {});
+  }, []);
+
   // Close preview panel on session switch
   useEffect(() => {
     usePreviewPanel.getState().close();
@@ -361,6 +372,24 @@ function AuthenticatedChat() {
           <div className="bg-red-50 border-b border-red-200 px-4 py-2 text-sm text-red-700 flex justify-between items-center">
             <span>{sessionError}</span>
             <button onClick={clearError} className="text-red-500 hover:text-red-700">
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {showKeyBanner && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-sm text-amber-800 flex justify-between items-center">
+            <span>
+              Agent responses require your Anthropic API key —{' '}
+              <a href="/settings" className="underline font-medium">
+                add it in Settings
+              </a>
+              .
+            </span>
+            <button
+              onClick={() => setShowKeyBanner(false)}
+              className="text-amber-600 hover:text-amber-800"
+            >
               Dismiss
             </button>
           </div>

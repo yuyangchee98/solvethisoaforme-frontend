@@ -6,6 +6,7 @@
     "dev": "PUBLIC_APP_ROUTES=1 astro dev",
     "build": "astro build",
     "build:app": "PUBLIC_APP_ROUTES=1 astro build",
+    "build:prod-app": "PUBLIC_APP_ROUTES=1 PUBLIC_API_URL=https://oa-api.chyuang.com astro build",
     "preview": "astro preview",
     "astro": "astro"
   },

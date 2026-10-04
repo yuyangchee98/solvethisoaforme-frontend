@@ -186,6 +186,16 @@ export function getOAAgentMessagesEndpoint(sessionId: string): string {
   return `${API_BASE}/oa-agent/sessions/${sessionId}/messages`;
 }
 
+export interface OAAgentConfig {
+  byok_required: boolean;
+}
+
+export async function getOAAgentConfig(): Promise<OAAgentConfig> {
+  const response = await fetch(`${API_BASE}/oa-agent/config`);
+  if (!response.ok) throw new Error("Failed to load agent config");
+  return response.json();
+}
+
 export function getFileUrl(sessionId: string, filePath: string): string {
   // Normalize path - remove leading slash if present
   const normalizedPath = filePath.startsWith("/")
