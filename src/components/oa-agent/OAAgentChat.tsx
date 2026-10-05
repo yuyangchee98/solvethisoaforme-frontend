@@ -24,9 +24,9 @@ import { usePreviewPanel } from '@/lib/previewPanelStore';
 import { useMobileSidebar } from '@/lib/mobileSidebarStore';
 import { useIsMobile } from '@/lib/useIsMobile';
 import { getOAAgentMessagesEndpoint, getFileUrl, getOAAgentConfig, type OAAgentMessage } from '@/lib/api';
-import { getToken, getMe, authHeaders, type AuthUser } from '@/lib/auth';
+import { authHeaders, ensureGuestAuth } from '@/lib/auth';
 import { byokHeaders, getAnthropicKey } from '@/lib/byok';
-import { MessageSquarePlus, Loader2, Bot } from 'lucide-react';
+import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -425,54 +425,31 @@ function AuthenticatedChat() {
 }
 
 export function OAAgentChat() {
-  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'not-logged-in'>('loading');
+  // No login screen: provision the invisible guest identity, then open the chat.
+  const [ready, setReady] = useState(false);
+  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      setAuthState('not-logged-in');
-      return;
-    }
-    getMe()
-      .then(() => {
-        setAuthState('authenticated');
-      })
-      .catch(() => {
-        setAuthState('not-logged-in');
-      });
+    ensureGuestAuth()
+      .then(() => setReady(true))
+      .catch(() => setAuthError(true));
   }, []);
 
-  if (authState === 'loading') {
+  if (authError) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
+      <div className="flex h-full items-center justify-center p-6">
+        <p className="max-w-md text-center text-stone-600">
+          Couldn't reach the server to start your session. Check your connection
+          and reload the page.
+        </p>
       </div>
     );
   }
 
-  if (authState === 'not-logged-in') {
+  if (!ready) {
     return (
-      <div className="flex h-full items-center justify-center p-6">
-        <div className="max-w-md text-center">
-          <Bot className="h-14 w-14 mx-auto text-amber-500 mb-5" />
-          <h2 className="text-2xl font-bold text-stone-900 mb-3">
-            OA Agent
-          </h2>
-          <p className="text-stone-600 mb-6">
-            Upload your Office Action and let AI help you draft responses — analyze rejections, research prior art, and build arguments.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild>
-              <a href="/login">Log in to get started</a>
-            </Button>
-            <Button variant="outline" asChild>
-              <a href="/login?tab=register">Sign up</a>
-            </Button>
-            <Button variant="ghost" asChild>
-              <a href="/tools/oa-agent">Learn more</a>
-            </Button>
-          </div>
-        </div>
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-stone-400" />
       </div>
     );
   }

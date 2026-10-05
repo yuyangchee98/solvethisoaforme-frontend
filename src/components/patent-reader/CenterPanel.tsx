@@ -109,10 +109,6 @@ interface CenterPanelProps {
   onAnnotationCreate?: (color: import("./annotation-types").AnnotationColor, note: string) => void;
   onAnnotationCancel?: () => void;
   onAnnotationClick?: (id: string) => void;
-  showAnnotationHardGate?: boolean;
-  showAnnotationSoftPrompt?: boolean;
-  onDismissSoftPrompt?: () => void;
-  annotationCount?: number;
 }
 
 /** Find the claim element span that covers a given character position. */
@@ -726,10 +722,6 @@ export function CenterPanel({
   onAnnotationCreate,
   onAnnotationCancel,
   onAnnotationClick,
-  showAnnotationHardGate,
-  showAnnotationSoftPrompt,
-  onDismissSoftPrompt,
-  annotationCount,
 }: CenterPanelProps) {
   const [showJumpTo, setShowJumpTo] = useState(false);
   const [jumpInput, setJumpInput] = useState("");
@@ -997,34 +989,12 @@ export function CenterPanel({
 
   return (
     <div ref={scrollContainerRef} className="flex-1 overflow-y-auto bg-stone-50 relative" onMouseUp={handleTextSelect}>
-      {/* Annotation soft prompt */}
-      {showAnnotationSoftPrompt && (
-        <div className="sticky top-0 z-30 bg-amber-50 border-b border-amber-200 px-4 py-2.5 flex items-center gap-3 text-sm">
-          <span className="text-amber-800 flex-1">
-            You have {annotationCount} annotation{annotationCount !== 1 ? "s" : ""}. Create a free account to save them across devices.
-          </span>
-          <a
-            href="/login?tab=register"
-            className="text-xs font-medium text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-md transition-colors shrink-0"
-          >
-            Create Account
-          </a>
-          <button
-            type="button"
-            onClick={onDismissSoftPrompt}
-            className="text-xs text-amber-600 hover:text-amber-800 shrink-0"
-          >
-            Maybe Later
-          </button>
-        </div>
-      )}
       {/* Annotation toolbar */}
       {pendingAnnotation && onAnnotationCreate && onAnnotationCancel && (
         <AnnotationToolbar
           pending={pendingAnnotation}
           onSave={onAnnotationCreate}
           onCancel={onAnnotationCancel}
-          hardGate={showAnnotationHardGate}
           scrollContainerRef={scrollContainerRef}
         />
       )}

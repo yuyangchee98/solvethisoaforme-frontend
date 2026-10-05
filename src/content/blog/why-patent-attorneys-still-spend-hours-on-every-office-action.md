@@ -67,4 +67,4 @@ Writing the actual response is still yours too. The tool produces analysis and d
 
 What *is* automatable is the grunt work of reading 80 pages of prior art and building a chart. That's the part nobody went to law school for, and it's the part that eats your afternoon.
 
-If you want to see what this looks like in practice, [grab a day pass](/) and try it on whatever OA is sitting on your desk right now. Bring your own references or let the agent fetch them. The analysis takes a few minutes; you'll know pretty quickly whether the output is useful.
+If you want to see what this looks like in practice, [try the OA Agent — it's free to use](/tools/oa-agent) on whatever OA is sitting on your desk right now. Bring your own references or let the agent fetch them. The analysis takes a few minutes; you'll know pretty quickly whether the output is useful.

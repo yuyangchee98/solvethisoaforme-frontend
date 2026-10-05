@@ -61,9 +61,9 @@ const faqs = [
       'It is a linter, not an examiner. It surfaces candidates for a human to judge, and it will produce false positives — claim language is genuinely ambiguous, and some constructions are deliberate. Treat a finding as "look at this line", not as "this claim is defective".',
   },
   {
-    question: 'What does it cost to run?',
+    question: 'What does it cost?',
     answer:
-      'Nothing beyond your own machine. It uses no AI models, so there is nothing to pay for per run.',
+      'Nothing — it\'s free. It uses no AI models, so there is nothing to pay for per run.',
   },
   {
     question: 'Does it handle multiple dependent claims?',
@@ -85,7 +85,7 @@ const faqSchema = {
 
 <LandingLayout
   title="Antecedent Basis Checker for Patent Claims"
-  description="Open source, self-hosted antecedent basis checker for patent claims. Catches missing antecedents, pronouns, 'such' phrases, prepositional scope, and reintroduction in patent claims."
+  description="Free antecedent basis checker for patent claims. Catches missing antecedents, pronouns, 'such' phrases, prepositional scope, and reintroduction in patent claims."
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <LandingNav />

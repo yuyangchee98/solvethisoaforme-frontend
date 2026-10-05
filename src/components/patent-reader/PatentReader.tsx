@@ -14,6 +14,7 @@ import { useResizableWidth } from "@/lib/useResizableWidth";
 import type { PatentPanel } from "./usePatentPanel";
 import { useAnnotations } from "./useAnnotations";
 import type { UseAnnotationsReturn } from "./useAnnotations";
+import { ensureGuestAuth } from "@/lib/auth";
 
 // ── URL state helpers ────────────────────────────────────────────────
 function getUrlParam(name: string): string | null {
@@ -292,6 +293,12 @@ function AnalysisStatus({ panel }: { panel: PatentPanel }) {
 
 export function PatentReader() {
   const isMobile = useIsMobile();
+
+  // Provision the invisible guest identity in the background so annotations
+  // save server-side. Reading patents works fine before (or without) it.
+  useEffect(() => {
+    ensureGuestAuth().catch(() => {});
+  }, []);
 
   // UI state (declared before hooks so callbacks can reference them)
   const [query, setQuery] = useState("");
@@ -703,10 +710,6 @@ export function PatentReader() {
                 onAnnotationSelect={leftAnnotations.setPendingAnnotation}
                 onAnnotationCreate={leftAnnotations.createAnnotation}
                 onAnnotationCancel={() => leftAnnotations.setPendingAnnotation(null)}
-                showAnnotationHardGate={leftAnnotations.showHardGate}
-                showAnnotationSoftPrompt={leftAnnotations.showSoftPrompt}
-                onDismissSoftPrompt={leftAnnotations.dismissSoftPrompt}
-                annotationCount={leftAnnotations.totalCount}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -759,10 +762,6 @@ export function PatentReader() {
                 onAnnotationSelect={rightAnnotations.setPendingAnnotation}
                 onAnnotationCreate={rightAnnotations.createAnnotation}
                 onAnnotationCancel={() => rightAnnotations.setPendingAnnotation(null)}
-                showAnnotationHardGate={rightAnnotations.showHardGate}
-                showAnnotationSoftPrompt={rightAnnotations.showSoftPrompt}
-                onDismissSoftPrompt={rightAnnotations.dismissSoftPrompt}
-                annotationCount={rightAnnotations.totalCount}
               />
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -841,7 +840,6 @@ export function PatentReader() {
           onAnnotationSelect={leftAnnotations.setPendingAnnotation}
           onAnnotationCreate={leftAnnotations.createAnnotation}
           onAnnotationCancel={() => leftAnnotations.setPendingAnnotation(null)}
-          showAnnotationHardGate={leftAnnotations.showHardGate}
         />
 
         {/* Desktop: inline sidebar */}

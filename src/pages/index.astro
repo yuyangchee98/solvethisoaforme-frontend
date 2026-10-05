@@ -2,7 +2,6 @@
 import LandingLayout from '../layouts/LandingLayout.astro';
 import LandingNav from '../components/landing/LandingNav.astro';
 import Footer from '../components/landing/Footer.astro';
-import { GITHUB_URL } from '../siteConfig';
 import { TOOLS } from '../navigation';
 
 const softwareSchema = {
@@ -13,9 +12,8 @@ const softwareSchema = {
   logo: "https://solvethisoaforme.chyuang.com/favicon.ico",
   applicationCategory: "BusinessApplication",
   description:
-    "Open-source, self-hosted patent prosecution tools. A structured patent viewer, an AI agent that reads the cited prior art and recommends argue or amend, and an antecedent basis checker for amended claims. Run them on your own machine.",
+    "Free patent prosecution tools in the browser. A structured patent viewer, an AI agent that reads the cited prior art and recommends argue or amend, and an antecedent basis checker for amended claims. The agent runs on your own Anthropic API key.",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-  codeRepository: GITHUB_URL,
 };
 
 // The three tools, described by the job they do rather than by their name.
@@ -43,8 +41,8 @@ const tools = [
 ---
 
 <LandingLayout
-  title="Solve This OA For Me — Open Source Patent Prosecution Tools"
-  description="Open source, self-hosted tools for answering Office Actions: a structured patent viewer, an AI agent that reads the cited prior art, and an antecedent basis checker for amended claims."
+  title="Solve This OA For Me — Free Patent Prosecution Tools"
+  description="Free tools for answering Office Actions: a structured patent viewer, an AI agent that reads the cited prior art on your own Anthropic API key, and an antecedent basis checker for amended claims."
 >
   <script type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
   <LandingNav />
@@ -58,17 +56,17 @@ const tools = [
           <span class="text-amber-600"> end to end</span>
         </h1>
         <p class="text-lg text-stone-500 leading-relaxed mb-8 max-w-2xl mx-auto">
-          Three open-source tools for patent prosecution. Self-hosted — you run them
-          on your own machine with your own Anthropic API key. There's no hosted
-          instance and no account to create.
+          Three free tools for patent prosecution, right here in the browser. No
+          account to create — the OA Agent runs on your own Anthropic API key, and
+          the other two tools don't even need that.
         </p>
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
           <a
-            href={GITHUB_URL}
+            href="/oa-agent"
             class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.35-1.3-1.71-1.3-1.71-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.4-1.27.73-1.56-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .98-.31 3.2 1.18a11.1 11.1 0 0 1 5.83 0c2.22-1.5 3.2-1.18 3.2-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
-            Get it on GitHub
+            Start free
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </a>
           <a
             href="#how-it-works"
@@ -77,9 +75,12 @@ const tools = [
             How it works
           </a>
         </div>
+        <p class="text-sm text-stone-500 mt-4">
+          or <a href="/patent-reader" class="text-amber-700 underline underline-offset-2 hover:text-amber-800">try the Patent Reader</a> — nothing to set up
+        </p>
         <p class="text-sm text-stone-400 mt-6 max-w-lg mx-auto">
-          Your documents go from your machine straight to the Claude API under your
-          own key — there's no server in between holding them.
+          Your API key stays in this browser and goes straight to your agent
+          session — it's never stored on the server.
         </p>
       </div>
     </section>
@@ -185,21 +186,42 @@ const tools = [
       </div>
     </section>
 
+    <!-- The honest asterisk -->
+    <section class="py-12 md:py-16">
+      <div class="max-w-3xl mx-auto px-6">
+        <div class="p-7 md:p-8 rounded-2xl border border-amber-200 bg-amber-50/60">
+          <h2 class="text-lg font-bold text-stone-900 mb-3">
+            Free, with one honest asterisk
+          </h2>
+          <p class="text-sm text-stone-600 leading-relaxed">
+            The tools cost nothing to use and there's nothing to sign up for. The
+            OA Agent thinks with Claude, and model usage is the expensive part — so
+            it runs on <em>your</em> Anthropic API key, and Anthropic bills you
+            directly for exactly what your sessions use. No subscription, no
+            markup, no pricing page. The Patent Reader and Antecedent Basis checker
+            use no AI models, so they're simply free.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- Close -->
     <section class="py-16 md:py-24 bg-stone-50/70">
       <div class="max-w-3xl mx-auto px-6 text-center">
         <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
-          Run it yourself
+          Start in two minutes
         </h2>
         <p class="text-base text-stone-500 leading-relaxed mb-8 max-w-xl mx-auto">
-          Clone the repo, follow the setup guide, and it runs on your laptop.
+          Open the OA Agent, paste your Anthropic API key in Settings, and drop in
+          your Office Action. The Patent Reader and Antecedent Basis checker don't
+          even need the key.
         </p>
         <a
-          href={GITHUB_URL}
+          href="/oa-agent"
           class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.35-1.3-1.71-1.3-1.71-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.4-1.27.73-1.56-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .98-.31 3.2 1.18a11.1 11.1 0 0 1 5.83 0c2.22-1.5 3.2-1.18 3.2-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.26 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
-          Setup guide on GitHub
+          Start free
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
         </a>
       </div>
     </section>

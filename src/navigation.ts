@@ -1,12 +1,11 @@
 // Single source of truth for site navigation.
 //
-// LandingNav and TopNav both read from here so the two menus can't drift apart
-// (they had diverged before, and login.astro carried a third hand-copied set).
+// LandingNav and TopNav both read from here so the two menus can't drift apart.
 
 export interface ToolLink {
   /** The description page. Always exists in every build. */
   href: string;
-  /** The running app. Only exists in the local build — see siteConfig.APP_ROUTES_ENABLED. */
+  /** The running app. Injected when PUBLIC_APP_ROUTES=1 — see siteConfig.APP_ROUTES_ENABLED. */
   appHref: string;
   label: string;
   /** What job this tool does, in the user's terms rather than the tool's. */

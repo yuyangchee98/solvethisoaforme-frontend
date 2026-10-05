@@ -1,5 +1,5 @@
 ---
-import { GITHUB_URL, GITHUB_URL_FRONTEND } from '../../siteConfig';
+import { GITHUB_URL } from '../../siteConfig';
 import { TOOLS } from '../../navigation';
 
 const year = new Date().getFullYear();
@@ -12,8 +12,8 @@ const year = new Date().getFullYear();
       <div>
         <p class="text-base font-semibold text-white mb-3">Solve This OA For Me</p>
         <p class="text-sm leading-relaxed max-w-xs">
-          Open source, self-hosted patent prosecution tools. Run them on your own
-          machine with your own Anthropic API key.
+          Free tools for patent prosecution. The OA Agent runs on your own
+          Anthropic API key — never stored on the server.
         </p>
       </div>
 
@@ -25,8 +25,7 @@ const year = new Date().getFullYear();
             <li><a href={href} class="text-sm hover:text-white transition-colors">{label}</a></li>
           ))}
           <li><a href="/blog" class="text-sm hover:text-white transition-colors">Blog</a></li>
-          <li><a href={GITHUB_URL} class="text-sm hover:text-white transition-colors">Backend source</a></li>
-          <li><a href={GITHUB_URL_FRONTEND} class="text-sm hover:text-white transition-colors">Frontend source</a></li>
+          <li><a href={GITHUB_URL} class="text-sm hover:text-white transition-colors">Source</a></li>
         </ul>
       </div>
     </div>

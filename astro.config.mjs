@@ -6,20 +6,17 @@ import sitemap from '@astrojs/sitemap';
 
 const SITE = 'https://solvethisoaforme.chyuang.com';
 
-// Routes that only work with a local backend running. They live in src/app-routes/
-// rather than src/pages/ so they are NOT picked up by file-based routing, and are
-// injected only when PUBLIC_APP_ROUTES=1.
+// Routes that need the backend. They live in src/app-routes/ rather than
+// src/pages/ so they are NOT picked up by file-based routing, and are injected
+// only when PUBLIC_APP_ROUTES=1.
 //
-// `npm run dev` sets it, so self-hosting works out of the box.
-// `npm run build` does NOT — it produces the public marketing site, which is what
-// the Cloudflare deploy hook runs. Keep that default: if `build` included the app
-// routes, a push would silently publish tool pages with no backend behind them.
-// `npm run build:app` is the full local build if you want to preview it.
+// `npm run dev` sets it, and so does `npm run build:prod-app` — which is what
+// the Cloudflare deploy hook MUST run. Plain `npm run build` produces the
+// marketing-only site and would silently take the app offline if deployed.
 const APP_ROUTES = [
   { pattern: '/patent-reader', entrypoint: './src/app-routes/patent-reader.astro' },
   { pattern: '/oa-agent', entrypoint: './src/app-routes/oa-agent.astro' },
   { pattern: '/check-antecedent-basis', entrypoint: './src/app-routes/check-antecedent-basis.astro' },
-  { pattern: '/login', entrypoint: './src/app-routes/login.astro' },
   { pattern: '/settings', entrypoint: './src/app-routes/settings.astro' },
 ];
 
@@ -46,7 +43,14 @@ function appRoutes() {
 
 // Allowlist rather than a blocklist: only the pages a search engine should see.
 // A blocklist silently indexes anything new that gets added.
-const SITEMAP_ALLOWED = [/^\/$/, /^\/tools\/[^/]+\/$/, /^\/blog\/?$/, /^\/blog\/[^/]+\/$/];
+const SITEMAP_ALLOWED = [
+  /^\/$/,
+  /^\/tools\/[^/]+\/$/,
+  /^\/blog\/?$/,
+  /^\/blog\/[^/]+\/$/,
+  // The one app route that's indexable: free, no key, works as a destination.
+  /^\/patent-reader\/$/,
+];
 
 export default defineConfig({
   site: SITE,

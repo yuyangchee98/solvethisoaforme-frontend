@@ -78,4 +78,4 @@ If you're evaluating options, here's what I'd focus on:
 
 We obviously built [Solve This OA For Me](/) to check all of these boxes. But the broader point is that AI for OA responses has moved past the "paste into ChatGPT" stage. Purpose-built tools that actually read references and show their reasoning are a meaningfully different experience.
 
-If you're still doing the first pass manually — reading every reference page by page, building limitation charts in Word — it's worth trying a tool that does that grunt work for you. [Try it with a day pass](/) and see if the analysis holds up on one of your current OAs. That's the fastest way to know if it's useful.
+If you're still doing the first pass manually — reading every reference page by page, building limitation charts in Word — it's worth trying a tool that does that grunt work for you. [Try the OA Agent — it's free to use](/tools/oa-agent) and see if the analysis holds up on one of your current OAs. That's the fastest way to know if it's useful.

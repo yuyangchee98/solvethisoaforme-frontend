@@ -14,6 +14,22 @@ const faqSchema = {
   mainEntity: [
     {
       "@type": "Question",
+      name: "What does it cost?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The tool is free. The agent thinks with Claude, and model usage is the expensive part — so it runs on your own Anthropic API key, and Anthropic bills you directly for exactly what your sessions use. No subscription, no markup.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Where does my API key live?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "In your browser. The key is stored locally, sent with each request to run your agent session, and never stored on the server. You can add or remove it any time in Settings, and get one at console.anthropic.com.",
+      },
+    },
+    {
+      "@type": "Question",
       name: "Does the AI hallucinate? How can I trust the analysis?",
       acceptedAnswer: {
         "@type": "Answer",
@@ -58,7 +74,7 @@ const faqSchema = {
 
 <LandingLayout
   title="OA Agent - AI Office Action Analysis"
-  description="Open source, self-hosted AI agent for Office Action responses. Upload your OA, cited prior art, and application — get argue/amend recommendations with draft language."
+  description="Free AI agent for Office Action responses, running on your own Anthropic API key. Upload your OA, cited prior art, and application — get argue/amend recommendations with draft language."
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <LandingNav />
@@ -78,7 +94,7 @@ const faqSchema = {
             rejection, with a citation you can check for every conclusion.
           </p>
           <div class="flex justify-center">
-            <ToolCta appHref="/oa-agent" label="OA Agent" size="lg" />
+            <ToolCta appHref="/oa-agent" label="OA Agent" size="lg" note="Free to use — runs on your Anthropic API key." />
           </div>
         </div>
       </div>

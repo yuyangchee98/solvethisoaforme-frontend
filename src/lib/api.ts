@@ -2,29 +2,34 @@
  * API client for Patent Claim NLP backend
  */
 
-import { authHeaders, clearToken } from './auth';
+import { authHeaders, ensureGuestAuth } from './auth';
 
 const API_BASE = import.meta.env.PUBLIC_API_URL || 'http://localhost:8000';
 
 async function authFetch(url: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(url, {
-    ...init,
-    headers: {
-      ...authHeaders(),
-      ...init?.headers,
-    },
-  });
+  const doFetch = () =>
+    fetch(url, {
+      ...init,
+      headers: {
+        ...authHeaders(),
+        ...init?.headers,
+      },
+    });
+
+  let res = await doFetch();
 
   if (res.status === 401) {
-    clearToken();
-    window.location.href = '/login';
-    throw new Error('Session expired');
+    // Stale or missing identity — including the phase-1 case where the
+    // backend's database was wiped while this browser kept its token. Silently
+    // re-provision the guest identity and retry once.
+    await ensureGuestAuth(true);
+    res = await doFetch();
+    if (res.status === 401) {
+      throw new Error('Could not sign in');
+    }
   }
 
   if (res.status === 403) {
-    // Billing was removed when the project became self-hosted. A 403 here means
-    // the backend is still enforcing the old subscription gate — see the setup
-    // guide for running an instance without it.
     throw new Error('Access denied by the backend');
   }
 

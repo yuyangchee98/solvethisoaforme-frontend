@@ -11,8 +11,6 @@ import type { PatentAnnotation, PendingAnnotation, AnnotationColor } from "./ann
 
 const LS_KEY = "patent_annotations";
 const LS_COUNT_KEY = "patent_annotation_count";
-const SOFT_THRESHOLD = 10;
-const HARD_THRESHOLD = 25;
 
 // ── localStorage helpers ─────────────────────────────────────────
 
@@ -229,8 +227,12 @@ function useAnnotationsImpl(patentNumber: string | null): UseAnnotationsReturn {
       .catch(console.error);
   }, [isLoggedIn]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const showSoftPrompt = !isLoggedIn && totalCount >= SOFT_THRESHOLD && !softDismissed;
-  const showHardGate = !isLoggedIn && totalCount >= HARD_THRESHOLD;
+  // Account-gating retired: identity is an invisible guest account now (see
+  // lib/auth.ts), so there is no "logged out" state to upsell from. The fields
+  // stay so callers don't need rewiring; the localStorage→server migration
+  // above still rescues annotations made before the guest login resolves.
+  const showSoftPrompt = false;
+  const showHardGate = false;
 
   return {
     annotations,

@@ -74,4 +74,4 @@ A few minutes of agentic analysis that you can spot-check by clicking through th
 
 If you've been using ChatGPT for OA analysis and getting mixed results, the issue probably isn't your prompting. It's the architecture. A model that can't open files, can't search documents, and can't show you where it looked will always be unreliable for multi-document comparison tasks.
 
-[Solve This OA For Me](/) is built on the agentic approach. Upload your OA and references, and watch the agent work through them step by step. You can [start with a day pass](/) — try it on an OA where you already know the answer, and see whether the agent finds the same gaps you did. That's the fastest way to calibrate trust.
+[Solve This OA For Me](/) is built on the agentic approach. Upload your OA and references, and watch the agent work through them step by step. You can [try it free](/tools/oa-agent) — pick an OA where you already know the answer, and see whether the agent finds the same gaps you did. That's the fastest way to calibrate trust.

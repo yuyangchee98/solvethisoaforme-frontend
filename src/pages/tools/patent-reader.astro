@@ -14,10 +14,10 @@ const faqSchema = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "What does Patent Reader cost to run?",
+      name: "What does Patent Reader cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Nothing beyond your own machine — it uses no AI models. One optional feature, placing reference numerals onto the figures, needs a separate key; everything else works without it. The setup guide covers it.",
+        text: "Nothing — it's free and uses no AI models. Enter a patent number and start reading.",
       },
     },
     {
@@ -46,10 +46,10 @@ const faqSchema = {
     },
     {
       "@type": "Question",
-      name: "Can I use Patent Reader during prosecution?",
+      name: "Can I link to a specific patent view?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Absolutely. Patent Reader is designed for patent professionals. Use it to quickly understand a cited reference or check how claim elements map to figures. Read the prior art here, then take the rejection to the OA Agent.",
+        text: "Yes. The URL updates as you navigate, so you can share a direct link to any patent. Useful for sharing references with colleagues or bookmarking patents you're working with.",
       },
     },
   ],
@@ -73,7 +73,7 @@ const supportedOffices = [
 
 <LandingLayout
   title="Patent Reader - Structured Patent Viewer"
-  description="Open source, self-hosted patent viewer with claim dependency trees, reference numeral mapping, figure bounding boxes, and multi-term search."
+  description="Free patent viewer with claim dependency trees, reference numeral mapping, figure bounding boxes, and multi-term search. No account needed."
 >
   <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   <LandingNav />

@@ -12,8 +12,6 @@ interface AnnotationToolbarProps {
   pending: PendingAnnotation;
   onSave: (color: AnnotationColor, note: string) => void;
   onCancel: () => void;
-  /** If true, show the hard gate message instead of the toolbar */
-  hardGate?: boolean;
   scrollContainerRef: React.RefObject<HTMLElement | null>;
 }
 
@@ -21,7 +19,6 @@ export function AnnotationToolbar({
   pending,
   onSave,
   onCancel,
-  hardGate,
   scrollContainerRef,
 }: AnnotationToolbarProps) {
   const [selectedColor, setSelectedColor] = useState<AnnotationColor>("yellow");
@@ -70,38 +67,6 @@ export function AnnotationToolbar({
   const handleSave = useCallback(() => {
     onSave(selectedColor, note);
   }, [onSave, selectedColor, note]);
-
-  if (hardGate) {
-    return (
-      <div
-        ref={toolbarRef}
-        className="absolute z-50 -translate-x-1/2 -translate-y-full"
-        style={{ top, left }}
-      >
-        <div className="bg-white rounded-lg shadow-lg border border-stone-200 px-4 py-3 text-center max-w-xs">
-          <p className="text-sm text-stone-700 mb-2">
-            Free annotation limit reached. Create a free account to continue.
-          </p>
-          <div className="flex gap-2 justify-center">
-            <a
-              href="/login?tab=register"
-              className="text-xs font-medium text-white bg-amber-500 hover:bg-amber-600 px-3 py-1.5 rounded-md transition-colors"
-            >
-              Create Account
-            </a>
-            <a
-              href="/login"
-              className="text-xs font-medium text-stone-600 hover:text-stone-800 px-3 py-1.5 rounded-md border border-stone-200 hover:border-stone-300 transition-colors"
-            >
-              Log In
-            </a>
-          </div>
-        </div>
-        {/* Arrow */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-white" />
-      </div>
-    );
-  }
 
   return (
     <div

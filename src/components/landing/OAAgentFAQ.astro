@@ -1,7 +1,13 @@
 ---
-import { GITHUB_URL } from '../../siteConfig';
-
 const faqs = [
+  {
+    question: "What does it cost?",
+    answer: "The tool is free. The agent thinks with Claude, and model usage is the expensive part — so it runs on your own Anthropic API key, and Anthropic bills you directly for exactly what your sessions use. No subscription, no markup.",
+  },
+  {
+    question: "Where does my API key live?",
+    answer: "In your browser. The key is stored locally, sent with each request to run your agent session, and never stored on the server. You can add or remove it any time in Settings, and get one at console.anthropic.com.",
+  },
   {
     question: "Does the AI hallucinate? How can I trust the analysis?",
     answer: "The OA Agent works directly from your uploaded documents, not from memory or training data. Every conclusion cites a specific passage, and those citations are verified against the source. You can click any reference to jump to the passage and check it yourself. Every claim is traceable and verifiable.",
@@ -46,10 +52,10 @@ const faqs = [
     <!-- CTA -->
     <div class="text-center mt-12">
       <a
-        href={GITHUB_URL}
+        href="/oa-agent"
         class="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition-colors shadow-sm"
       >
-        Self-host it
+        Open the OA Agent
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
       </a>
     </div>
