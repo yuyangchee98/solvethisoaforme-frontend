@@ -5,7 +5,7 @@ import { TOOLS } from '../../navigation';
 const currentPath = Astro.url.pathname;
 
 const pageLabels: Record<string, string> = {
-  ...Object.fromEntries(TOOLS.map((t) => [t.appHref, t.label])),
+  ...Object.fromEntries(TOOLS.map((t) => [t.href, t.label])),
   '/settings': 'Settings',
 };
 const currentPageLabel = pageLabels[currentPath];
@@ -38,12 +38,10 @@ const currentPageLabel = pageLabels[currentPath];
         <div class="invisible opacity-0 group-hover/nav:visible group-hover/nav:opacity-100 transition-all duration-150 absolute top-full left-0 mt-1 w-72 bg-white rounded-xl border border-stone-200 shadow-xl p-5">
           <p class="text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-2">Tools</p>
           <div class="space-y-1">
-            {TOOLS.map(({ appHref, href, label, description }) => (
-              <a href={appHref} class={`block px-3 py-2 rounded-lg transition-colors ${currentPath === appHref ? 'bg-stone-50' : 'hover:bg-stone-50'}`}>
-                <p class={`text-sm font-medium ${currentPath === appHref ? 'text-amber-600' : 'text-stone-900'}`}>{label}</p>
-                <p class="text-xs text-stone-400">
-                  {description} · <a href={href} class="hover:text-stone-600 underline underline-offset-2">about</a>
-                </p>
+            {TOOLS.map(({ href, label, description }) => (
+              <a href={href} class={`block px-3 py-2 rounded-lg transition-colors ${currentPath === href ? 'bg-stone-50' : 'hover:bg-stone-50'}`}>
+                <p class={`text-sm font-medium ${currentPath === href ? 'text-amber-600' : 'text-stone-900'}`}>{label}</p>
+                <p class="text-xs text-stone-400">{description}</p>
               </a>
             ))}
           </div>

@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { TOOLS } from '@/navigation';
 
 const links = [
-  ...TOOLS.map((t) => ({ href: t.appHref, label: t.label })),
+  ...TOOLS.map((t) => ({ href: t.href, label: t.label })),
   { href: '/settings', label: 'Settings' },
 ];
 

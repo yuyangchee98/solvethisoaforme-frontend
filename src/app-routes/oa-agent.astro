@@ -1,12 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TopNav from '../components/layout/TopNav.astro';
+import Footer from '../components/landing/Footer.astro';
+import OAAgentAbout from '../components/landing/OAAgentAbout.astro';
 import { OAAgentChat } from '../components/oa-agent/OAAgentChat';
 ---
 
-<Layout title="OA Agent - Solve This OA For Me" noindex>
+<Layout
+  title="OA Agent - AI Office Action Analysis"
+  description="Free AI agent for Office Action responses, running on your own Anthropic API key. Upload your OA, cited prior art, and application — get argue/amend recommendations with draft language."
+>
   <TopNav />
-  <main class="h-[calc(100vh-64px)] overflow-hidden bg-stone-50">
-    <OAAgentChat client:only="react" />
+  <main>
+    <div id="app" class="h-[calc(100vh-64px)] overflow-hidden bg-stone-50">
+      <OAAgentChat client:only="react" />
+    </div>
+    <OAAgentAbout />
   </main>
+  <Footer />
 </Layout>

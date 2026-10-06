@@ -1,12 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import TopNav from '../components/layout/TopNav.astro';
+import Footer from '../components/landing/Footer.astro';
+import PatentReaderAbout from '../components/landing/PatentReaderAbout.astro';
 import { PatentReader } from '../components/patent-reader/PatentReader';
 ---
 
-<Layout title="Patent Reader - Solve This OA For Me">
+<Layout
+  title="Patent Reader - Structured Patent Viewer"
+  description="Free patent viewer with claim dependency trees, reference numeral mapping, figure bounding boxes, and multi-term search. No account needed."
+>
   <TopNav />
-  <main class="h-[calc(100vh-64px)] overflow-hidden bg-stone-50">
-    <PatentReader client:only="react" />
+  <main>
+    <div id="app" class="h-[calc(100vh-64px)] overflow-hidden bg-stone-50">
+      <PatentReader client:only="react" />
+    </div>
+    <PatentReaderAbout />
   </main>
+  <Footer />
 </Layout>

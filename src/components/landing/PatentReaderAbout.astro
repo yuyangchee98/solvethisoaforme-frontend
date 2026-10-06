@@ -1,0 +1,139 @@
+---
+// Description content for the Patent Reader, shown below the tool itself on
+// /patent-reader. Formerly the standalone /tools/patent-reader page.
+import PatentReaderFeatures from './PatentReaderFeatures.astro';
+import PatentReaderHowItWorks from './PatentReaderHowItWorks.astro';
+import PatentReaderFAQ from './PatentReaderFAQ.astro';
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "What does Patent Reader cost?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Nothing — it's free and uses no AI models. Enter a patent number and start reading.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How is this different from Google Patents?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Google Patents shows you the raw document. Patent Reader structures it for prosecution work — claim dependency trees, clickable reference numerals cross-linked to figures, bounding boxes overlaid on drawings, and multi-term color-coded search. It's the viewer you wish Google Patents had.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Where does Patent Reader get its data?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Patent data is sourced from official patent office publications. You get the full specification, claims, figures, citations, legal events, and family information — structured into claim trees, reference numeral extraction, and figure mapping.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What patent offices are supported?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "US (USPTO), European (EPO), Chinese (CNIPA), Japanese (JPO), Korean (KIPO), PCT (WIPO), and many more. Enter the publication number in any standard format.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Can I link to a specific patent view?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes. The URL updates as you navigate, so you can share a direct link to any patent. Useful for sharing references with colleagues or bookmarking patents you're working with.",
+      },
+    },
+  ],
+};
+
+const supportedOffices = [
+  { code: "US", name: "United States Patent and Trademark Office (USPTO)" },
+  { code: "EP", name: "European Patent Office (EPO)" },
+  { code: "WO", name: "World Intellectual Property Organization (WIPO/PCT)" },
+  { code: "CN", name: "China National Intellectual Property Administration (CNIPA)" },
+  { code: "JP", name: "Japan Patent Office (JPO)" },
+  { code: "KR", name: "Korean Intellectual Property Office (KIPO)" },
+  { code: "CA", name: "Canadian Intellectual Property Office (CIPO)" },
+  { code: "AU", name: "IP Australia" },
+  { code: "IN", name: "Indian Patent Office (IPO)" },
+  { code: "GB", name: "UK Intellectual Property Office (UKIPO)" },
+  { code: "DE", name: "German Patent and Trade Mark Office (DPMA)" },
+  { code: "FR", name: "French National Institute of Industrial Property (INPI)" },
+];
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+<!-- Intro -->
+<section class="relative overflow-hidden">
+  <div class="absolute inset-0 bg-gradient-to-b from-amber-50/60 via-transparent to-transparent pointer-events-none"></div>
+  <div class="relative max-w-4xl mx-auto px-6 pt-20 pb-16 md:pt-28 md:pb-20 text-center">
+    <h2 class="text-4xl md:text-5xl font-bold text-stone-900 tracking-tight leading-[1.1] mb-6">
+      A better way to
+      <span class="text-amber-600"> read patents</span>
+    </h2>
+    <p class="text-lg text-stone-500 leading-relaxed max-w-2xl mx-auto">
+      Enter a patent number like you would on Google Patents — but get claim dependency trees, reference numeral mapping, figure bounding boxes, and multi-term search.
+    </p>
+  </div>
+</section>
+
+<PatentReaderFeatures />
+<PatentReaderHowItWorks />
+
+<!-- Supported Patent Offices -->
+<section class="py-20 md:py-28 bg-white">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="max-w-2xl mx-auto text-center mb-14">
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Coverage</p>
+      <h2 class="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight mb-4">
+        Any patent, any jurisdiction
+      </h2>
+      <p class="text-lg text-stone-500 leading-relaxed">
+        Enter a publication number from any of these offices. The reader fetches and structures the full patent automatically.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+      {supportedOffices.map((office) => (
+        <div class="flex items-center gap-3 p-4 rounded-xl border border-stone-100 bg-stone-50/50">
+          <code class="text-sm font-mono font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded shrink-0">{office.code}</code>
+          <span class="text-xs text-stone-500 leading-tight">{office.name}</span>
+        </div>
+      ))}
+    </div>
+
+    <p class="text-center text-sm text-stone-400 mt-8">
+      And many more jurisdictions worldwide.
+    </p>
+  </div>
+</section>
+
+<!-- Use with OA Agent callout -->
+<section class="py-16 md:py-20 bg-stone-50/70">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+      Next: decide argue or amend
+    </h2>
+    <p class="text-base text-stone-500 leading-relaxed mb-6 max-w-2xl mx-auto">
+      Read the cited prior art here, then take the rejection to the OA Agent.
+      The reader helps you understand the references; the agent works through
+      the examiner's mapping limitation by limitation.
+    </p>
+    <a
+      href="/oa-agent"
+      class="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+    >
+      Open the OA Agent
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<PatentReaderFAQ />

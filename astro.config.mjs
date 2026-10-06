@@ -45,9 +45,10 @@ function appRoutes() {
 // A blocklist silently indexes anything new that gets added.
 const SITEMAP_ALLOWED = [
   /^\/$/,
-  /^\/tools\/[^/]+\/$/,
-  // The one app route that's indexable: free, no key, works as a destination.
+  // The tool pages: each is the running app with its description below it.
   /^\/patent-reader\/$/,
+  /^\/oa-agent\/$/,
+  /^\/check-antecedent-basis\/$/,
 ];
 
 export default defineConfig({
