@@ -1,16 +1,22 @@
 # Cloudflare static-asset redirects.
 #
-# Legacy URLs from earlier site structures: the two /*/about marketing pages
-# moved under /tools/, the OA Response Agent was shortened to OA Agent, Reviewer
-# was removed, and the billing pages are gone. These URLs are in old sitemaps and
-# may be indexed, so they redirect rather than 404.
+# Legacy URLs from earlier site structures: the OA Response Agent was shortened
+# to OA Agent, Reviewer was removed, the billing pages are gone, the blog was
+# removed, and the /tools/* description pages were merged into the tool pages
+# themselves (the app with its description below it). These URLs are in old
+# sitemaps and may be indexed, so they redirect rather than 404.
 
-/oa-response/about       /tools/oa-agent           301
-/patent-reader/about     /tools/patent-reader      301
-/reviewer                /                         301
-/subscribe               /                         301
-/oa-response             /oa-agent                 301
+/oa-response/about        /oa-agent                 301
+/patent-reader/about      /patent-reader            301
+/tools/oa-agent           /oa-agent                 301
+/tools/patent-reader      /patent-reader            301
+/tools/antecedent-basis   /check-antecedent-basis   301
+/reviewer                 /                         301
+/subscribe                /                         301
+/oa-response              /oa-agent                 301
+/blog/*                   /                         301
+/blog                     /                         301
 
 # Login was removed when the site went hosted-free with invisible guest
 # accounts — the app signs you in silently.
-/login                   /oa-agent                 302
+/login                    /oa-agent                 302
