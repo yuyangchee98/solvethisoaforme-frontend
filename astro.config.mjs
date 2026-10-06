@@ -46,8 +46,6 @@ function appRoutes() {
 const SITEMAP_ALLOWED = [
   /^\/$/,
   /^\/tools\/[^/]+\/$/,
-  /^\/blog\/?$/,
-  /^\/blog\/[^/]+\/$/,
   // The one app route that's indexable: free, no key, works as a destination.
   /^\/patent-reader\/$/,
 ];

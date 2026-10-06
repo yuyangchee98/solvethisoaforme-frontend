@@ -32,11 +32,3 @@ export const TOOLS: ToolLink[] = [
     description: 'Check your amendments',
   },
 ];
-
-export const BLOG_POSTS = [
-  { href: '/blog/best-ai-tools-for-responding-to-patent-office-actions', label: 'Best AI Tools for Patent OA Response' },
-  { href: '/blog/how-agentic-ai-reads-prior-art-differently-than-chatgpt', label: 'How Agentic AI Reads Prior Art' },
-  { href: '/blog/ai-for-patent-prosecution-what-works-and-what-doesnt', label: 'AI for Patent Prosecution: What Works' },
-  { href: '/blog/why-patent-attorneys-still-spend-hours-on-every-office-action', label: 'Why OAs Still Take 6 Hours' },
-  { href: '/blog/antecedent-basis-mistakes-examiners-catch-that-ai-catches-first', label: 'Antecedent Basis Mistakes AI Catches' },
-];
