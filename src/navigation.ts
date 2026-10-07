@@ -26,4 +26,9 @@ export const TOOLS: ToolLink[] = [
     label: 'Antecedent Basis',
     description: 'Check your amendments',
   },
+  {
+    href: '/translate-claims',
+    label: 'Claim Translator',
+    description: 'Draft US claims from Japanese',
+  },
 ];

@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import TopNav from '../components/layout/TopNav.astro';
+import Footer from '../components/landing/Footer.astro';
+import ClaimTranslatorAbout from '../components/landing/ClaimTranslatorAbout.astro';
+import ClaimTranslator from '../components/ClaimTranslator';
+---
+
+<Layout
+  title="Japanese Patent Claim Translator"
+  description="Free Japanese-to-English patent claim translator. Produces English claims in US form, with multiple-dependent claims rewritten as single dependencies. Trained on claims US counsel filed for Japanese applications."
+>
+  <TopNav />
+
+  <main>
+    <div id="app" class="min-h-screen bg-stone-50">
+      <ClaimTranslator client:load />
+    </div>
+    <ClaimTranslatorAbout />
+  </main>
+  <Footer />
+</Layout>

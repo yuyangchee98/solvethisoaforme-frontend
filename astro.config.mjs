@@ -17,6 +17,7 @@ const APP_ROUTES = [
   { pattern: '/patent-reader', entrypoint: './src/app-routes/patent-reader.astro' },
   { pattern: '/oa-agent', entrypoint: './src/app-routes/oa-agent.astro' },
   { pattern: '/check-antecedent-basis', entrypoint: './src/app-routes/check-antecedent-basis.astro' },
+  { pattern: '/translate-claims', entrypoint: './src/app-routes/translate-claims.astro' },
   { pattern: '/settings', entrypoint: './src/app-routes/settings.astro' },
 ];
 
@@ -49,6 +50,7 @@ const SITEMAP_ALLOWED = [
   /^\/patent-reader\/$/,
   /^\/oa-agent\/$/,
   /^\/check-antecedent-basis\/$/,
+  /^\/translate-claims\/$/,
 ];
 
 export default defineConfig({

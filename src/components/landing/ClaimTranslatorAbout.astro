@@ -1,0 +1,155 @@
+---
+// Description content for the claim translator, shown below the tool on /translate-claims.
+// The examples are real outputs of the model; the figures come from the evaluation on
+// the model card - keep them in sync if the model is retrained.
+
+const MODEL_URL = 'https://huggingface.co/yuyangchee98/qwen3-14b-jp-us-claims-lora';
+
+const changes = [
+  {
+    name: 'Multiple dependencies',
+    summary:
+      'A Japanese claim that refers to several earlier claims is rewritten as separate claims, or as a single dependency, as is usual in US filings.',
+    example: {
+      ja: '【請求項3】請求項1又は2に記載の照明装置を備える車両。',
+      en: '3. A vehicle comprising the lighting device according to claim 1.<br>4. A vehicle comprising the lighting device according to claim 2.',
+    },
+  },
+  {
+    name: 'US claim form',
+    summary:
+      'Each claim gets a preamble, a transitional phrase and its elements in US form, numbered from 1 with nothing else around it.',
+    example: {
+      ja: '【請求項1】基板と、前記基板上に設けられた発光素子とを備える照明装置。',
+      en: '1. A lighting device comprising: a substrate; and a light emitting element provided on the substrate.',
+    },
+  },
+  {
+    name: 'Reference signs',
+    summary:
+      'Drawing reference signs in parentheses are left out, as they are in most US claims. Numbers that limit the claim, such as ranges and amounts, are kept.',
+    example: {
+      ja: 'ドライブプーリ（１３）およびドリブンプーリ（１４）に巻き掛けられる金属ベルト（１５）が、…',
+      en: '1. A metal belt for a continuously variable transmission, the metal belt being wound around a drive pulley and a driven pulley, …',
+    },
+  },
+];
+
+const faqs = [
+  {
+    question: 'How was it built?',
+    answer:
+      'It is Qwen3-14B fine-tuned on 978 patent families in which the same invention was filed first in Japan and then in the US. Each training example pairs the Japanese claims as filed with the claims US counsel filed, as a complete claim set, so the model learned the translation and the US restructuring together.',
+  },
+  {
+    question: 'How accurate is it?',
+    answer:
+      'Treat the output as a first draft. On 209 applications held out from training, every output was in US claim form and none contained multiple-dependent claims. It can still mistranslate a term, drop a number or word a claim differently from counsel, and it cannot add the extra claims counsel often files. Full results and limitations are on the model card.',
+  },
+  {
+    question: 'Is it free?',
+    answer:
+      'Yes. It runs on shared GPUs on Hugging Face, and each visitor has a daily allowance of a few translations. If you reach the limit, try again the next day, or use the Space directly while signed in to Hugging Face for a larger allowance.',
+  },
+  {
+    question: 'What happens to the claims I paste?',
+    answer:
+      'They are sent from your browser to the Hugging Face Space that runs the model. This site does not receive or store them. Because they leave your browser, do not paste claims that are not yet published.',
+  },
+  {
+    question: 'Can I run it myself?',
+    answer:
+      'Yes. The model is published on Hugging Face under the Apache 2.0 license, with code to run it.',
+  },
+];
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.question,
+    acceptedAnswer: { '@type': 'Answer', text: f.answer },
+  })),
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+
+<!-- What it changes -->
+<section class="py-16 md:py-24 bg-stone-50/70">
+  <div class="max-w-5xl mx-auto px-6">
+    <div class="max-w-2xl mb-12">
+      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Beyond word-for-word</p>
+      <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+        What it changes
+      </h2>
+      <p class="text-base text-stone-500 leading-relaxed">
+        A general translator keeps the Japanese structure. This model was trained on the claims US counsel
+        actually filed, so it also makes the changes counsel makes. The examples below are its own output.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      {changes.map(({ name, summary, example }) => (
+        <div class="p-6 md:p-7 rounded-2xl border border-stone-200 bg-white">
+          <h3 class="text-lg font-bold text-stone-900 mb-3">{name}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed mb-4">{summary}</p>
+          <div class="grid gap-3 md:grid-cols-2">
+            <div class="rounded-lg bg-stone-50 border border-stone-100 p-4">
+              <p class="text-xs text-stone-400 mb-1.5">Japanese</p>
+              <p class="text-sm text-stone-600 leading-relaxed">{example.ja}</p>
+            </div>
+            <div class="rounded-lg bg-stone-50 border border-stone-100 p-4">
+              <p class="text-xs text-stone-400 mb-1.5">English</p>
+              <p class="text-sm text-stone-600 font-mono leading-relaxed" set:html={example.en} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-16 md:py-24">
+  <div class="max-w-3xl mx-auto px-6">
+    <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-10">
+      Claim Translator FAQ
+    </h2>
+    <div class="space-y-8">
+      {faqs.map(({ question, answer }) => (
+        <div>
+          <h3 class="text-base font-semibold text-stone-900 mb-3">{question}</h3>
+          <p class="text-sm text-stone-500 leading-relaxed">{answer}</p>
+        </div>
+      ))}
+    </div>
+    <p class="mt-10 text-sm text-stone-500">
+      Model, data and evaluation:
+      <a href={MODEL_URL} class="font-medium text-amber-600 hover:text-amber-700" target="_blank" rel="noopener">
+        qwen3-14b-jp-us-claims-lora on Hugging Face
+      </a>
+    </p>
+  </div>
+</section>
+
+<!-- Workflow callout -->
+<section class="py-16 md:py-20 bg-stone-50/70">
+  <div class="max-w-3xl mx-auto px-6 text-center">
+    <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
+      Then check the antecedent basis
+    </h2>
+    <p class="text-base text-stone-500 leading-relaxed mb-6 max-w-2xl mx-auto">
+      Translated claims can pick up antecedent problems, such as "the" before an element that was never
+      introduced. Run the English claim set through the checker before it goes out.
+    </p>
+    <a
+      href="/check-antecedent-basis"
+      class="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
+    >
+      Open the Antecedent Basis checker
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>

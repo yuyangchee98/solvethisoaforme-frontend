@@ -12,14 +12,14 @@ const softwareSchema = {
   logo: "https://solvethisoaforme.chyuang.com/favicon.ico",
   applicationCategory: "BusinessApplication",
   description:
-    "Free patent prosecution tools in the browser. A structured patent viewer, an AI agent that reads the cited prior art and recommends argue or amend, and an antecedent basis checker for amended claims. The agent runs on your own Anthropic API key.",
+    "Free patent prosecution tools in the browser. A structured patent viewer, an AI agent that reads the cited prior art and recommends argue or amend, an antecedent basis checker for amended claims, and a Japanese-to-English claim translator. The agent runs on your own Anthropic API key.",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
 ---
 
 <LandingLayout
   title="Patent Tools for Prosecution | Solve This OA For Me"
-  description="Free tools for answering Office Actions: a structured patent viewer, an AI agent that reads the cited prior art on your own Anthropic API key, and an antecedent basis checker for amended claims."
+  description="Free tools for answering Office Actions: a structured patent viewer, an AI agent that reads the cited prior art on your own Anthropic API key, an antecedent basis checker for amended claims, and a Japanese-to-English claim translator."
 >
   <script type="application/ld+json" set:html={JSON.stringify(softwareSchema)} />
   <LandingNav />
@@ -27,7 +27,7 @@ const softwareSchema = {
     <!-- Product cards -->
     <section class="pt-20 pb-12 md:pt-28 md:pb-16">
       <div class="max-w-5xl mx-auto px-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Patent Reader -->
           <a href="/patent-reader" class="group block p-6 rounded-xl border border-stone-200 bg-white hover:border-amber-300 hover:shadow-lg transition-all">
             <div class="flex items-center gap-3 mb-4">
@@ -72,6 +72,23 @@ const softwareSchema = {
             </div>
             <p class="text-sm text-stone-500 leading-relaxed mb-6">
               Paste a claim set and check for missing antecedent basis, ambiguous pronouns, unclear "such" phrases, prepositional scope, and silent reintroduction before you file.
+            </p>
+            <span class="inline-flex items-center gap-1 text-sm font-medium text-amber-600 group-hover:text-amber-700 transition-colors">
+              Open tool
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
+          </a>
+
+          <!-- Claim Translator -->
+          <a href="/translate-claims" class="group block p-6 rounded-xl border border-stone-200 bg-white hover:border-amber-300 hover:shadow-lg transition-all">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-amber-600"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+              </div>
+              <h2 class="text-xl font-bold text-stone-900">Claim Translator</h2>
+            </div>
+            <p class="text-sm text-stone-500 leading-relaxed mb-6">
+              Paste the claims of a Japanese application and get English claims in US form, with multiple-dependent claims rewritten as single dependencies. A first draft for review before filing.
             </p>
             <span class="inline-flex items-center gap-1 text-sm font-medium text-amber-600 group-hover:text-amber-700 transition-colors">
               Open tool
