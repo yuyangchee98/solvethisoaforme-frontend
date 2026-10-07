@@ -29,6 +29,6 @@ export const TOOLS: ToolLink[] = [
   {
     href: '/translate-claims',
     label: 'Claim Translator',
-    description: 'Draft US claims from Japanese',
+    description: 'Translate Japanese claims',
   },
 ];

@@ -7,9 +7,9 @@ const MODEL_URL = 'https://huggingface.co/yuyangchee98/qwen3-14b-jp-us-claims-lo
 
 const changes = [
   {
-    name: 'Multiple dependencies',
+    name: 'Multiple dependent claims',
     summary:
-      'A Japanese claim that refers to several earlier claims is rewritten as separate claims, or as a single dependency, as is usual in US filings.',
+      'A claim that depends on several earlier claims is split into separate claims or tied to a single parent, the way it usually is before a US filing.',
     example: {
       ja: '【請求項3】請求項1又は2に記載の照明装置を備える車両。',
       en: '3. A vehicle comprising the lighting device according to claim 1.<br>4. A vehicle comprising the lighting device according to claim 2.',
@@ -17,17 +17,16 @@ const changes = [
   },
   {
     name: 'US claim form',
-    summary:
-      'Each claim gets a preamble, a transitional phrase and its elements in US form, numbered from 1 with nothing else around it.',
+    summary: 'Preamble, transitional phrase, then the elements — numbered from 1, with no headings or commentary.',
     example: {
       ja: '【請求項1】基板と、前記基板上に設けられた発光素子とを備える照明装置。',
       en: '1. A lighting device comprising: a substrate; and a light emitting element provided on the substrate.',
     },
   },
   {
-    name: 'Reference signs',
+    name: 'Reference numerals',
     summary:
-      'Drawing reference signs in parentheses are left out, as they are in most US claims. Numbers that limit the claim, such as ranges and amounts, are kept.',
+      'Drawing reference numerals are dropped, as they are in most US claims. Numbers that actually limit the claim — ranges, amounts — stay.',
     example: {
       ja: 'ドライブプーリ（１３）およびドリブンプーリ（１４）に巻き掛けられる金属ベルト（１５）が、…',
       en: '1. A metal belt for a continuously variable transmission, the metal belt being wound around a drive pulley and a driven pulley, …',
@@ -37,29 +36,33 @@ const changes = [
 
 const faqs = [
   {
-    question: 'How was it built?',
+    question: 'Why not just use Google Translate or ChatGPT?',
     answer:
-      'It is Qwen3-14B fine-tuned on 978 patent families in which the same invention was filed first in Japan and then in the US. Each training example pairs the Japanese claims as filed with the claims US counsel filed, as a complete claim set, so the model learned the translation and the US restructuring together.',
+      "You can, and you'll get Japanese claims in English: the multiple dependencies, the reference numerals and the Japanese claim structure all come along, and you fix them by hand. This was trained on what US counsel actually filed, so the fixing is part of the translation.",
+  },
+  {
+    question: 'How was it trained?',
+    answer:
+      'On 978 real patent families — the same invention filed in Japan first, then in the US. Each example pairs the Japanese claims as filed with the US claims as filed, whole claim set to whole claim set, so the model learned to translate and restructure at the same time.',
   },
   {
     question: 'How accurate is it?',
     answer:
-      'Treat the output as a first draft. On 209 applications held out from training, every output was in US claim form and none contained multiple-dependent claims. It can still mistranslate a term, drop a number or word a claim differently from counsel, and it cannot add the extra claims counsel often files. Full results and limitations are on the model card.',
+      "It's a first draft, not a filing. On 209 applications it never saw in training, every output was in US claim form and none had multiple dependent claims. It can still pick the wrong term, drop a number or word a claim differently from counsel — and it won't add the extra claims counsel often files. The full numbers are on the model card.",
   },
   {
     question: 'Is it free?',
     answer:
-      'Yes. It runs on shared GPUs on Hugging Face, and each visitor has a daily allowance of a few translations. If you reach the limit, try again the next day, or use the Space directly while signed in to Hugging Face for a larger allowance.',
+      'Yes. It runs on shared GPUs on Hugging Face, which gives every visitor a few translations a day. If you hit the limit, come back tomorrow, or use the Space directly while signed in to Hugging Face for a bigger allowance.',
   },
   {
-    question: 'What happens to the claims I paste?',
+    question: 'Where do my claims go?',
     answer:
-      'They are sent from your browser to the Hugging Face Space that runs the model. This site does not receive or store them. Because they leave your browser, do not paste claims that are not yet published.',
+      "From your browser straight to the Hugging Face Space that runs the model. They never touch this server. Still, don't paste anything that isn't published yet.",
   },
   {
     question: 'Can I run it myself?',
-    answer:
-      'Yes. The model is published on Hugging Face under the Apache 2.0 license, with code to run it.',
+    answer: 'Yes. The model is on Hugging Face under Apache 2.0, with code to run it.',
   },
 ];
 
@@ -76,17 +79,17 @@ const faqSchema = {
 
 <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
 
-<!-- What it changes -->
+<!-- What it does -->
 <section class="py-16 md:py-24 bg-stone-50/70">
   <div class="max-w-5xl mx-auto px-6">
     <div class="max-w-2xl mb-12">
-      <p class="text-sm font-medium text-amber-600 tracking-wide uppercase mb-3">Beyond word-for-word</p>
       <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
-        What it changes
+        What the Claim Translator does
       </h2>
       <p class="text-base text-stone-500 leading-relaxed">
-        A general translator keeps the Japanese structure. This model was trained on the claims US counsel
-        actually filed, so it also makes the changes counsel makes. The examples below are its own output.
+        A general translator gives you Japanese claims in English. US counsel would restructure them before
+        filing — different dependencies, US claim form, no reference numerals. This model was trained on what
+        counsel actually filed, so it does that as it translates. Every example below is real output.
       </p>
     </div>
 
@@ -126,7 +129,7 @@ const faqSchema = {
       ))}
     </div>
     <p class="mt-10 text-sm text-stone-500">
-      Model, data and evaluation:
+      Model, training data and full results:
       <a href={MODEL_URL} class="font-medium text-amber-600 hover:text-amber-700" target="_blank" rel="noopener">
         qwen3-14b-jp-us-claims-lora on Hugging Face
       </a>
@@ -138,17 +141,17 @@ const faqSchema = {
 <section class="py-16 md:py-20 bg-stone-50/70">
   <div class="max-w-3xl mx-auto px-6 text-center">
     <h2 class="text-2xl md:text-3xl font-bold text-stone-900 tracking-tight mb-4">
-      Then check the antecedent basis
+      Next: check the antecedent basis
     </h2>
     <p class="text-base text-stone-500 leading-relaxed mb-6 max-w-2xl mx-auto">
-      Translated claims can pick up antecedent problems, such as "the" before an element that was never
-      introduced. Run the English claim set through the checker before it goes out.
+      Translation can leave a "the" in front of an element that was never introduced. Run the English claims
+      through the Antecedent Basis checker before they go out.
     </p>
     <a
       href="/check-antecedent-basis"
       class="inline-flex items-center gap-2 text-sm font-medium text-amber-600 hover:text-amber-700 transition-colors"
     >
-      Open the Antecedent Basis checker
+      Open Antecedent Basis
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
     </a>
   </div>

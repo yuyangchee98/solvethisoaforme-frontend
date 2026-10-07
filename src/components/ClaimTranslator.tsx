@@ -104,7 +104,7 @@ export default function ClaimTranslator() {
   const status: Record<Phase, string> = {
     idle: '',
     connecting: 'Connecting…',
-    starting: 'Starting the model. After a quiet period this takes about two minutes.',
+    starting: 'Starting the model — after a quiet spell this takes about two minutes.',
     queued: `Waiting for a GPU${detail ? ` (${detail})` : ''}…`,
     translating: 'Translating…',
     done: `Done. ${claimCount} ${claimCount === 1 ? 'claim' : 'claims'}.`,
@@ -117,9 +117,9 @@ export default function ClaimTranslator() {
       <header className="mb-8 max-w-3xl">
         <h1 className="text-3xl md:text-4xl font-bold text-stone-900 tracking-tight">Japanese Patent Claim Translator</h1>
         <p className="mt-3 text-base text-stone-500 leading-relaxed">
-          Translates the claims of a Japanese patent application into English, in the form used for US filings.
-          Claims that depend on several earlier claims are rewritten to depend on one. The output is a draft for
-          review by a patent professional.
+          Paste the claims from a Japanese application and get English claims in US form, with multiple dependent
+          claims rewritten the way US counsel would rewrite them. It's a first draft — review it before it goes
+          anywhere.
         </p>
       </header>
 
@@ -195,12 +195,12 @@ export default function ClaimTranslator() {
       {example && (
         <details className="mt-6 rounded-xl border border-stone-200 bg-white p-5">
           <summary className="cursor-pointer text-sm font-semibold text-stone-900">
-            US claims as filed for this example ({example.usPublication})
+            What US counsel filed for this one ({example.usPublication})
           </summary>
           {example.usClaimCount > example.jpClaimCount && (
             <p className="mt-3 text-sm text-stone-500">
-              Counsel filed {example.usClaimCount} US claims for these {example.jpClaimCount} Japanese claims. The
-              added claims have no counterpart in the Japanese text, so no translation would include them.
+              Counsel filed {example.usClaimCount} claims for these {example.jpClaimCount} Japanese claims. The extra
+              ones aren't in the Japanese text, so no translation would produce them.
             </p>
           )}
           <div className="mt-3 whitespace-pre-wrap rounded-lg bg-stone-50 p-3 text-sm leading-relaxed text-stone-700">
@@ -210,12 +210,12 @@ export default function ClaimTranslator() {
       )}
 
       <p className="mt-6 max-w-3xl text-xs leading-relaxed text-stone-400">
-        The model runs on a{' '}
+        Runs on a{' '}
         <a href={SPACE_URL} className="underline hover:text-stone-600" target="_blank" rel="noopener">
           Hugging Face Space
         </a>
-        . Your claims are sent there for processing and are not stored by this site; don't paste claims that are not
-        yet published. Each visitor has a daily GPU allowance of a few translations.
+        . Your claims go from your browser straight to the Space and never touch this server — but don't paste anything
+        that isn't published yet. You get a few translations a day.
       </p>
     </div>
   );
